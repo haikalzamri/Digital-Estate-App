@@ -1,0 +1,379 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Work Program Tracker</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar" aria-label="Primary">
+        <div class="brand-block">
+          <div class="brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 24 24" role="img">
+              <path d="M5 4h9.5L19 8.5V20H5V4Z" />
+              <path d="M14 4v5h5" />
+              <path d="M8 12h8" />
+              <path d="M8 15h6" />
+            </svg>
+          </div>
+          <div>
+            <p class="eyebrow">Group Digital</p>
+            <h1>Work Program Tracker</h1>
+          </div>
+        </div>
+
+        <nav class="nav-list">
+          <button class="nav-button active" type="button" data-view="dashboard">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M4 13h7V4H4v9Z" />
+              <path d="M13 20h7V4h-7v16Z" />
+              <path d="M4 20h7v-5H4v5Z" />
+            </svg>
+            Dashboard
+          </button>
+          <button class="nav-button" type="button" data-view="records">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M5 4h14v16H5V4Z" />
+              <path d="M8 8h8" />
+              <path d="M8 12h8" />
+              <path d="M8 16h5" />
+            </svg>
+            Records
+          </button>
+          <button class="nav-button" type="button" data-view="capture">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 5v14" />
+              <path d="M5 12h14" />
+            </svg>
+            Capture
+          </button>
+          <button class="nav-button" type="button" data-view="settings">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8Z" />
+              <path d="M4 12h2" />
+              <path d="M18 12h2" />
+              <path d="M12 4v2" />
+              <path d="M12 18v2" />
+              <path d="m6.3 6.3 1.4 1.4" />
+              <path d="m16.3 16.3 1.4 1.4" />
+              <path d="m17.7 6.3-1.4 1.4" />
+              <path d="m7.7 16.3-1.4 1.4" />
+            </svg>
+            Configuration
+          </button>
+        </nav>
+
+        <div class="offline-panel">
+          <div>
+            <span class="status-dot" id="connectionDot"></span>
+            <span id="connectionText">Checking status</span>
+          </div>
+          <button class="icon-button" type="button" id="syncButton" title="Sync offline records" aria-label="Sync offline records">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M17 2v5h-5" />
+              <path d="M7 22v-5h5" />
+              <path d="M20 11a8 8 0 0 0-13.6-5.7L4 7.7" />
+              <path d="M4 13a8 8 0 0 0 13.6 5.7L20 16.3" />
+            </svg>
+          </button>
+        </div>
+      </aside>
+
+      <main class="main-content">
+        <section class="topbar">
+          <div>
+            <p class="eyebrow">Operational capture and monitoring</p>
+            <h2 id="viewTitle">Dashboard</h2>
+          </div>
+          <div class="toolbar">
+            <label class="search-field">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="m21 21-4.3-4.3" />
+                <path d="M10.8 18a7.2 7.2 0 1 0 0-14.4 7.2 7.2 0 0 0 0 14.4Z" />
+              </svg>
+              <input id="searchInput" type="search" placeholder="Search records" />
+            </label>
+            <button class="primary-button" type="button" id="newRecordButton">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M12 5v14" />
+                <path d="M5 12h14" />
+              </svg>
+              New Record
+            </button>
+          </div>
+        </section>
+
+        <section class="view active" id="dashboardView">
+          <section class="panel programme-dashboard-panel">
+            <div class="programme-title">
+              <p>DIGITAL ESTATE</p>
+              <h3 id="programmeDashboardTitle">WORK PROGRAMME FY 2026</h3>
+            </div>
+
+            <div class="dashboard-tabs" id="dashboardProgramTabs" aria-label="Dashboard programme selector"></div>
+
+            <div class="dashboard-mode-toggle" role="group" aria-label="Dashboard view">
+              <button class="dashboard-mode-button active" type="button" id="dashboardMapButton" data-dashboard-mode="map">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M9 18 3 21V6l6-3 6 3 6-3v15l-6 3-6-3Z" />
+                  <path d="M9 3v15" />
+                  <path d="M15 6v15" />
+                </svg>
+                Map View
+              </button>
+              <button class="dashboard-mode-button" type="button" id="dashboardTableButton" data-dashboard-mode="table">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M4 5h16v14H4V5Z" />
+                  <path d="M4 10h16" />
+                  <path d="M10 5v14" />
+                </svg>
+                Table View
+              </button>
+            </div>
+
+            <div class="dashboard-mode-view active" id="dashboardMapView">
+              <div class="map-dashboard-summary" id="dashboardMapSummary"></div>
+              <div class="map-legend">
+                <span><i class="legend-dot green"></i>On time / completed</span>
+                <span><i class="legend-dot yellow"></i>Delayed 1-3 months</span>
+                <span><i class="legend-dot red"></i>Over-delayed &gt;3 months</span>
+                <span><i class="legend-dot grey"></i>No planned data</span>
+              </div>
+              <div class="estate-map-shell">
+                <div class="kml-estate-map" id="dashboardMap"></div>
+                <div class="map-field-detail" id="dashboardMapDetail"></div>
+              </div>
+            </div>
+
+            <div class="dashboard-mode-view" id="dashboardTableView">
+              <div class="programme-summary" id="programmeSummary"></div>
+
+              <div class="daily-tracking-panel hidden" id="dailyTrackingPanel"></div>
+
+              <div class="programme-table-wrap">
+                <table class="programme-table">
+                  <thead id="programmeDashboardHead"></thead>
+                  <tbody id="programmeDashboardBody"></tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+        </section>
+
+        <section class="view" id="recordsView">
+          <section class="panel">
+            <div class="panel-header split">
+              <div>
+                <h3>Work Program Records</h3>
+                <p>Review, edit, and approve field submissions before dashboard reporting</p>
+              </div>
+              <div class="filter-row">
+                <select id="typeFilter" aria-label="Filter by type"></select>
+                <select id="stageFilter" aria-label="Filter by approval status"></select>
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Reporter</th>
+                    <th>Program / Task</th>
+                    <th>Field</th>
+                    <th>Hectares</th>
+                    <th>Completion Date</th>
+                    <th>Approval</th>
+                    <th>Evidence</th>
+                    <th>GPS</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="recordsTable"></tbody>
+              </table>
+            </div>
+            <div class="record-card-list" id="recordsCardList"></div>
+            <div class="empty-state hidden" id="recordsEmpty">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M5 4h14v16H5V4Z" />
+                <path d="M8 8h8" />
+                <path d="M8 12h5" />
+                <path d="M8 16h7" />
+              </svg>
+              <h3>No matching records</h3>
+              <p>Adjust the filters or capture a new Work Program entry.</p>
+            </div>
+          </section>
+
+          <section class="panel map-panel">
+            <div class="panel-header">
+              <div>
+                <h3>Map Output</h3>
+                <p>GPS-enabled records plotted by field coordinate and accuracy</p>
+              </div>
+            </div>
+            <div class="map-output" id="mapOutput"></div>
+          </section>
+        </section>
+
+        <section class="view" id="captureView">
+          <section class="panel form-panel">
+            <div class="panel-header">
+              <div>
+                <h3 id="formHeading">Capture Work Program</h3>
+                <p>Mobile-friendly field submission for Field Officer or Mandore</p>
+              </div>
+              <button class="secondary-button" type="button" id="resetFormButton">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M3 12a9 9 0 0 1 15.5-6.2L21 8" />
+                  <path d="M21 3v5h-5" />
+                  <path d="M21 12a9 9 0 0 1-15.5 6.2L3 16" />
+                  <path d="M3 21v-5h5" />
+                </svg>
+                Clear
+              </button>
+            </div>
+
+            <form id="recordForm" novalidate>
+              <input type="hidden" id="recordId" />
+              <div class="form-grid">
+                <label>
+                  <span>Reporter Name *</span>
+                  <input id="reporterName" type="text" required placeholder="Example: Ahmad bin Ali" />
+                  <small class="field-error"></small>
+                </label>
+                <label>
+                  <span>Work Program Type *</span>
+                  <select id="programType" required></select>
+                  <small class="field-error"></small>
+                </label>
+                <label>
+                  <span>Field *</span>
+                  <input id="blockField" type="text" required placeholder="Example: P02D1" />
+                  <small class="field-error"></small>
+                </label>
+                <label>
+                  <span>Task *</span>
+                  <input id="taskName" type="text" required placeholder="Example: Circle spraying round 1" />
+                  <small class="field-error"></small>
+                </label>
+                <label>
+                  <span>Hectares Covered *</span>
+                  <input id="hectares" type="number" min="0.01" step="0.01" required placeholder="0.00" />
+                  <small class="field-error"></small>
+                </label>
+                <label>
+                  <span>Actual Completion Date *</span>
+                  <input id="actualCompletionDate" type="date" required />
+                  <small class="field-error"></small>
+                </label>
+                <label class="wide">
+                  <span>Remarks</span>
+                  <textarea id="remarks" rows="4" placeholder="Capture observations, exceptions, or follow-up notes"></textarea>
+                </label>
+                <div class="gps-readout wide">
+                  <span>GPS Details</span>
+                  <div>
+                    <input id="latitude" type="number" step="0.000001" placeholder="Latitude" aria-label="Latitude" />
+                    <input id="longitude" type="number" step="0.000001" placeholder="Longitude" aria-label="Longitude" />
+                    <input id="gpsAccuracy" type="number" min="0" step="0.1" placeholder="Accuracy (m)" aria-label="GPS accuracy in meters" />
+                  </div>
+                </div>
+              </div>
+
+              <div class="capture-tools">
+                <label class="upload-box">
+                  <input id="photoInput" type="file" accept="image/*" />
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M4 5h16v14H4V5Z" />
+                    <path d="m8 14 2.4-2.4L14 15.2l1.6-1.6L20 18" />
+                    <path d="M15 9h.01" />
+                  </svg>
+                  <span>Attach Photo Evidence</span>
+                </label>
+                <button class="secondary-button" type="button" id="gpsButton">
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M12 21s7-6.1 7-12A7 7 0 0 0 5 9c0 5.9 7 12 7 12Z" />
+                    <path d="M12 12a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" />
+                  </svg>
+                  Capture GPS
+                </button>
+                <button class="secondary-button" type="button" id="offlineModeButton" aria-pressed="false">
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M4 12.5A8 8 0 0 1 17.9 7" />
+                    <path d="M8.5 16.5A5 5 0 0 1 15.5 10" />
+                    <path d="m3 3 18 18" />
+                  </svg>
+                  Save Offline
+                </button>
+              </div>
+
+              <div class="evidence-preview hidden" id="photoPreviewWrap">
+                <img id="photoPreview" alt="Attached evidence preview" />
+                <button class="icon-button danger" type="button" id="removePhotoButton" title="Remove evidence" aria-label="Remove evidence">
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M6 7h12" />
+                    <path d="M9 7V5h6v2" />
+                    <path d="M9 11v6" />
+                    <path d="M15 11v6" />
+                    <path d="M8 7l1 13h6l1-13" />
+                  </svg>
+                </button>
+              </div>
+
+              <div class="form-actions">
+                <button class="primary-button" type="submit">
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M5 12.5 10 17 19 7" />
+                  </svg>
+                  Save Record
+                </button>
+              </div>
+            </form>
+          </section>
+        </section>
+
+        <section class="view" id="settingsView">
+          <div class="content-grid">
+            <section class="panel">
+              <div class="panel-header">
+                <div>
+                  <h3>Work Program Types</h3>
+                  <p>Configure selectable program categories and criteria</p>
+                </div>
+              </div>
+              <form class="inline-form" id="typeForm">
+                <input id="typeName" type="text" placeholder="Program type" required />
+                <input id="typeGroup" type="text" placeholder="Grouping" required />
+                <input id="typeCriteria" type="text" placeholder="Acceptance criteria" required />
+                <button class="primary-button compact" type="submit">Add</button>
+              </form>
+              <div class="config-list" id="typeList"></div>
+            </section>
+
+            <section class="panel">
+              <div class="panel-header">
+                <div>
+                  <h3>Scheduler Stages</h3>
+                  <p>Define stage values used during capture</p>
+                </div>
+              </div>
+              <form class="inline-form" id="stageForm">
+                <input id="stageName" type="text" placeholder="Stage name" required />
+                <button class="primary-button compact" type="submit">Add</button>
+              </form>
+              <div class="config-list" id="stageList"></div>
+            </section>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <div class="toast hidden" id="toast" role="status" aria-live="polite"></div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="./field-map-data.js?v=gis-map"></script>
+    <script src="./app.js?v=gis-map"></script>
+  </body>
+</html>
