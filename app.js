@@ -15,20 +15,9 @@ const MONTHS_2026 = [
   { key: "2026-12", label: "Dec" },
 ];
 const APPROVAL_STATUSES = ["Pending Approval", "Approved"];
+const SPRAYING_PROGRAM = "Spraying";
 
 const DEFAULT_PROGRAM_TYPES = [
-  {
-    id: "programme-circle-spraying",
-    name: "Circle Spraying",
-    group: "Estate Operations",
-    criteria: "Actual completion is captured by field and compared against quarterly planned programme",
-  },
-  {
-    id: "programme-manuring",
-    name: "Manuring",
-    group: "Estate Operations",
-    criteria: "Record type, block/field, hectares, findings, and deadline",
-  },
   {
     id: "programme-pruning",
     name: "Pruning",
@@ -36,24 +25,43 @@ const DEFAULT_PROGRAM_TYPES = [
     criteria: "Photo evidence and remarks required for work completion review",
   },
   {
-    id: "programme-pest-control",
-    name: "Pest Control",
-    group: "Crop Protection",
-    criteria: "GPS point and treatment remarks captured for traceability",
+    id: "programme-raking",
+    name: "Raking",
+    group: "Estate Operations",
+    criteria: "Field completion captured by block, hectares, and actual completion date",
+  },
+  {
+    id: "programme-spraying",
+    name: SPRAYING_PROGRAM,
+    group: "Estate Operations",
+    criteria: "Actual completion is captured by field and compared against quarterly planned programme",
+  },
+  {
+    id: "programme-harvesting",
+    name: "Harvesting",
+    group: "Estate Operations",
+    criteria: "Harvesting completion captured by field, hectares, evidence, and remarks",
   },
 ];
+const ALLOWED_PROGRAM_NAMES = new Set(DEFAULT_PROGRAM_TYPES.map((type) => type.name));
+
+function createId() {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
+  }
+  return `id-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+}
 
 const defaultState = {
-  programTypes: DEFAULT_PROGRAM_TYPES,
-  stages: ["Planned", "In Progress", "Completed", "Verified"],
+  programTypes: getDefaultProgramTypes(),
   plannedProgrammes: buildDefaultPlannedProgrammes(),
   records: [
     {
-      id: crypto.randomUUID(),
+      id: createId(),
       reporterName: "Rahman Mandore",
-      programType: "Circle Spraying",
+      programType: SPRAYING_PROGRAM,
       blockField: "P02D1",
-      taskName: "Circle spraying completion",
+      taskName: "Spraying completion",
       schedulerStage: "Completed",
       hectares: 38.17,
       actualCompletionDate: "2026-06-12",
@@ -69,11 +77,11 @@ const defaultState = {
       updatedAt: new Date().toISOString(),
     },
     {
-      id: crypto.randomUUID(),
+      id: createId(),
       reporterName: "Siti Field Officer",
-      programType: "Circle Spraying",
+      programType: SPRAYING_PROGRAM,
       blockField: "P05C1",
-      taskName: "Circle spraying partial completion",
+      taskName: "Spraying partial completion",
       schedulerStage: "Completed",
       hectares: 12,
       actualCompletionDate: "2026-01-18",
@@ -93,7 +101,7 @@ const defaultState = {
 
 let state = loadState();
 let currentView = "dashboard";
-let selectedDashboardProgram = state.programTypes.find((type) => type.name === "Circle Spraying")?.name || state.programTypes[0]?.name || "";
+let selectedDashboardProgram = state.programTypes.find((type) => type.name === SPRAYING_PROGRAM)?.name || state.programTypes[0]?.name || "";
 let selectedDrilldownMonth = "";
 let selectedDashboardMode = "map";
 let selectedMapField = "";
@@ -136,7 +144,6 @@ const dom = {
   programType: document.querySelector("#programType"),
   blockField: document.querySelector("#blockField"),
   taskName: document.querySelector("#taskName"),
-  schedulerStage: document.querySelector("#schedulerStage"),
   hectares: document.querySelector("#hectares"),
   actualCompletionDate: document.querySelector("#actualCompletionDate"),
   deadline: document.querySelector("#deadline"),
@@ -152,14 +159,7 @@ const dom = {
   gpsButton: document.querySelector("#gpsButton"),
   offlineModeButton: document.querySelector("#offlineModeButton"),
   resetFormButton: document.querySelector("#resetFormButton"),
-  typeForm: document.querySelector("#typeForm"),
-  typeName: document.querySelector("#typeName"),
-  typeGroup: document.querySelector("#typeGroup"),
-  typeCriteria: document.querySelector("#typeCriteria"),
   typeList: document.querySelector("#typeList"),
-  stageForm: document.querySelector("#stageForm"),
-  stageName: document.querySelector("#stageName"),
-  stageList: document.querySelector("#stageList"),
   toast: document.querySelector("#toast"),
 };
 
@@ -198,8 +198,6 @@ function bindEvents() {
   dom.photoInput.addEventListener("change", handlePhotoUpload);
   dom.removePhotoButton.addEventListener("click", removePhoto);
 
-  dom.typeForm.addEventListener("submit", addProgramType);
-  dom.stageForm.addEventListener("submit", addStage);
 }
 
 function loadState() {
@@ -208,12 +206,10 @@ function loadState() {
 
   try {
     const parsed = JSON.parse(saved);
-    const programTypes = mergeDefaultProgramTypes(parsed.programTypes?.length ? parsed.programTypes : defaultState.programTypes);
     return {
       ...defaultState,
       ...parsed,
-      programTypes,
-      stages: parsed.stages?.length ? parsed.stages : defaultState.stages,
+      programTypes: getDefaultProgramTypes(),
       plannedProgrammes: normalizePlannedProgrammes(parsed.plannedProgrammes?.length ? parsed.plannedProgrammes : defaultState.plannedProgrammes),
       records: (Array.isArray(parsed.records) ? parsed.records : defaultState.records).map(normalizeRecord),
     };
@@ -222,16 +218,12 @@ function loadState() {
   }
 }
 
-function mergeDefaultProgramTypes(programTypes) {
-  const byName = new Map(programTypes.map((type) => [type.name.toLowerCase(), type]));
-  const orderedDefaults = DEFAULT_PROGRAM_TYPES.map((type) => byName.get(type.name.toLowerCase()) || type);
-  const defaultNames = new Set(DEFAULT_PROGRAM_TYPES.map((type) => type.name.toLowerCase()));
-  const customTypes = programTypes.filter((type) => !defaultNames.has(type.name.toLowerCase()));
-  return [...orderedDefaults, ...customTypes];
+function getDefaultProgramTypes() {
+  return DEFAULT_PROGRAM_TYPES.map((type) => ({ ...type }));
 }
 
 function normalizeRecord(record) {
-  return {
+  const normalized = {
     reporterName: record.reporterName || "Not captured",
     taskName: record.taskName || record.schedulerStage || "Completion",
     actualCompletionDate: record.actualCompletionDate || record.deadline || todayDate(),
@@ -244,25 +236,38 @@ function normalizeRecord(record) {
     remarks: "",
     ...record,
   };
+  normalized.programType = normalizeProgramTypeName(normalized.programType);
+  return normalized;
 }
 
 function normalizePlannedProgrammes(plannedProgrammes) {
-  const nonCirclePlans = plannedProgrammes.filter((row) => row.programType !== "Circle Spraying");
-  const circlePlans = plannedProgrammes.filter((row) => row.programType === "Circle Spraying");
+  const normalizedProgrammes = plannedProgrammes
+    .map((row) => ({ ...row, programType: normalizeProgramTypeName(row.programType) }))
+    .filter((row) => ALLOWED_PROGRAM_NAMES.has(row.programType));
+  const otherPlans = normalizedProgrammes.filter((row) => row.programType !== SPRAYING_PROGRAM);
+  const sprayingPlans = normalizedProgrammes.filter((row) => row.programType === SPRAYING_PROGRAM);
   const mapFields = getFieldMapItems();
 
   if (mapFields.length) {
-    const plannedFields = new Set(circlePlans.map((row) => fieldKey(row.field)));
+    const plannedFields = new Set(sprayingPlans.map((row) => fieldKey(row.field)));
     const hasFullMapCoverage = mapFields.every((field) => plannedFields.has(fieldKey(field.fieldGis)));
     if (!hasFullMapCoverage) {
-      return [...buildProgrammeRows("Circle Spraying", getCircleSprayingPlanRows()), ...nonCirclePlans];
+      return [...buildProgrammeRows(SPRAYING_PROGRAM, getSprayingPlanRows()), ...otherPlans];
     }
   }
 
-  const hasKmlCirclePlan = circlePlans.some((row) => fieldKey(row.field) === fieldKey("P02D1"));
-  if (hasKmlCirclePlan) return plannedProgrammes;
+  const hasKmlSprayingPlan = sprayingPlans.some((row) => fieldKey(row.field) === fieldKey("P02D1"));
+  if (hasKmlSprayingPlan || otherPlans.length) return [...sprayingPlans, ...otherPlans];
 
-  return [...buildProgrammeRows("Circle Spraying", getCircleSprayingPlanRows()), ...nonCirclePlans];
+  return buildDefaultPlannedProgrammes();
+}
+
+function normalizeProgramTypeName(programType) {
+  const value = String(programType || "").trim();
+  const directMatch = DEFAULT_PROGRAM_TYPES.find((type) => type.name.toLowerCase() === value.toLowerCase());
+  if (directMatch) return directMatch.name;
+  if (value.toLowerCase() === "circle spraying") return SPRAYING_PROGRAM;
+  return DEFAULT_PROGRAM_TYPES[0].name;
 }
 
 function persist() {
@@ -296,7 +301,6 @@ function renderSelects() {
     selectedDashboardProgram = state.programTypes[0]?.name || "";
   }
   fillSelect(dom.programType, "Select program type", state.programTypes.map((item) => item.name));
-  if (dom.schedulerStage) fillSelect(dom.schedulerStage, "Select scheduler stage", state.stages);
   fillSelect(dom.typeFilter, "All program types", state.programTypes.map((item) => item.name));
   fillSelect(dom.stageFilter, "All approval status", APPROVAL_STATUSES);
 }
@@ -553,7 +557,6 @@ function renderDailyRecordsTable(records) {
             <th>Date Done</th>
             <th>Field</th>
             <th>Completed Hectares</th>
-            <th>Stage</th>
             <th>Remarks</th>
             <th>Evidence</th>
             <th>GPS</th>
@@ -567,7 +570,6 @@ function renderDailyRecordsTable(records) {
                   <td>${formatDate(record.actualCompletionDate, "No date")}</td>
                   <td><strong>${escapeHtml(record.blockField)}</strong></td>
                   <td>${formatNumber(record.hectares)}</td>
-                  <td>${escapeHtml(record.schedulerStage)}</td>
                   <td>${escapeHtml(record.remarks || "No remarks")}</td>
                   <td>${record.photoData ? "Attached" : "None"}</td>
                   <td>${record.latitude && record.longitude ? `${Number(record.latitude).toFixed(5)}, ${Number(record.longitude).toFixed(5)}` : "Not captured"}</td>
@@ -1236,27 +1238,9 @@ function renderConfiguration() {
         <strong>${escapeHtml(type.name)}</strong>
         <span>${escapeHtml(type.group || "Ungrouped")} | ${escapeHtml(type.criteria)}</span>
       </div>
-      <button type="button" data-id="${type.id}">Remove</button>
+      <span class="pill">Fixed</span>
     `;
     dom.typeList.append(item);
-  });
-
-  dom.stageList.innerHTML = "";
-  state.stages.forEach((stage) => {
-    const item = document.createElement("article");
-    item.className = "config-item";
-    item.innerHTML = `
-      <div><strong>${escapeHtml(stage)}</strong><span>Available during Work Program capture</span></div>
-      <button type="button" data-stage="${escapeHtml(stage)}">Remove</button>
-    `;
-    dom.stageList.append(item);
-  });
-
-  dom.typeList.querySelectorAll("button").forEach((button) => {
-    button.addEventListener("click", () => removeProgramType(button.dataset.id));
-  });
-  dom.stageList.querySelectorAll("button").forEach((button) => {
-    button.addEventListener("click", () => removeStage(button.dataset.stage));
   });
 }
 
@@ -1265,7 +1249,7 @@ function saveRecord(event) {
   clearFieldErrors();
 
   const data = {
-    id: dom.recordId.value || crypto.randomUUID(),
+    id: dom.recordId.value || createId(),
     reporterName: dom.reporterName.value.trim(),
     programType: dom.programType.value,
     blockField: dom.blockField.value.trim(),
@@ -1310,6 +1294,7 @@ function validateRecord(data) {
   const errors = [];
   if (!data.reporterName) errors.push({ field: dom.reporterName, message: "Enter reporter name." });
   if (!data.programType) errors.push({ field: dom.programType, message: "Select a Work Program type." });
+  if (data.programType && !ALLOWED_PROGRAM_NAMES.has(data.programType)) errors.push({ field: dom.programType, message: "Select an approved Work Program type." });
   if (!data.blockField) errors.push({ field: dom.blockField, message: "Enter the block or field." });
   if (!data.taskName) errors.push({ field: dom.taskName, message: "Enter the task." });
   if (!data.hectares || data.hectares <= 0) errors.push({ field: dom.hectares, message: "Enter hectares above zero." });
@@ -1466,68 +1451,6 @@ function removePhoto() {
   renderPhotoPreview();
 }
 
-function addProgramType(event) {
-  event.preventDefault();
-  const name = dom.typeName.value.trim();
-  const group = dom.typeGroup.value.trim();
-  const criteria = dom.typeCriteria.value.trim();
-  if (!name || !group || !criteria) return;
-
-  if (state.programTypes.some((type) => type.name.toLowerCase() === name.toLowerCase())) {
-    showToast("This Work Program type already exists.");
-    return;
-  }
-
-  state.programTypes.push({ id: crypto.randomUUID(), name, group, criteria });
-  dom.typeForm.reset();
-  persist();
-  renderAll();
-  showToast("Work Program type added.");
-}
-
-function removeProgramType(id) {
-  const type = state.programTypes.find((item) => item.id === id);
-  if (!type) return;
-  const used = state.records.some((record) => record.programType === type.name);
-  if (used) {
-    showToast("This type is used by existing records and cannot be removed.");
-    return;
-  }
-
-  state.programTypes = state.programTypes.filter((item) => item.id !== id);
-  persist();
-  renderAll();
-}
-
-function addStage(event) {
-  event.preventDefault();
-  const stage = dom.stageName.value.trim();
-  if (!stage) return;
-
-  if (state.stages.some((item) => item.toLowerCase() === stage.toLowerCase())) {
-    showToast("This scheduler stage already exists.");
-    return;
-  }
-
-  state.stages.push(stage);
-  dom.stageForm.reset();
-  persist();
-  renderAll();
-  showToast("Scheduler stage added.");
-}
-
-function removeStage(stage) {
-  const used = state.records.some((record) => record.schedulerStage === stage);
-  if (used) {
-    showToast("This stage is used by existing records and cannot be removed.");
-    return;
-  }
-
-  state.stages = state.stages.filter((item) => item !== stage);
-  persist();
-  renderAll();
-}
-
 function syncPendingRecords() {
   if (!navigator.onLine) {
     showToast("You are offline. Sync can run when the connection is restored.");
@@ -1563,26 +1486,26 @@ function refreshConnectionStatus() {
 
 function buildDefaultPlannedProgrammes() {
   return [
-    ...buildProgrammeRows("Circle Spraying", getCircleSprayingPlanRows()),
-    ...buildProgrammeRows("Manuring", [
-      ["Block A12", 18.5, "Fertiliser", 108, 1998, "Manual", "Jan 26", 0],
-      ["Block B04", 22.75, "Fertiliser", 112, 2548, "Manual", "Feb 26", 1],
-      ["Block C09", 31.4, "Fertiliser", 118, 3705, "Manual", "Mar 26", 2],
-    ]),
     ...buildProgrammeRows("Pruning", [
       ["Field P07", 9.2, "Frond", 110, 1012, "Manual", "Jan 26", 0],
       ["Field P11", 15.6, "Frond", 116, 1810, "Manual", "Feb 26", 1],
       ["Field P19", 21.3, "Frond", 120, 2556, "Manual", "Mar 26", 2],
     ]),
-    ...buildProgrammeRows("Pest Control", [
-      ["Block T99", 12.75, "Treatment", 109, 1390, "Sprayer", "Jan 26", 0],
-      ["Block T14", 17.8, "Treatment", 113, 2011, "Sprayer", "Feb 26", 1],
-      ["Block T22", 24.4, "Treatment", 119, 2904, "Sprayer", "Mar 26", 2],
+    ...buildProgrammeRows("Raking", [
+      ["Block A12", 18.5, "Field upkeep", 108, 1998, "Manual", "Jan 26", 0],
+      ["Block B04", 22.75, "Field upkeep", 112, 2548, "Manual", "Feb 26", 1],
+      ["Block C09", 31.4, "Field upkeep", 118, 3705, "Manual", "Mar 26", 2],
+    ]),
+    ...buildProgrammeRows(SPRAYING_PROGRAM, getSprayingPlanRows()),
+    ...buildProgrammeRows("Harvesting", [
+      ["Block H01", 14.6, "FFB", 115, 1679, "Manual", "Jan 26", 0],
+      ["Block H08", 26.2, "FFB", 118, 3092, "Manual", "Feb 26", 1],
+      ["Block H15", 33.8, "FFB", 121, 4090, "Manual", "Mar 26", 2],
     ]),
   ];
 }
 
-function getCircleSprayingPlanRows() {
+function getSprayingPlanRows() {
   const mapFields = typeof window !== "undefined" ? window.FIELD_MAP_DATA?.fields || [] : [];
   if (mapFields.length) {
     return mapFields.map((field, index) => [
