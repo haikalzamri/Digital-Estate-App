@@ -1,5 +1,6 @@
 const STORAGE_KEY = "sdg-work-program-tracker-v1";
 const DASHBOARD_YEAR = 2026;
+const DASHBOARD_MAP_DEFAULT_ZOOM_OFFSET = 0;
 const MONTHS_2026 = [
   { key: "2026-01", label: "Jan" },
   { key: "2026-02", label: "Feb" },
@@ -15,9 +16,22 @@ const MONTHS_2026 = [
   { key: "2026-12", label: "Dec" },
 ];
 const APPROVAL_STATUSES = ["Pending Approval", "Approved"];
-const SPRAYING_PROGRAM = "Spraying";
+const MATURE_CIRCLE_PROGRAM = "Mature Circle";
+const MATURE_WOODIES_PROGRAM = "Mature Woodies & Steno";
 
 const DEFAULT_PROGRAM_TYPES = [
+  {
+    id: "programme-mature-circle",
+    name: MATURE_CIRCLE_PROGRAM,
+    group: "Estate Operations",
+    criteria: "Mature circle completion captured by field, hectares, actual date, and GPS evidence",
+  },
+  {
+    id: "programme-mature-woodies-steno",
+    name: MATURE_WOODIES_PROGRAM,
+    group: "Estate Operations",
+    criteria: "Woodies and steno completion captured by field, hectares, actual date, and remarks",
+  },
   {
     id: "programme-pruning",
     name: "Pruning",
@@ -31,19 +45,351 @@ const DEFAULT_PROGRAM_TYPES = [
     criteria: "Field completion captured by block, hectares, and actual completion date",
   },
   {
-    id: "programme-spraying",
-    name: SPRAYING_PROGRAM,
+    id: "programme-mature-vops",
+    name: "Mature_VOPs",
     group: "Estate Operations",
-    criteria: "Actual completion is captured by field and compared against quarterly planned programme",
+    criteria: "Template ready for field-level capture once programme data is available",
   },
   {
-    id: "programme-harvesting",
-    name: "Harvesting",
+    id: "programme-mature-epiphytes",
+    name: "Mature_Epiphytes",
     group: "Estate Operations",
-    criteria: "Harvesting completion captured by field, hectares, evidence, and remarks",
+    criteria: "Template ready for field-level capture once programme data is available",
+  },
+  {
+    id: "programme-rat-baiting",
+    name: "Rat Baiting",
+    group: "Estate Operations",
+    criteria: "Template ready for field-level capture once programme data is available",
+  },
+  {
+    id: "programme-grasscut-path",
+    name: "Grasscut Path",
+    group: "Estate Operations",
+    criteria: "Template ready for field-level capture once programme data is available",
+  },
+  {
+    id: "programme-path-repair",
+    name: "Path Repair",
+    group: "Estate Operations",
+    criteria: "Template ready for field-level capture once programme data is available",
+  },
+  {
+    id: "programme-desilting-md",
+    name: "Desilting MD",
+    group: "Estate Operations",
+    criteria: "Template ready for field-level capture once programme data is available",
+  },
+  {
+    id: "programme-desilting-cd",
+    name: "Desilting CD",
+    group: "Estate Operations",
+    criteria: "Template ready for field-level capture once programme data is available",
+  },
+  {
+    id: "programme-road-grading",
+    name: "Road Grading",
+    group: "Estate Operations",
+    criteria: "Template ready for field-level capture once programme data is available",
+  },
+  {
+    id: "programme-road-resurfacing",
+    name: "Road resurfacing",
+    group: "Estate Operations",
+    criteria: "Template ready for field-level capture once programme data is available",
   },
 ];
 const ALLOWED_PROGRAM_NAMES = new Set(DEFAULT_PROGRAM_TYPES.map((type) => type.name));
+const PROGRAM_COLORS = {
+  "Mature Circle": "#2563eb",
+  "Mature Woodies & Steno": "#8b5cf6",
+  Pruning: "#22a65a",
+  Raking: "#d8912b",
+  Mature_VOPs: "#0f766e",
+  Mature_Epiphytes: "#16a34a",
+  "Rat Baiting": "#dc2626",
+  "Grasscut Path": "#ca8a04",
+  "Path Repair": "#7c3aed",
+  "Desilting MD": "#0891b2",
+  "Desilting CD": "#0284c7",
+  "Road Grading": "#6b7280",
+  "Road resurfacing": "#111827",
+};
+const MAP_STATUS_RULES = {
+  [MATURE_CIRCLE_PROGRAM]: {
+    greenText: "<3 months",
+    yellowText: "3-4 months",
+    redText: ">4 months",
+    greenBelow: 3,
+    yellowTo: 4,
+    redFrom: 4,
+  },
+  [MATURE_WOODIES_PROGRAM]: {
+    greenText: "<6 months",
+    yellowText: "6-10 months",
+    redText: ">10 months",
+    greenBelow: 6,
+    yellowTo: 10,
+    redFrom: 10,
+  },
+  Pruning: {
+    greenText: "<5 months",
+    yellowText: "5-7 months",
+    redText: ">7 months",
+    greenBelow: 5,
+    yellowTo: 7,
+    redFrom: 7,
+  },
+  Raking: {
+    greenText: "<7 months",
+    yellowText: "7-8 months",
+    redText: ">8 months",
+    greenBelow: 7,
+    yellowTo: 8,
+    redFrom: 8,
+  },
+};
+const DEFAULT_MAP_STATUS_RULE = {
+  greenText: "Not configured",
+  yellowText: "Not configured",
+  redText: "Not configured",
+  greenBelow: null,
+  yellowTo: null,
+  redFrom: null,
+  isConfigured: false,
+};
+const EXCEL_RECORD_SOURCE = "Excel Main actual";
+const EXCEL_RECORD_PREFIX = "excel-main";
+const DEFAULT_RECORD_GPS = {
+  latitude: 2.86667,
+  longitude: 101.36667,
+};
+const DASHBOARD_SOURCE_ROWS = [
+  ["Mature Circle","02D1","Mature",38.17,"Completed",1,1,1,"2026-07-26",[0,0,0,38.17,0,0,0,0,0,0,0,0]],
+  ["Mature Circle","02D1","Mature",38.17,"Programme",4,4,"","",[0,0,38.17,0,0,38.17,0,0,38.17,0,0,38.17]],
+  ["Mature Circle","05C1","Mature",44.9,"Completed",2,1.2673,1,"2026-07-26",[12.0,0,0,44.9,0,0,0,0,0,0,0,0]],
+  ["Mature Circle","05C1","Mature",44.9,"Programme",4,4,"","",[0,0,44.9,0,0,44.9,0,0,44.9,0,0,44.9]],
+  ["Mature Circle","07B1","Mature",61.2,"Completed",1,1,3,"2026-05-26",[0,61.2,0,0,0,0,0,0,0,0,0,0]],
+  ["Mature Circle","07B1","Mature",61.2,"Programme",4,4,"","",[61.2,0,0,61.2,0,0,61.2,0,0,61.2,0,0]],
+  ["Mature Circle","07B3","Mature",57.74,"Completed",1,1,3,"2026-05-26",[0,57.74,0,0,0,0,0,0,0,0,0,0]],
+  ["Mature Circle","07B3","Mature",57.74,"Programme",4,3.9941,"","",[57.74,0,0,57.74,0,0,57.74,0,0,57.4,0,0]],
+  ["Mature Circle","07B3A","Mature",86.62,"Completed",1,1,1,"2026-07-26",[0,0,0,86.62,0,0,0,0,0,0,0,0]],
+  ["Mature Circle","07B3A","Mature",86.62,"Programme",4,4,"","",[0,0,86.62,0,0,86.62,0,0,86.62,0,0,86.62]],
+  ["Mature Circle","07B3B","Mature",48.96,"Completed",1,1,3,"2026-05-26",[0,48.96,0,0,0,0,0,0,0,0,0,0]],
+  ["Mature Circle","07B3B","Mature",48.96,"Programme",4,4,"","",[48.96,0,0,48.96,0,0,48.96,0,0,48.96,0,0]],
+  ["Mature Circle","08C1","Mature",36.26,"Completed",1,1,3,"2026-05-26",[0,36.26,0,0,0,0,0,0,0,0,0,0]],
+  ["Mature Circle","08C1","Mature",36.26,"Programme",4,4,"","",[36.26,0,0,36.26,0,0,36.26,0,0,36.26,0,0]],
+  ["Mature Circle","2009C","Mature",69.09,"Completed",2,1.0386,1,"2026-07-26",[1.86,0,0,69.9,0,0,0,0,0,0,0,0]],
+  ["Mature Circle","2009C","Mature",69.09,"Programme",4,4.0469,"","",[0,69.9,0,0,69.9,0,0,69.9,0,0,69.9,0]],
+  ["Mature Circle","2009C1","Mature",76.15,"Completed",2,0.7636,2,"2026-06-26",[0,56.15,2.0,0,0,0,0,0,0,0,0,0]],
+  ["Mature Circle","2009C1","Mature",76.15,"Programme",4,4,"","",[0,76.15,0,0,76.15,0,0,76.15,0,0,76.15,0]],
+  ["Mature Circle","2009D","Mature",77.39,"Completed",1,1,2,"2026-06-26",[0,0,77.39,0,0,0,0,0,0,0,0,0]],
+  ["Mature Circle","2009D","Mature",77.39,"Programme",4,4,"","",[0,0,77.39,0,0,77.39,0,0,77.39,0,0,77.39]],
+  ["Mature Circle","2012A","Mature",65.06,"Completed",2,0.455,1,"2026-07-26",[0,0,4.0,25.6,0,0,0,0,0,0,0,0]],
+  ["Mature Circle","2012A","Mature",65.06,"Programme",4,4.0332,"","",[0,0,65.6,0,0,65.6,0,0,65.6,0,0,65.6]],
+  ["Mature Circle","2012B","Mature",66.77,"Completed",1,1,1,"2026-07-26",[0,0,0,66.77,0,0,0,0,0,0,0,0]],
+  ["Mature Circle","2012B","Mature",66.77,"Programme",3,3,"","",[0,0,66.77,0,0,0,0,0,66.77,0,0,66.77]],
+  ["Mature Circle","2014A","Mature",61.89,"Completed",0,0,6,"2026-03-01",[0,0,0,0,0,0,0,0,0,0,0,0]],
+  ["Mature Circle","2014A","Mature",61.89,"Programme",4,4,"","",[0,61.89,0,0,61.89,0,0,61.89,0,0,61.89,0]],
+  ["Mature Circle","2014C","Mature",7.4,"Completed",1,1,4,"2026-04-26",[7.4,0,0,0,0,0,0,0,0,0,0,0]],
+  ["Mature Circle","2014C","Mature",7.4,"Programme",3,3,"","",[0,0,7.4,0,0,0,0,0,7.4,0,0,7.4]],
+  ["Mature Circle","2015B","Mature",68.8,"Completed",1,1,2,"2026-06-26",[0,0,68.8,0,0,0,0,0,0,0,0,0]],
+  ["Mature Circle","2015B","Mature",68.8,"Programme",4,4,"","",[68.8,0,0,68.8,0,0,68.8,0,0,68.8,0,0]],
+  ["Mature Circle","2015E","Mature",56,"Completed",1,1,3,"2026-05-26",[0,56.0,0,0,0,0,0,0,0,0,0,0]],
+  ["Mature Circle","2015E","Mature",56,"Programme",4,4,"","",[56.0,0,0,56.0,0,0,56.0,0,0,56.0,0,0]],
+  ["Mature Circle","2016B","Mature",75.29,"Completed",2,2,1,"2026-07-26",[75.29,0,0,75.29,0,0,0,0,0,0,0,0]],
+  ["Mature Circle","2016B","Mature",75.29,"Programme",4,4,"","",[75.29,0,0,75.29,0,0,75.29,0,0,75.29,0,0]],
+  ["Mature Circle","2017A","Mature",99.51,"Completed",2,1,2,"2026-06-26",[0,49.75,49.76,0,0,0,0,0,0,0,0,0]],
+  ["Mature Circle","2017A","Mature",99.51,"Programme",4,4,"","",[99.51,0,0,99.51,0,0,99.51,0,0,99.51,0,0]],
+  ["Mature Circle","2017B","Mature",97.36,"Completed",2,1,1,"2026-07-26",[0,0,72.0,25.36,0,0,0,0,0,0,0,0]],
+  ["Mature Circle","2017B","Mature",97.36,"Programme",4,4,"","",[97.36,0,0,97.36,0,0,97.36,0,0,97.36,0,0]],
+  ["Mature Circle","2017C","Mature",107.16,"Completed",1,0.1601,3,"2026-05-26",[0,17.16,0,0,0,0,0,0,0,0,0,0]],
+  ["Mature Circle","2017C","Mature",107.16,"Programme",4,0.6405,"","",[17.16,0,0,17.16,0,0,17.16,0,0,17.16,0,0]],
+  ["Mature Circle","2018A","Mature",99.41,"Completed",3,1.2757,0,"2026-08-26",[18.67,8.74,0,0,99.41,0,0,0,0,0,0,0]],
+  ["Mature Circle","2018A","Mature",99.41,"Programme",4,4,"","",[99.41,0,0,99.41,0,0,99.41,0,0,99.41,0,0]],
+  ["Mature Circle","2018B1","Mature",51.93,"Completed",1,1,2,"2026-06-26",[0,0,51.93,0,0,0,0,0,0,0,0,0]],
+  ["Mature Circle","2018B1","Mature",51.93,"Programme",4,4,"","",[0,51.93,0,0,51.93,0,0,51.93,0,0,51.93,0]],
+  ["Mature Circle","2019A","Mature",46.45,"Completed",1,1,3,"2026-05-26",[0,46.45,0,0,0,0,0,0,0,0,0,0]],
+  ["Mature Circle","2019A","Mature",46.45,"Programme",4,4,"","",[46.45,0,0,46.45,0,0,46.45,0,0,46.45,0,0]],
+  ["Mature Circle","2019B","Mature",48.66,"Completed",1,1,3,"2026-05-26",[0,48.66,0,0,0,0,0,0,0,0,0,0]],
+  ["Mature Circle","2019B","Mature",48.66,"Programme",4,4,"","",[0,48.66,0,0,48.66,0,0,48.66,0,0,48.66,0]],
+  ["Mature Circle","2023D","Immature",10.79,"Completed",2,0.3318,0,"2026-08-26",[1.79,0,0,0,1.79,0,0,0,0,0,0,0]],
+  ["Mature Circle","2023D","Immature",10.79,"Programme",4,0.6636,"","",[1.79,0,0,1.79,0,0,1.79,0,0,1.79,0,0]],
+  ["Mature Circle","2024A","Immature",70.05,"Completed",0,0,"Immature","TBC",[0,0,0,0,0,0,0,0,0,0,0,0]],
+  ["Mature Circle","2024A","Immature",70.05,"Programme",0,0,"","",[0,0,0,0,0,0,0,0,0,0,0,0]],
+  ["Mature Circle","P06B","Mature",71.92,"Completed",1,1,3,"2026-05-26",[0,71.92,0,0,0,0,0,0,0,0,0,0]],
+  ["Mature Circle","P06B","Mature",71.92,"Programme",4,4,"","",[71.92,0,0,71.92,0,0,71.92,0,0,71.92,0,0]],
+  ["Mature Circle","P06C","Mature",61.49,"Completed",2,2,0,"2026-08-26",[61.49,0,0,0,61.49,0,0,0,0,0,0,0]],
+  ["Mature Circle","P06C","Mature",61.49,"Programme",4,4,"","",[0,61.49,0,0,61.49,0,0,61.49,0,0,61.49,0]],
+  ["Mature Woodies & Steno","02D1","Mature",38.17,"Completed",0,0,11,"TBC",[0,0,0,0,0,0,0,0,0,0,0,0]],
+  ["Mature Woodies & Steno","02D1","Mature",38.17,"Programme",2,2,"","",[0,0,0,0,0,38.17,0,0,0,0,0,38.17]],
+  ["Mature Woodies & Steno","05C1","Mature",44.9,"Completed",0,0,17,"TBC",[0,0,0,0,0,0,0,0,0,0,0,0]],
+  ["Mature Woodies & Steno","05C1","Mature",44.9,"Programme",2,2,"","",[0,0,0,0,0,44.9,0,0,0,0,0,44.9]],
+  ["Mature Woodies & Steno","07B1","Mature",61.2,"Completed",0,0,7,"TBC",[0,0,0,0,0,0,0,0,0,0,0,0]],
+  ["Mature Woodies & Steno","07B1","Mature",61.2,"Programme",2,2,"","",[0,0,61.2,0,0,0,0,0,61.2,0,0,0]],
+  ["Mature Woodies & Steno","07B3","Mature",57.74,"Completed",0,0,8,"TBC",[0,0,0,0,0,0,0,0,0,0,0,0]],
+  ["Mature Woodies & Steno","07B3","Mature",57.74,"Programme",2,2,"","",[0,0,57.74,0,0,0,0,0,57.74,0,0,0]],
+  ["Mature Woodies & Steno","07B3A","Mature",86.62,"Completed",0,0,8,"TBC",[0,0,0,0,0,0,0,0,0,0,0,0]],
+  ["Mature Woodies & Steno","07B3A","Mature",86.62,"Programme",2,1.6666,"","",[0,0,0,86.62,0,0,0,0,0,57.74,0,0]],
+  ["Mature Woodies & Steno","07B3B","Mature",48.96,"Completed",1,1,0,"2026-11-26",[0,0,0,0,48.96,0,0,0,0,0,0,0]],
+  ["Mature Woodies & Steno","07B3B","Mature",48.96,"Programme",2,2,"","",[0,0,0,48.96,0,0,0,0,0,48.96,0,0]],
+  ["Mature Woodies & Steno","08C1","Mature",36.26,"Completed",0,0,15,"TBC",[0,0,0,0,0,0,0,0,0,0,0,0]],
+  ["Mature Woodies & Steno","08C1","Mature",36.26,"Programme",2,2.3502,"","",[0,0,0,0,0,36.26,0,0,0,0,0,48.96]],
+  ["Mature Woodies & Steno","2009C","Mature",69.09,"Completed",0,0,10,"TBC",[0,0,0,0,0,0,0,0,0,0,0,0]],
+  ["Mature Woodies & Steno","2009C","Mature",69.09,"Programme",2,1.5365,"","",[0,0,0,0,69.9,0,0,0,0,0,36.26,0]],
+  ["Mature Woodies & Steno","2009C1","Mature",76.15,"Completed",0,0,10,"TBC",[0,0,0,0,0,0,0,0,0,0,0,0]],
+  ["Mature Woodies & Steno","2009C1","Mature",76.15,"Programme",2,2,"","",[0,0,0,76.15,0,0,0,0,0,76.15,0,0]],
+  ["Mature Woodies & Steno","2009D","Mature",77.39,"Completed",0,0,11,"TBC",[0,0,0,0,0,0,0,0,0,0,0,0]],
+  ["Mature Woodies & Steno","2009D","Mature",77.39,"Programme",2,2,"","",[0,0,0,0,0,77.39,0,0,0,0,0,77.39]],
+  ["Mature Woodies & Steno","2012A","Mature",65.06,"Completed",0,0,11,"TBC",[0,0,0,0,0,0,0,0,0,0,0,0]],
+  ["Mature Woodies & Steno","2012A","Mature",65.06,"Programme",2,2.0166,"","",[0,0,0,65.6,0,0,0,0,0,65.6,0,0]],
+  ["Mature Woodies & Steno","2012B","Mature",66.77,"Completed",0,0,11,"TBC",[0,0,0,0,0,0,0,0,0,0,0,0]],
+  ["Mature Woodies & Steno","2012B","Mature",66.77,"Programme",2,2,"","",[0,0,0,0,66.77,0,0,0,0,0,66.77,0]],
+  ["Mature Woodies & Steno","2014A","Mature",61.89,"Completed",0,0,13,"TBC",[0,0,0,0,0,0,0,0,0,0,0,0]],
+  ["Mature Woodies & Steno","2014A","Mature",61.89,"Programme",2,2,"","",[0,0,0,0,61.89,0,0,0,0,0,61.89,0]],
+  ["Mature Woodies & Steno","2014C","Mature",7.4,"Completed",0,0,6,"TBC",[0,0,0,0,0,0,0,0,0,0,0,0]],
+  ["Mature Woodies & Steno","2014C","Mature",7.4,"Programme",2,2,"","",[0,0,0,0,0,7.4,0,0,0,0,0,7.4]],
+  ["Mature Woodies & Steno","2015B","Mature",68.8,"Completed",0,0,12,"TBC",[0,0,0,0,0,0,0,0,0,0,0,0]],
+  ["Mature Woodies & Steno","2015B","Mature",68.8,"Programme",2,2,"","",[68.8,0,0,0,0,0,68.8,0,0,0,0,0]],
+  ["Mature Woodies & Steno","2015E","Mature",56,"Completed",0,0,13,"TBC",[0,0,0,0,0,0,0,0,0,0,0,0]],
+  ["Mature Woodies & Steno","2015E","Mature",56,"Programme",2,2,"","",[56.0,0,0,0,0,0,56.0,0,0,0,0,0]],
+  ["Mature Woodies & Steno","2016B","Mature",75.29,"Completed",1,1,4,"2026-07-26",[75.29,0,0,0,0,0,0,0,0,0,0,0]],
+  ["Mature Woodies & Steno","2016B","Mature",75.29,"Programme",2,2,"","",[0,0,75.29,0,0,0,0,0,75.29,0,0,0]],
+  ["Mature Woodies & Steno","2017A","Mature",99.51,"Completed",0,0,3,"TBC",[0,0,0,0,0,0,0,0,0,0,0,0]],
+  ["Mature Woodies & Steno","2017A","Mature",99.51,"Programme",2,2,"","",[0,99.51,0,0,0,0,0,99.51,0,0,0,0]],
+  ["Mature Woodies & Steno","2017B","Mature",97.36,"Completed",0,0,2,"TBC",[0,0,0,0,0,0,0,0,0,0,0,0]],
+  ["Mature Woodies & Steno","2017B","Mature",97.36,"Programme",2,2,"","",[0,97.36,0,0,0,0,0,97.36,0,0,0,0]],
+  ["Mature Woodies & Steno","2017C","Mature",107.16,"Completed",0,0,17,"TBC",[0,0,0,0,0,0,0,0,0,0,0,0]],
+  ["Mature Woodies & Steno","2017C","Mature",107.16,"Programme",2,0.3203,"","",[0,17.16,0,0,0,0,0,17.16,0,0,0,0]],
+  ["Mature Woodies & Steno","2018A","Mature",99.41,"Completed",2,0.2757,3,"2026-08-26",[18.67,8.74,0,0,0,0,0,0,0,0,0,0]],
+  ["Mature Woodies & Steno","2018A","Mature",99.41,"Programme",2,2,"","",[99.41,0,0,0,0,0,99.41,0,0,0,0,0]],
+  ["Mature Woodies & Steno","2018B1","Mature",51.93,"Completed",0,0,13,"TBC",[0,0,0,0,0,0,0,0,0,0,0,0]],
+  ["Mature Woodies & Steno","2018B1","Mature",51.93,"Programme",2,2.0797,"","",[0,0,54.0,0,0,0,0,0,54.0,0,0,0]],
+  ["Mature Woodies & Steno","2019A","Mature",46.45,"Completed",0,0,17,"TBC",[0,0,0,0,0,0,0,0,0,0,0,0]],
+  ["Mature Woodies & Steno","2019A","Mature",46.45,"Programme",2,2,"","",[46.45,0,0,0,0,0,46.45,0,0,0,0,0]],
+  ["Mature Woodies & Steno","2019B","Mature",48.66,"Completed",0,0,17,"TBC",[0,0,0,0,0,0,0,0,0,0,0,0]],
+  ["Mature Woodies & Steno","2019B","Mature",48.66,"Programme",2,1.9219,"","",[46.76,0,0,0,0,0,46.76,0,0,0,0,0]],
+  ["Mature Woodies & Steno","2023D","Immature",10.79,"Completed",0,0,10,"TBC",[0,0,0,0,0,0,0,0,0,0,0,0]],
+  ["Mature Woodies & Steno","2023D","Immature",10.79,"Programme",2,0.3318,"","",[0,0,0,0,1.79,0,0,0,0,0,1.79,0]],
+  ["Mature Woodies & Steno","2024A","Immature",70.05,"Completed",0,0,"Immature","TBC",[0,0,0,0,0,0,0,0,0,0,0,0]],
+  ["Mature Woodies & Steno","2024A","Immature",70.05,"Programme",0,0,"","",[0,0,0,0,0,0,0,0,0,0,0,0]],
+  ["Mature Woodies & Steno","P06B","Mature",71.92,"Completed",0,0,17,"TBC",[0,0,0,0,0,0,0,0,0,0,0,0]],
+  ["Mature Woodies & Steno","P06B","Mature",71.92,"Programme",2,2,"","",[71.92,0,0,0,0,0,71.92,0,0,0,0,0]],
+  ["Mature Woodies & Steno","P06C","Mature",61.49,"Completed",0,0,17,"TBC",[0,0,0,0,0,0,0,0,0,0,0,0]],
+  ["Mature Woodies & Steno","P06C","Mature",61.49,"Programme",2,2,"","",[0,0,0,0,61.49,0,0,0,0,0,61.49,0]],
+  ["Pruning","02D1","Mature",38.17,"Completed",2,1,1,"2026-07-26",[0,0,1.9,36.27,0,0,0,0,0,0,0,0]],
+  ["Pruning","02D1","Mature",38.17,"Programme",4,4,"","",[0,0,38.17,0,0,38.17,0,0,38.17,0,0,38.17]],
+  ["Pruning","05C1","Mature",44.9,"Completed",0,0,6,"2026-03-01",[0,0,0,0,0,0,0,0,0,0,0,0]],
+  ["Pruning","05C1","Mature",44.9,"Programme",3,3,"","",[0,44.9,0,0,44.9,0,0,0,0,0,44.9,0]],
+  ["Pruning","07B1","Mature",61.2,"Completed",0,0,6,"2026-02-25",[0,0,0,0,0,0,0,0,0,0,0,0]],
+  ["Pruning","07B1","Mature",61.2,"Programme",4,4,"","",[0,61.2,0,0,61.2,0,0,61.2,0,0,61.2,0]],
+  ["Pruning","07B3","Mature",57.74,"Completed",0,0,6,"2026-02-25",[0,0,0,0,0,0,0,0,0,0,0,0]],
+  ["Pruning","07B3","Mature",57.74,"Programme",5,5.5002,"","",[0,57.74,0,0,57.74,0,0,57.74,86.62,0,57.74,0]],
+  ["Pruning","07B3A","Mature",86.62,"Completed",0,0,6,"2026-02-25",[0,0,0,0,0,0,0,0,0,0,0,0]],
+  ["Pruning","07B3A","Mature",86.62,"Programme",4,3.5652,"","",[0,0,86.62,0,0,86.62,0,0,48.96,0,0,86.62]],
+  ["Pruning","07B3B","Mature",48.96,"Completed",0,0,6,"2026-03-01",[0,0,0,0,0,0,0,0,0,0,0,0]],
+  ["Pruning","07B3B","Mature",48.96,"Programme",3,3,"","",[0,0,48.96,0,0,48.96,0,0,0,0,0,48.96]],
+  ["Pruning","08C1","Mature",36.26,"Completed",1,0.0516,2,"2026-06-26",[0,0,1.87,0,0,0,0,0,0,0,0,0]],
+  ["Pruning","08C1","Mature",36.26,"Programme",4,4,"","",[0,0,36.26,0,0,36.26,0,0,36.26,0,0,36.26]],
+  ["Pruning","2009C","Mature",69.09,"Completed",3,1,1,"2026-07-26",[6.0,0,31.77,31.32,0,0,0,0,0,0,0,0]],
+  ["Pruning","2009C","Mature",69.09,"Programme",4,4.0469,"","",[0,0,69.9,0,0,69.9,0,0,69.9,0,0,69.9]],
+  ["Pruning","2009C1","Mature",76.15,"Completed",1,1,2,"2026-06-26",[0,0,76.15,0,0,0,0,0,0,0,0,0]],
+  ["Pruning","2009C1","Mature",76.15,"Programme",4,4,"","",[0,0,76.15,0,0,76.15,0,0,76.15,0,0,76.15]],
+  ["Pruning","2009D","Mature",77.39,"Completed",2,1,1,"2026-07-26",[0,0,3.86,73.53,0,0,0,0,0,0,0,0]],
+  ["Pruning","2009D","Mature",77.39,"Programme",4,4,"","",[0,77.39,0,0,77.39,0,0,77.39,0,0,77.39,0]],
+  ["Pruning","2012A","Mature",65.06,"Completed",1,1.0083,1,"2026-07-26",[0,0,0,65.6,0,0,0,0,0,0,0,0]],
+  ["Pruning","2012A","Mature",65.06,"Programme",4,4.0332,"","",[0,0,65.6,0,0,65.6,0,0,65.6,0,0,65.6]],
+  ["Pruning","2012B","Mature",66.77,"Completed",1,1,1,"2026-07-26",[0,0,0,66.77,0,0,0,0,0,0,0,0]],
+  ["Pruning","2012B","Mature",66.77,"Programme",4,4,"","",[0,0,66.77,0,0,66.77,0,0,66.77,0,0,66.77]],
+  ["Pruning","2014A","Mature",61.89,"Completed",2,1,1,"2026-07-26",[0,0,12.37,49.52,0,0,0,0,0,0,0,0]],
+  ["Pruning","2014A","Mature",61.89,"Programme",4,4,"","",[0,61.89,0,0,61.89,0,0,61.89,0,0,61.89,0]],
+  ["Pruning","2014C","Mature",7.4,"Completed",2,2,1,"2026-07-26",[7.4,0,0,7.4,0,0,0,0,0,0,0,0]],
+  ["Pruning","2014C","Mature",7.4,"Programme",4,4,"","",[7.4,0,0,7.4,0,0,7.4,0,0,7.4,0,0]],
+  ["Pruning","2015B","Mature",68.8,"Completed",1,1,4,"2026-04-26",[68.8,0,0,0,0,0,0,0,0,0,0,0]],
+  ["Pruning","2015B","Mature",68.8,"Programme",4,4,"","",[0,68.8,0,0,68.8,0,0,68.8,0,0,68.8,0]],
+  ["Pruning","2015E","Mature",56,"Completed",1,1,4,"2026-04-26",[56.0,0,0,0,0,0,0,0,0,0,0,0]],
+  ["Pruning","2015E","Mature",56,"Programme",4,4,"","",[0,56.0,0,0,56.0,0,0,56.0,0,0,56.0,0]],
+  ["Pruning","2016B","Mature",75.29,"Completed",2,1,2,"2026-06-26",[5.6,0,69.69,0,0,0,0,0,0,0,0,0]],
+  ["Pruning","2016B","Mature",75.29,"Programme",4,4,"","",[75.29,0,0,75.29,0,0,75.29,0,0,75.29,0,0]],
+  ["Pruning","2017A","Mature",99.51,"Completed",1,1,3,"2026-05-26",[0,99.51,0,0,0,0,0,0,0,0,0,0]],
+  ["Pruning","2017A","Mature",99.51,"Programme",4,4,"","",[99.51,0,0,99.51,0,0,99.51,0,0,99.51,0,0]],
+  ["Pruning","2017B","Mature",97.36,"Completed",2,1,2,"2026-06-26",[0,19.472,77.89,0,0,0,0,0,0,0,0,0]],
+  ["Pruning","2017B","Mature",97.36,"Programme",4,4,"","",[97.36,0,0,97.36,0,0,97.36,0,0,97.36,0,0]],
+  ["Pruning","2017C","Mature",107.16,"Completed",2,1.0017,3,"2026-05-26",[32.14,75.2,0,0,0,0,0,0,0,0,0,0]],
+  ["Pruning","2017C","Mature",107.16,"Programme",4,0.6405,"","",[17.16,0,0,17.16,0,0,17.16,0,0,17.16,0,0]],
+  ["Pruning","2018A","Mature",99.41,"Completed",1,1,4,"2026-04-26",[99.41,0,0,0,0,0,0,0,0,0,0,0]],
+  ["Pruning","2018A","Mature",99.41,"Programme",4,4,"","",[99.41,0,0,99.41,0,0,99.41,0,0,99.41,0,0]],
+  ["Pruning","2018B1","Mature",51.93,"Completed",0,0,7,"2026-02-01",[0,0,0,0,0,0,0,0,0,0,0,0]],
+  ["Pruning","2018B1","Mature",51.93,"Programme",4,4.1594,"","",[0,54.0,0,0,54.0,0,0,54.0,0,0,54.0,0]],
+  ["Pruning","2019A","Mature",46.45,"Completed",2,1,2,"2026-06-26",[0,9.29,37.16,0,0,0,0,0,0,0,0,0]],
+  ["Pruning","2019A","Mature",46.45,"Programme",4,4,"","",[46.45,0,0,46.45,0,0,46.45,0,0,46.45,0,0]],
+  ["Pruning","2019B","Mature",48.66,"Completed",2,0.9758,2,"2026-06-26",[0,4.68,42.8,0,0,0,0,0,0,0,0,0]],
+  ["Pruning","2019B","Mature",48.66,"Programme",4,3.8438,"","",[46.76,0,0,46.76,0,0,46.76,0,0,46.76,0,0]],
+  ["Pruning","2023D","Immature",10.79,"Completed",0,0,"Immature","TBC",[0,0,0,0,0,0,0,0,0,0,0,0]],
+  ["Pruning","2023D","Immature",10.79,"Programme",0,0,"","",[0,0,0,0,0,0,0,0,0,0,0,0]],
+  ["Pruning","2024A","Immature",70.05,"Completed",0,0,"Immature","TBC",[0,0,0,0,0,0,0,0,0,0,0,0]],
+  ["Pruning","2024A","Immature",70.05,"Programme",0,0,"","",[0,0,0,0,0,0,0,0,0,0,0,0]],
+  ["Pruning","P06B","Mature",71.92,"Completed",0,0,8,"2026-01-01",[0,0,0,0,0,0,0,0,0,0,0,0]],
+  ["Pruning","P06B","Mature",71.92,"Programme",4,4,"","",[0,71.92,0,0,71.92,0,0,71.92,0,0,71.92,0]],
+  ["Pruning","P06C","Mature",61.49,"Completed",0,0,1,"2026-08-01",[0,0,0,0,0,0,0,0,0,0,0,0]],
+  ["Pruning","P06C","Mature",61.49,"Programme",5,4.7302,"","",[0,0,61.49,0,0,61.49,0,44.9,61.49,0,0,61.49]],
+  ["Raking","02D1","Mature",38.17,"Completed",0,0,15,"2025-06-15",[0,0,0,0,0,0,0,0,0,0,0,0]],
+  ["Raking","02D1","Mature",38.17,"Programme",4,4,"","",[0,0,38.17,0,0,38.17,0,0,38.17,0,0,38.17]],
+  ["Raking","05C1","Mature",44.9,"Completed",0,0,9,"2025-12-15",[0,0,0,0,0,0,0,0,0,0,0,0]],
+  ["Raking","05C1","Mature",44.9,"Programme",3,3,"","",[0,44.9,0,0,44.9,0,0,0,0,0,44.9,0]],
+  ["Raking","07B1","Mature",61.2,"Completed",0,0,15,"2025-06-15",[0,0,0,0,0,0,0,0,0,0,0,0]],
+  ["Raking","07B1","Mature",61.2,"Programme",4,4,"","",[0,61.2,0,0,61.2,0,0,61.2,0,0,61.2,0]],
+  ["Raking","07B3","Mature",57.74,"Completed",0,0,15,"2025-06-15",[0,0,0,0,0,0,0,0,0,0,0,0]],
+  ["Raking","07B3","Mature",57.74,"Programme",5,5.5002,"","",[0,57.74,0,0,57.74,0,0,57.74,86.62,0,57.74,0]],
+  ["Raking","07B3A","Mature",86.62,"Completed",0,0,15,"2025-06-15",[0,0,0,0,0,0,0,0,0,0,0,0]],
+  ["Raking","07B3A","Mature",86.62,"Programme",4,3.5652,"","",[0,0,86.62,0,0,86.62,0,0,48.96,0,0,86.62]],
+  ["Raking","07B3B","Mature",48.96,"Completed",0,0,15,"2025-06-15",[0,0,0,0,0,0,0,0,0,0,0,0]],
+  ["Raking","07B3B","Mature",48.96,"Programme",3,3,"","",[0,0,48.96,0,0,48.96,0,0,0,0,0,48.96]],
+  ["Raking","08C1","Mature",36.26,"Completed",0,0,15,"2025-06-15",[0,0,0,0,0,0,0,0,0,0,0,0]],
+  ["Raking","08C1","Mature",36.26,"Programme",4,4,"","",[0,0,36.26,0,0,36.26,0,0,36.26,0,0,36.26]],
+  ["Raking","2009C","Mature",69.09,"Completed",1,1.0117,1,"2026-07-26",[0,0,0,69.9,0,0,0,0,0,0,0,0]],
+  ["Raking","2009C","Mature",69.09,"Programme",4,4.0469,"","",[0,0,69.9,0,0,69.9,0,0,69.9,0,0,69.9]],
+  ["Raking","2009C1","Mature",76.15,"Completed",0,0,15,"2025-06-15",[0,0,0,0,0,0,0,0,0,0,0,0]],
+  ["Raking","2009C1","Mature",76.15,"Programme",4,4,"","",[0,0,76.15,0,0,76.15,0,0,76.15,0,0,76.15]],
+  ["Raking","2009D","Mature",77.39,"Completed",0,0,15,"2025-06-15",[0,0,0,0,0,0,0,0,0,0,0,0]],
+  ["Raking","2009D","Mature",77.39,"Programme",4,4,"","",[0,77.39,0,0,77.39,0,0,77.39,0,0,77.39,0]],
+  ["Raking","2012A","Mature",65.06,"Completed",0,0,15,"2025-06-15",[0,0,0,0,0,0,0,0,0,0,0,0]],
+  ["Raking","2012A","Mature",65.06,"Programme",4,4.0332,"","",[0,0,65.6,0,0,65.6,0,0,65.6,0,0,65.6]],
+  ["Raking","2012B","Mature",66.77,"Completed",0,0,15,"2025-06-15",[0,0,0,0,0,0,0,0,0,0,0,0]],
+  ["Raking","2012B","Mature",66.77,"Programme",4,4,"","",[0,0,66.77,0,0,66.77,0,0,66.77,0,0,66.77]],
+  ["Raking","2014A","Mature",61.89,"Completed",0,0,15,"2025-06-15",[0,0,0,0,0,0,0,0,0,0,0,0]],
+  ["Raking","2014A","Mature",61.89,"Programme",4,4,"","",[0,61.89,0,0,61.89,0,0,61.89,0,0,61.89,0]],
+  ["Raking","2014C","Mature",7.4,"Completed",1,1,2,"2026-06-26",[0,0,7.4,0,0,0,0,0,0,0,0,0]],
+  ["Raking","2014C","Mature",7.4,"Programme",4,4,"","",[7.4,0,0,7.4,0,0,7.4,0,0,7.4,0,0]],
+  ["Raking","2015B","Mature",68.8,"Completed",0,0,15,"2025-06-15",[0,0,0,0,0,0,0,0,0,0,0,0]],
+  ["Raking","2015B","Mature",68.8,"Programme",4,4,"","",[0,68.8,0,0,68.8,0,0,68.8,0,0,68.8,0]],
+  ["Raking","2015E","Mature",56,"Completed",0,0,15,"2025-06-15",[0,0,0,0,0,0,0,0,0,0,0,0]],
+  ["Raking","2015E","Mature",56,"Programme",4,4,"","",[0,56.0,0,0,56.0,0,0,56.0,0,0,56.0,0]],
+  ["Raking","2016B","Mature",75.29,"Completed",1,1,3,"2026-05-26",[0,75.29,0,0,0,0,0,0,0,0,0,0]],
+  ["Raking","2016B","Mature",75.29,"Programme",4,4,"","",[75.29,0,0,75.29,0,0,75.29,0,0,75.29,0,0]],
+  ["Raking","2017A","Mature",99.51,"Completed",0,0,11,"2025-10-15",[0,0,0,0,0,0,0,0,0,0,0,0]],
+  ["Raking","2017A","Mature",99.51,"Programme",4,4,"","",[99.51,0,0,99.51,0,0,99.51,0,0,99.51,0,0]],
+  ["Raking","2017B","Mature",97.36,"Completed",0,0,11,"2025-10-15",[0,0,0,0,0,0,0,0,0,0,0,0]],
+  ["Raking","2017B","Mature",97.36,"Programme",4,4,"","",[97.36,0,0,97.36,0,0,97.36,0,0,97.36,0,0]],
+  ["Raking","2017C","Mature",107.16,"Completed",0,0,11,"2025-10-15",[0,0,0,0,0,0,0,0,0,0,0,0]],
+  ["Raking","2017C","Mature",107.16,"Programme",4,0.6405,"","",[17.16,0,0,17.16,0,0,17.16,0,0,17.16,0,0]],
+  ["Raking","2018A","Mature",99.41,"Completed",2,0.5473,2,"2026-06-26",[0,5.0,49.41,0,0,0,0,0,0,0,0,0]],
+  ["Raking","2018A","Mature",99.41,"Programme",4,4,"","",[99.41,0,0,99.41,0,0,99.41,0,0,99.41,0,0]],
+  ["Raking","2018B1","Mature",51.93,"Completed",0,0,11,"2025-10-15",[0,0,0,0,0,0,0,0,0,0,0,0]],
+  ["Raking","2018B1","Mature",51.93,"Programme",4,4.1594,"","",[0,54.0,0,0,54.0,0,0,54.0,0,0,54.0,0]],
+  ["Raking","2019A","Mature",46.45,"Completed",1,1,1,"2026-07-26",[0,0,0,46.45,0,0,0,0,0,0,0,0]],
+  ["Raking","2019A","Mature",46.45,"Programme",4,4,"","",[46.45,0,0,46.45,0,0,46.45,0,0,46.45,0,0]],
+  ["Raking","2019B","Mature",48.66,"Completed",1,0.961,1,"2026-07-26",[0,0,0,46.76,0,0,0,0,0,0,0,0]],
+  ["Raking","2019B","Mature",48.66,"Programme",4,3.8438,"","",[46.76,0,0,46.76,0,0,46.76,0,0,46.76,0,0]],
+  ["Raking","2023D","Immature",10.79,"Completed",0,0,"Immature","TBC",[0,0,0,0,0,0,0,0,0,0,0,0]],
+  ["Raking","2023D","Immature",10.79,"Programme",0,0,"","",[0,0,0,0,0,0,0,0,0,0,0,0]],
+  ["Raking","2024A","Immature",70.05,"Completed",0,0,"Immature","TBC",[0,0,0,0,0,0,0,0,0,0,0,0]],
+  ["Raking","2024A","Immature",70.05,"Programme",0,0,"","",[0,0,0,0,0,0,0,0,0,0,0,0]],
+  ["Raking","P06B","Mature",71.92,"Completed",0,0,15,"2025-06-15",[0,0,0,0,0,0,0,0,0,0,0,0]],
+  ["Raking","P06B","Mature",71.92,"Programme",4,4,"","",[0,71.92,0,0,71.92,0,0,71.92,0,0,71.92,0]],
+  ["Raking","P06C","Mature",61.49,"Completed",1,1,2,"2026-06-26",[0,0,61.49,0,0,0,0,0,0,0,0,0]],
+  ["Raking","P06C","Mature",61.49,"Programme",5,4.7302,"","",[0,0,61.49,0,0,61.49,0,44.9,61.49,0,0,61.49]],
+];
 
 function createId() {
   if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
@@ -52,61 +398,98 @@ function createId() {
   return `id-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
 }
 
+let dashboardSourceCache = null;
+
+function getDashboardSourceRows(programType = "") {
+  if (!dashboardSourceCache) {
+    dashboardSourceCache = DASHBOARD_SOURCE_ROWS.map(
+      ([sourceProgram, field, category, hect, actualBudget, frequencyMonths, completedRounds, intervalMonths, proposedNextDate, values]) => ({
+        id: `${normaliseKey(sourceProgram)}-${normaliseKey(field)}-${normaliseKey(actualBudget)}`,
+        programType: sourceProgram,
+        field,
+        category,
+        hect: Number(hect) || 0,
+        actualBudget,
+        frequencyMonths,
+        completedRounds,
+        intervalMonths,
+        proposedNextDate,
+        months: MONTHS_2026.reduce((months, month, index) => {
+          months[month.key] = Number(values[index]) || 0;
+          return months;
+        }, {}),
+      }),
+    );
+  }
+
+  return programType ? dashboardSourceCache.filter((row) => row.programType === programType) : dashboardSourceCache;
+}
+
+function getDashboardRowsByType(programType, actualBudget) {
+  return getDashboardSourceRows(programType).filter((row) => row.actualBudget === actualBudget);
+}
+
+function buildDefaultRecords() {
+  return getDashboardRowsByType("", "Completed")
+    .flatMap((row) =>
+      MONTHS_2026.map((month) => {
+        const hectares = Number(row.months[month.key]) || 0;
+        if (hectares <= 0) return null;
+        const completionDate = getMonthEndDate(month.key);
+        return {
+          id: `${EXCEL_RECORD_PREFIX}-${normaliseKey(row.programType)}-${normaliseKey(row.field)}-${month.key}`,
+          source: EXCEL_RECORD_SOURCE,
+          reporterName: "Haikal",
+          programType: row.programType,
+          blockField: row.field,
+          taskName: row.programType,
+          schedulerStage: "Completed",
+          hectares,
+          actualCompletionDate: completionDate,
+          deadline: completionDate,
+          priority: "Must",
+          approvalStatus: "Approved",
+          remarks: "",
+          latitude: DEFAULT_RECORD_GPS.latitude,
+          longitude: DEFAULT_RECORD_GPS.longitude,
+          gpsAccuracy: "",
+          photoData: "",
+          syncStatus: "Synced",
+          updatedAt: `${completionDate}T12:00:00.000Z`,
+          category: row.category,
+        };
+      }),
+    )
+    .filter(Boolean)
+    .sort((a, b) => new Date(b.actualCompletionDate) - new Date(a.actualCompletionDate) || a.programType.localeCompare(b.programType));
+}
+
 const defaultState = {
   programTypes: getDefaultProgramTypes(),
   plannedProgrammes: buildDefaultPlannedProgrammes(),
-  records: [
-    {
-      id: createId(),
-      reporterName: "Rahman Mandore",
-      programType: SPRAYING_PROGRAM,
-      blockField: "P02D1",
-      taskName: "Spraying completion",
-      schedulerStage: "Completed",
-      hectares: 38.17,
-      actualCompletionDate: "2026-06-12",
-      deadline: futureDate(4),
-      priority: "Must",
-      approvalStatus: "Approved",
-      remarks: "Actual completion captured for dashboard comparison.",
-      latitude: 2.9273,
-      longitude: 101.6559,
-      gpsAccuracy: 18.2,
-      photoData: "",
-      syncStatus: "Synced",
-      updatedAt: new Date().toISOString(),
-    },
-    {
-      id: createId(),
-      reporterName: "Siti Field Officer",
-      programType: SPRAYING_PROGRAM,
-      blockField: "P05C1",
-      taskName: "Spraying partial completion",
-      schedulerStage: "Completed",
-      hectares: 12,
-      actualCompletionDate: "2026-01-18",
-      deadline: futureDate(9),
-      priority: "Should",
-      approvalStatus: "Pending Approval",
-      remarks: "Partial completion recorded against January programme.",
-      latitude: "",
-      longitude: "",
-      gpsAccuracy: "",
-      photoData: "",
-      syncStatus: "Pending Sync",
-      updatedAt: new Date(Date.now() - 86400000).toISOString(),
-    },
-  ],
+  records: buildDefaultRecords(),
 };
 
 let state = loadState();
 let currentView = "dashboard";
-let selectedDashboardProgram = state.programTypes.find((type) => type.name === SPRAYING_PROGRAM)?.name || state.programTypes[0]?.name || "";
-let selectedDrilldownMonth = "";
+let selectedDashboardType = "work-program";
+let selectedDashboardProgram = state.programTypes.find((type) => type.name === MATURE_CIRCLE_PROGRAM)?.name || state.programTypes[0]?.name || "";
+let selectedDashboardBreakdown = null;
 let selectedDashboardMode = "map";
+let showProgrammeRows = false;
+let selectedDashboardTableField = "";
+let selectedDashboardTableColumn = "";
 let selectedMapField = "";
+let selectedApprovalStatus = getInitialApprovalStatus();
+let selectedRecordId = "";
+let selectedMonthlyProgram = state.programTypes.find((type) => type.name === MATURE_CIRCLE_PROGRAM)?.name || state.programTypes[0]?.name || "";
+let selectedMonthlyMonth = getDefaultMonthlyMonth();
 let dashboardLeafletMap = null;
 let dashboardFieldLayer = null;
+let recordsLeafletMap = null;
+let recordsFieldLayer = null;
+let recordsMarkerLayer = null;
+let recordsMarkerLookup = new Map();
 let offlineSaveMode = false;
 let currentPhotoData = "";
 
@@ -119,16 +502,24 @@ const dom = {
   syncButton: document.querySelector("#syncButton"),
   connectionDot: document.querySelector("#connectionDot"),
   connectionText: document.querySelector("#connectionText"),
-  dashboardProgramTabs: document.querySelector("#dashboardProgramTabs"),
+  dashboardTypeSelect: document.querySelector("#dashboardTypeSelect"),
+  workProgramDashboardView: document.querySelector("#workProgramDashboardView"),
+  pmvDashboardView: document.querySelector("#pmvDashboardView"),
+  dashboardProgramSelect: document.querySelector("#dashboardProgramSelect"),
   programmeDashboardTitle: document.querySelector("#programmeDashboardTitle"),
   dashboardMapButton: document.querySelector("#dashboardMapButton"),
   dashboardTableButton: document.querySelector("#dashboardTableButton"),
   dashboardMapView: document.querySelector("#dashboardMapView"),
   dashboardTableView: document.querySelector("#dashboardTableView"),
   dashboardMapSummary: document.querySelector("#dashboardMapSummary"),
+  dashboardMapLegend: document.querySelector("#dashboardMapLegend"),
+  dashboardMapRulesButton: document.querySelector("#dashboardMapRulesButton"),
+  dashboardMapRulesPopover: document.querySelector("#dashboardMapRulesPopover"),
   dashboardMap: document.querySelector("#dashboardMap"),
   dashboardMapDetail: document.querySelector("#dashboardMapDetail"),
   programmeSummary: document.querySelector("#programmeSummary"),
+  programmeRowsToggle: document.querySelector("#programmeRowsToggle"),
+  dashboardExportButton: document.querySelector("#dashboardExportButton"),
   programmeDashboardHead: document.querySelector("#programmeDashboardHead"),
   programmeDashboardBody: document.querySelector("#programmeDashboardBody"),
   dailyTrackingPanel: document.querySelector("#dailyTrackingPanel"),
@@ -136,13 +527,21 @@ const dom = {
   recordsCardList: document.querySelector("#recordsCardList"),
   recordsEmpty: document.querySelector("#recordsEmpty"),
   typeFilter: document.querySelector("#typeFilter"),
-  stageFilter: document.querySelector("#stageFilter"),
+  fieldFilter: document.querySelector("#fieldFilter"),
+  approvalTabs: document.querySelector("#approvalTabs"),
+  recordsScrollButton: document.querySelector("#recordsScrollButton"),
+  monthlyProgramFilter: document.querySelector("#monthlyProgramFilter"),
+  monthlyMonthFilter: document.querySelector("#monthlyMonthFilter"),
+  monthlyTrackingHead: document.querySelector("#monthlyTrackingHead"),
+  monthlyTrackingBody: document.querySelector("#monthlyTrackingBody"),
+  monthlyTrackingFoot: document.querySelector("#monthlyTrackingFoot"),
   recordForm: document.querySelector("#recordForm"),
   formHeading: document.querySelector("#formHeading"),
   recordId: document.querySelector("#recordId"),
   reporterName: document.querySelector("#reporterName"),
   programType: document.querySelector("#programType"),
   blockField: document.querySelector("#blockField"),
+  fieldOptions: document.querySelector("#fieldOptions"),
   taskName: document.querySelector("#taskName"),
   hectares: document.querySelector("#hectares"),
   actualCompletionDate: document.querySelector("#actualCompletionDate"),
@@ -176,11 +575,50 @@ function bindEvents() {
     button.addEventListener("click", () => setView(button.dataset.view));
   });
 
-  dom.searchInput.addEventListener("input", renderRecords);
-  dom.typeFilter.addEventListener("change", renderRecords);
-  dom.stageFilter.addEventListener("change", renderRecords);
+  dom.searchInput.addEventListener("input", renderRecordsOutputs);
+  dom.typeFilter.addEventListener("change", renderRecordsOutputs);
+  dom.fieldFilter.addEventListener("change", renderRecordsOutputs);
+  dom.dashboardTypeSelect.addEventListener("change", () => {
+    selectedDashboardType = dom.dashboardTypeSelect.value || "work-program";
+    selectedDashboardBreakdown = null;
+    selectedDashboardTableField = "";
+    selectedDashboardTableColumn = "";
+    renderDashboard();
+  });
+  dom.dashboardProgramSelect.addEventListener("change", () => {
+    selectedDashboardProgram = dom.dashboardProgramSelect.value || state.programTypes[0]?.name || "";
+    selectedDashboardBreakdown = null;
+    selectedDashboardTableField = "";
+    selectedDashboardTableColumn = "";
+    selectedMapField = "";
+    renderDashboard();
+  });
+  dom.approvalTabs.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-approval-status]");
+    if (!button) return;
+    selectedApprovalStatus = button.dataset.approvalStatus;
+    selectedRecordId = "";
+    renderRecordsOutputs();
+  });
+  dom.recordsScrollButton.addEventListener("click", scrollRecordsList);
+  dom.monthlyProgramFilter.addEventListener("change", () => {
+    selectedMonthlyProgram = dom.monthlyProgramFilter.value || state.programTypes[0]?.name || "";
+    renderMonthlyTrackingTable();
+  });
+  dom.monthlyMonthFilter.addEventListener("change", () => {
+    selectedMonthlyMonth = dom.monthlyMonthFilter.value || getDefaultMonthlyMonth();
+    renderMonthlyTrackingTable();
+  });
+  dom.blockField.addEventListener("change", () => {
+    dom.blockField.value = dom.blockField.value.trim();
+  });
   dom.dashboardMapButton.addEventListener("click", () => setDashboardMode("map"));
   dom.dashboardTableButton.addEventListener("click", () => setDashboardMode("table"));
+  dom.programmeRowsToggle.addEventListener("click", toggleProgrammeRows);
+  dom.dashboardExportButton.addEventListener("click", downloadDashboardTableExport);
+  dom.programmeDashboardHead.addEventListener("click", handleProgrammeTableHighlightClick);
+  dom.programmeDashboardBody.addEventListener("click", handleProgrammeTableHighlightClick);
+  dom.dashboardMapRulesButton.addEventListener("click", toggleDashboardMapRules);
 
   dom.newRecordButton.addEventListener("click", () => {
     resetForm();
@@ -197,6 +635,7 @@ function bindEvents() {
   dom.offlineModeButton.addEventListener("click", toggleOfflineSaveMode);
   dom.photoInput.addEventListener("change", handlePhotoUpload);
   dom.removePhotoButton.addEventListener("click", removePhoto);
+  document.addEventListener("click", handleRecordActionClick);
 
 }
 
@@ -211,7 +650,7 @@ function loadState() {
       ...parsed,
       programTypes: getDefaultProgramTypes(),
       plannedProgrammes: normalizePlannedProgrammes(parsed.plannedProgrammes?.length ? parsed.plannedProgrammes : defaultState.plannedProgrammes),
-      records: (Array.isArray(parsed.records) ? parsed.records : defaultState.records).map(normalizeRecord),
+      records: mergeDefaultRecords(Array.isArray(parsed.records) ? parsed.records : defaultState.records),
     };
   } catch {
     return defaultState;
@@ -237,28 +676,35 @@ function normalizeRecord(record) {
     ...record,
   };
   normalized.programType = normalizeProgramTypeName(normalized.programType);
+  normalized.blockField = normalizeFieldName(normalized.blockField);
   return normalized;
 }
 
+function getInitialApprovalStatus() {
+  return state.records.some((record) => record.approvalStatus === "Pending Approval") ? "Pending Approval" : "Approved";
+}
+
+function mergeDefaultRecords(records) {
+  const importedRecords = buildDefaultRecords().map(normalizeRecord);
+  const importedIds = new Set(importedRecords.map((record) => record.id));
+  const manualRecords = records
+    .map(normalizeRecord)
+    .filter((record) => !importedIds.has(record.id) && !isExcelImportedRecord(record) && !isFirstDraftDemoRecord(record));
+  return [...importedRecords, ...manualRecords];
+}
+
+function isExcelImportedRecord(record) {
+  return record.source === EXCEL_RECORD_SOURCE || String(record.id || "").startsWith(`${EXCEL_RECORD_PREFIX}-`);
+}
+
+function isFirstDraftDemoRecord(record) {
+  return (
+    (record.reporterName === "Rahman Mandore" && record.taskName === "Mature circle completion") ||
+    (record.reporterName === "Siti Field Officer" && record.taskName === "Mature circle partial completion")
+  );
+}
+
 function normalizePlannedProgrammes(plannedProgrammes) {
-  const normalizedProgrammes = plannedProgrammes
-    .map((row) => ({ ...row, programType: normalizeProgramTypeName(row.programType) }))
-    .filter((row) => ALLOWED_PROGRAM_NAMES.has(row.programType));
-  const otherPlans = normalizedProgrammes.filter((row) => row.programType !== SPRAYING_PROGRAM);
-  const sprayingPlans = normalizedProgrammes.filter((row) => row.programType === SPRAYING_PROGRAM);
-  const mapFields = getFieldMapItems();
-
-  if (mapFields.length) {
-    const plannedFields = new Set(sprayingPlans.map((row) => fieldKey(row.field)));
-    const hasFullMapCoverage = mapFields.every((field) => plannedFields.has(fieldKey(field.fieldGis)));
-    if (!hasFullMapCoverage) {
-      return [...buildProgrammeRows(SPRAYING_PROGRAM, getSprayingPlanRows()), ...otherPlans];
-    }
-  }
-
-  const hasKmlSprayingPlan = sprayingPlans.some((row) => fieldKey(row.field) === fieldKey("P02D1"));
-  if (hasKmlSprayingPlan || otherPlans.length) return [...sprayingPlans, ...otherPlans];
-
   return buildDefaultPlannedProgrammes();
 }
 
@@ -266,8 +712,28 @@ function normalizeProgramTypeName(programType) {
   const value = String(programType || "").trim();
   const directMatch = DEFAULT_PROGRAM_TYPES.find((type) => type.name.toLowerCase() === value.toLowerCase());
   if (directMatch) return directMatch.name;
-  if (value.toLowerCase() === "circle spraying") return SPRAYING_PROGRAM;
+  const legacyValue = value.toLowerCase();
+  if (legacyValue === "spraying" || legacyValue === "circle spraying") return MATURE_CIRCLE_PROGRAM;
   return DEFAULT_PROGRAM_TYPES[0].name;
+}
+
+function normalizeFieldName(fieldName) {
+  const value = String(fieldName || "").trim();
+  if (!value) return "";
+  const match = findFieldByInput(value);
+  return match ? getFieldDisplayName(match) : value;
+}
+
+function findFieldByInput(fieldName) {
+  const key = fieldKey(fieldName);
+  return getFieldMapItems().find((field) =>
+    [field.fieldNo, field.fieldGis, field.fieldSem].some((candidate) => fieldKey(candidate) === key),
+  );
+}
+
+function isListedFieldName(fieldName) {
+  const value = String(fieldName || "").trim();
+  return getTrackingFields().some((field) => getFieldDisplayName(field) === value);
 }
 
 function persist() {
@@ -276,9 +742,10 @@ function persist() {
 
 function renderAll() {
   renderSelects();
+  renderApprovalTabs();
   renderDashboard();
-  renderRecords();
-  renderMapOutput();
+  renderRecordsOutputs();
+  renderMonthlyTrackingTable();
   renderConfiguration();
 }
 
@@ -287,33 +754,111 @@ function setView(viewName) {
   const titleMap = {
     dashboard: "Dashboard",
     records: "Records",
-    capture: "Capture",
+    capture: "Program Tracker",
+    pmv: "PMV Tracker",
     settings: "Configuration",
   };
 
   dom.viewTitle.textContent = titleMap[viewName];
   dom.navButtons.forEach((button) => button.classList.toggle("active", button.dataset.view === viewName));
   dom.views.forEach((view) => view.classList.toggle("active", view.id === `${viewName}View`));
+  if (viewName === "records") window.setTimeout(fitRecordsLeafletMap, 0);
+  if (viewName === "dashboard" && selectedDashboardType === "work-program" && selectedDashboardMode === "map") {
+    window.setTimeout(fitLeafletDashboardMap, 0);
+  }
 }
 
 function renderSelects() {
   if (!state.programTypes.some((type) => type.name === selectedDashboardProgram)) {
     selectedDashboardProgram = state.programTypes[0]?.name || "";
   }
+  fillSelect(dom.dashboardProgramSelect, "", state.programTypes.map((item) => item.name));
+  dom.dashboardProgramSelect.value = selectedDashboardProgram;
   fillSelect(dom.programType, "Select program type", state.programTypes.map((item) => item.name));
   fillSelect(dom.typeFilter, "All program types", state.programTypes.map((item) => item.name));
-  fillSelect(dom.stageFilter, "All approval status", APPROVAL_STATUSES);
+  fillSelect(dom.fieldFilter, "All fields", getFieldFilterValues());
+  fillSelect(dom.monthlyProgramFilter, "Select program", state.programTypes.map((item) => item.name));
+  if (!state.programTypes.some((type) => type.name === selectedMonthlyProgram)) {
+    selectedMonthlyProgram = state.programTypes[0]?.name || "";
+  }
+  dom.monthlyProgramFilter.value = selectedMonthlyProgram;
+  fillMonthSelect(dom.monthlyMonthFilter);
+  renderFieldOptions();
 }
 
 function fillSelect(element, placeholder, values) {
   const currentValue = element.value;
   element.innerHTML = "";
-  element.append(new Option(placeholder, ""));
+  if (placeholder) element.append(new Option(placeholder, ""));
   values.forEach((value) => element.append(new Option(value, value)));
   if (values.includes(currentValue)) element.value = currentValue;
 }
 
+function renderFieldOptions() {
+  dom.fieldOptions.innerHTML = "";
+  getTrackingFields().forEach((field) => {
+    const option = document.createElement("option");
+    option.value = getFieldDisplayName(field);
+    dom.fieldOptions.append(option);
+  });
+}
+
+function getFieldFilterValues() {
+  const values = new Map();
+  getTrackingFields().forEach((field) => {
+    values.set(fieldKey(getFieldDisplayName(field)), getFieldDisplayName(field));
+  });
+  state.records.forEach((record) => {
+    const field = normalizeFieldName(record.blockField);
+    if (field) values.set(fieldKey(field), field);
+  });
+  return [...values.values()].sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+}
+
+function fillMonthSelect(element) {
+  element.innerHTML = "";
+  MONTHS_2026.forEach((month) => {
+    element.append(new Option(formatMonthLabel(month.key), month.key));
+  });
+  if (!MONTHS_2026.some((month) => month.key === selectedMonthlyMonth)) {
+    selectedMonthlyMonth = getDefaultMonthlyMonth();
+  }
+  element.value = selectedMonthlyMonth;
+}
+
+function renderApprovalTabs() {
+  const labels = {
+    "Pending Approval": "Not Approved",
+    Approved: "Approved",
+  };
+  const counts = Object.fromEntries(APPROVAL_STATUSES.map((status) => [status, 0]));
+  state.records.forEach((record) => {
+    if (recordMatchesSearchAndType(record)) counts[record.approvalStatus] = (counts[record.approvalStatus] || 0) + 1;
+  });
+
+  dom.approvalTabs.innerHTML = APPROVAL_STATUSES.map(
+    (status) => `
+      <button class="approval-tab ${selectedApprovalStatus === status ? "active" : ""}" type="button" data-approval-status="${escapeHtml(status)}">
+        ${labels[status] || status}
+        <span>${counts[status] || 0}</span>
+      </button>
+    `,
+  ).join("");
+}
+
 function renderDashboard() {
+  const isWorkProgramDashboard = selectedDashboardType === "work-program";
+  dom.dashboardTypeSelect.value = selectedDashboardType;
+  dom.workProgramDashboardView.classList.toggle("hidden", !isWorkProgramDashboard);
+  dom.pmvDashboardView.classList.toggle("hidden", isWorkProgramDashboard);
+  if (!isWorkProgramDashboard) {
+    destroyDashboardLeafletMap();
+    selectedDashboardBreakdown = null;
+    dom.dailyTrackingPanel.classList.add("hidden");
+    dom.dailyTrackingPanel.innerHTML = "";
+    return;
+  }
+
   renderDashboardTabs();
   renderDashboardMode();
   renderDashboardMap();
@@ -330,6 +875,11 @@ function setDashboardMode(mode) {
   }
 }
 
+function toggleProgrammeRows() {
+  showProgrammeRows = !showProgrammeRows;
+  renderProgrammeTable();
+}
+
 function renderDashboardMode() {
   const isMap = selectedDashboardMode === "map";
   dom.dashboardMapButton.classList.toggle("active", isMap);
@@ -339,27 +889,13 @@ function renderDashboardMode() {
 }
 
 function renderDashboardTabs() {
-  dom.dashboardProgramTabs.innerHTML = "";
-  state.programTypes.forEach((type) => {
-    const button = document.createElement("button");
-    button.type = "button";
-    button.className = selectedDashboardProgram === type.name ? "dashboard-tab active" : "dashboard-tab";
-    button.textContent = type.name;
-    button.addEventListener("click", () => {
-      selectedDashboardProgram = type.name;
-      selectedDrilldownMonth = "";
-      selectedMapField = "";
-      renderDashboard();
-    });
-    dom.dashboardProgramTabs.append(button);
-  });
+  dom.dashboardProgramSelect.value = selectedDashboardProgram;
 }
 
 function renderProgrammeSummary() {
   const rows = getDashboardRows(selectedDashboardProgram);
-  const actualLookup = getActualLookup(selectedDashboardProgram);
-  const plannedTotal = sumPlannedRows(rows);
-  const completedTotal = sumActualRows(rows, actualLookup);
+  const plannedTotal = sumDashboardRowsByType(rows, "Programme");
+  const completedTotal = sumDashboardRowsByType(rows, "Completed");
   const variance = completedTotal - plannedTotal;
   const completion = plannedTotal ? (completedTotal / plannedTotal) * 100 : 0;
 
@@ -368,12 +904,12 @@ function renderProgrammeSummary() {
     <article>
       <span>Programme</span>
       <strong>${formatNumber(plannedTotal)}</strong>
-      <small>Planned hectares from dummy quarterly schedule</small>
+      <small>Planned hectares where programme data is available</small>
     </article>
     <article>
       <span>Completed</span>
       <strong>${formatNumber(completedTotal)}</strong>
-      <small>Approved actual hectares by completion date</small>
+      <small>Approved completed hectares from Records</small>
     </article>
     <article>
       <span>Actual vs Programme</span>
@@ -390,18 +926,26 @@ function renderProgrammeSummary() {
 
 function renderProgrammeTable() {
   const rows = getDashboardRows(selectedDashboardProgram);
-  const actualLookup = getActualLookup(selectedDashboardProgram);
+  const rowGroups = getDashboardTableRowGroups(rows);
+
+  dom.programmeRowsToggle.setAttribute("aria-expanded", String(showProgrammeRows));
+  dom.programmeRowsToggle.innerHTML = `
+    <svg viewBox="0 0 24 24" aria-hidden="true" class="${showProgrammeRows ? "expanded" : ""}">
+      <path d="M6 9l6 6 6-6" />
+    </svg>
+    ${showProgrammeRows ? "Hide Programme Rows" : "Show Programme Rows"}
+  `;
 
   dom.programmeDashboardHead.innerHTML = `
     <tr>
-      <th rowspan="2">Field</th>
-      <th rowspan="2">Hect</th>
-      <th rowspan="2">Type</th>
-      <th rowspan="2">SPH</th>
-      <th rowspan="2">No of Palms</th>
-      <th rowspan="2">Machine</th>
-      <th rowspan="2">Last Done</th>
-      <th rowspan="2">Percent Completion Per Programme</th>
+      <th rowspan="2" class="${getDashboardHeaderHighlightClass("field")}" data-dashboard-column="field">Field</th>
+      <th rowspan="2" class="${getDashboardHeaderHighlightClass("category")}" data-dashboard-column="category">Category</th>
+      <th rowspan="2" class="${getDashboardHeaderHighlightClass("hect")}" data-dashboard-column="hect">Ha</th>
+      <th rowspan="2" class="${getDashboardHeaderHighlightClass("actualBudget")}" data-dashboard-column="actualBudget">Actual / Budget</th>
+      <th rowspan="2" class="${getDashboardHeaderHighlightClass("frequencyMonths")}" data-dashboard-column="frequencyMonths">Frequency (Months)</th>
+      <th rowspan="2" class="${getDashboardHeaderHighlightClass("completedRounds")}" data-dashboard-column="completedRounds">Completed Rounds</th>
+      <th rowspan="2" class="${getDashboardHeaderHighlightClass("intervalMonths")}" data-dashboard-column="intervalMonths">Interval (Months)</th>
+      <th rowspan="2" class="${getDashboardHeaderHighlightClass("proposedNextDate")}" data-dashboard-column="proposedNextDate">Proposed Next Date</th>
       <th colspan="${MONTHS_2026.length}">${DASHBOARD_YEAR}</th>
     </tr>
     <tr>
@@ -409,143 +953,233 @@ function renderProgrammeTable() {
     </tr>
   `;
 
-  if (!rows.length) {
+  if (!rowGroups.length) {
     dom.programmeDashboardBody.innerHTML = `
       <tr>
         <td colspan="${8 + MONTHS_2026.length}" class="programme-empty">No planned programme rows available.</td>
       </tr>
     `;
-    bindMonthDrilldowns();
+    bindDashboardBreakdownCells();
     return;
   }
 
-  dom.programmeDashboardBody.innerHTML = rows
-    .map((row) => {
-      const plannedTotal = sumRowPlanned(row);
-      const completedTotal = sumRowActual(row, actualLookup);
-      const completion = plannedTotal ? (completedTotal / plannedTotal) * 100 : 0;
-      return `
-        <tr>
-          <td rowspan="2" class="field-cell">${escapeHtml(row.field)}</td>
-          <td rowspan="2">${formatNumber(row.hect)}</td>
-          <td class="programme-label">Programme</td>
-          <td rowspan="2">${escapeHtml(row.sph)}</td>
-          <td rowspan="2">${escapeHtml(row.palms)}</td>
-          <td rowspan="2">${escapeHtml(row.machine)}</td>
-          <td rowspan="2">${escapeHtml(row.lastDone)}</td>
-          <td rowspan="2" class="${completion >= 100 ? "complete-cell" : "pending-cell"}">
-            ${plannedTotal ? formatPercent(completion) : "No Plan"}
-          </td>
-          ${MONTHS_2026.map((month) => renderProgrammeMonthCell(row, month)).join("")}
-        </tr>
-        <tr>
-          <td class="completed-label">Completed</td>
-          ${MONTHS_2026.map((month) => renderCompletedMonthCell(row, month, actualLookup)).join("")}
-        </tr>
-      `;
-    })
+  dom.programmeDashboardBody.innerHTML = rowGroups
+    .map((group) => renderProgrammeTableGroup(group))
     .join("");
-  bindMonthDrilldowns();
+  bindDashboardBreakdownCells();
+}
+
+function getDashboardTableRowGroups(rows) {
+  const groups = new Map();
+  rows.forEach((row, index) => {
+    const key = fieldKey(row.field);
+    if (!groups.has(key)) {
+      groups.set(key, {
+        key,
+        firstIndex: index,
+        completed: null,
+        programme: null,
+        fallback: row,
+      });
+    }
+    const group = groups.get(key);
+    if (row.actualBudget === "Completed") group.completed = row;
+    if (row.actualBudget === "Programme") group.programme = row;
+  });
+
+  return [...groups.values()].sort((a, b) => a.firstIndex - b.firstIndex);
+}
+
+function renderProgrammeTableGroup(group) {
+  const primaryRow = group.completed || group.programme || group.fallback;
+  const visibleRows = [group.completed || group.programme].filter(Boolean);
+  if (showProgrammeRows && group.programme && group.programme !== visibleRows[0]) visibleRows.push(group.programme);
+  const sharedRowspan = showProgrammeRows && group.programme && visibleRows.length > 1 ? visibleRows.length : 1;
+
+  return visibleRows
+    .map((row, index) => renderProgrammeTableRow(row, primaryRow, index === 0, sharedRowspan))
+    .join("");
+}
+
+function renderProgrammeTableRow(row, primaryRow, includeSharedCells, sharedRowspan) {
+  const fieldValue = primaryRow.field;
+  return `
+    <tr class="${row.actualBudget === "Programme" ? "programme-source-row" : "completed-source-row"} ${getDashboardRowHighlightClass(fieldValue)}">
+      ${
+        includeSharedCells
+          ? `
+            <td class="field-cell merged-field-cell ${getDashboardCellHighlightClass(fieldValue, "field")}" rowspan="${sharedRowspan}" data-dashboard-field="${escapeHtml(fieldValue)}" data-dashboard-column="field">${escapeHtml(primaryRow.field)}</td>
+            <td class="merged-field-cell ${getDashboardCellHighlightClass(fieldValue, "category")}" rowspan="${sharedRowspan}" data-dashboard-field="${escapeHtml(fieldValue)}" data-dashboard-column="category">${escapeHtml(primaryRow.category)}</td>
+            <td class="merged-field-cell ${getDashboardCellHighlightClass(fieldValue, "hect")}" rowspan="${sharedRowspan}" data-dashboard-field="${escapeHtml(fieldValue)}" data-dashboard-column="hect">${formatNumber(primaryRow.hect)}</td>
+          `
+          : ""
+      }
+      <td class="${row.actualBudget === "Programme" ? "programme-label" : "completed-label"} ${getDashboardCellHighlightClass(fieldValue, "actualBudget")}" data-dashboard-field="${escapeHtml(fieldValue)}" data-dashboard-column="actualBudget">${escapeHtml(row.actualBudget)}</td>
+      <td class="${getDashboardCellHighlightClass(fieldValue, "frequencyMonths")}" data-dashboard-field="${escapeHtml(fieldValue)}" data-dashboard-column="frequencyMonths">${formatDashboardTemplateValue(row, "frequencyMonths")}</td>
+      <td class="${getDashboardCellHighlightClass(fieldValue, "completedRounds")}" data-dashboard-field="${escapeHtml(fieldValue)}" data-dashboard-column="completedRounds">${formatDashboardTemplateValue(row, "completedRounds")}</td>
+      <td class="${getDashboardCellHighlightClass(fieldValue, "intervalMonths")}" data-dashboard-field="${escapeHtml(fieldValue)}" data-dashboard-column="intervalMonths">${formatDashboardTemplateValue(row, "intervalMonths")}</td>
+      <td class="${getDashboardCellHighlightClass(fieldValue, "proposedNextDate")}" data-dashboard-field="${escapeHtml(fieldValue)}" data-dashboard-column="proposedNextDate">${formatDashboardTemplateDate(row, "proposedNextDate")}</td>
+      ${MONTHS_2026.map((month) => renderDashboardMonthCell(row, month)).join("")}
+    </tr>
+  `;
 }
 
 function renderMonthHeader(month) {
-  const isOpen = selectedDrilldownMonth === month.key;
   return `
-    <th class="month-head">
-      <button class="month-drilldown-button ${isOpen ? "active" : ""}" type="button" data-month="${month.key}" aria-expanded="${isOpen}">
-        <span>${month.label}</span>
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="m6 9 6 6 6-6" />
-        </svg>
-      </button>
+    <th class="month-head ${getDashboardHeaderHighlightClass(month.key)}" data-dashboard-column="${month.key}">
+      <span>${month.label}</span>
     </th>
   `;
 }
 
-function bindMonthDrilldowns() {
-  dom.programmeDashboardHead.querySelectorAll(".month-drilldown-button").forEach((button) => {
-    button.addEventListener("click", () => {
-      selectedDrilldownMonth = selectedDrilldownMonth === button.dataset.month ? "" : button.dataset.month;
-      renderDashboard();
+function bindDashboardBreakdownCells() {
+  dom.programmeDashboardBody.querySelectorAll(".dashboard-month-cell-button").forEach((button) => {
+    button.addEventListener("click", (event) => {
+      event.stopPropagation();
+      selectedDashboardTableField = button.dataset.field;
+      selectedDashboardTableColumn = button.dataset.month;
+      selectedDashboardBreakdown = {
+        programType: button.dataset.programType,
+        field: button.dataset.field,
+        monthKey: button.dataset.month,
+        total: Number(button.dataset.total) || 0,
+      };
+      renderProgrammeTable();
+      renderDailyTrackingPanel();
     });
   });
 }
 
-function renderProgrammeMonthCell(row, month) {
-  const value = row.months[month.key] || 0;
-  return `<td class="planned-month">${value ? formatNumber(value) : ""}</td>`;
+function handleProgrammeTableHighlightClick(event) {
+  const cell = event.target.closest("[data-dashboard-column]");
+  if (!cell) return;
+  if (!dom.programmeDashboardHead.contains(cell) && !dom.programmeDashboardBody.contains(cell)) return;
+  selectedDashboardTableField = cell.dataset.dashboardField || "";
+  selectedDashboardTableColumn = cell.dataset.dashboardColumn || "";
+  renderProgrammeTable();
 }
 
-function renderCompletedMonthCell(row, month, actualLookup) {
-  const value = actualLookup[`${fieldKey(row.field)}|${month.key}`] || 0;
-  return `<td class="${value ? "completed-month" : "blank-completed-month"}">${value ? formatNumber(value) : ""}</td>`;
+function renderDashboardMonthCell(row, month) {
+  const value = row.months[month.key] || 0;
+  const filledClass = row.actualBudget === "Programme" ? "planned-month" : "completed-month";
+  const isSelected =
+    selectedDashboardBreakdown &&
+    selectedDashboardBreakdown.programType === row.programType &&
+    fieldKey(selectedDashboardBreakdown.field) === fieldKey(row.field) &&
+    selectedDashboardBreakdown.monthKey === month.key;
+  const isClickable = row.actualBudget === "Completed" && value > 0;
+  const highlightClass = getDashboardCellHighlightClass(row.field, month.key);
+  if (!isClickable) {
+    return `<td class="${value ? filledClass : "blank-completed-month"} ${highlightClass}" data-dashboard-field="${escapeHtml(row.field)}" data-dashboard-column="${month.key}">${value ? formatNumber(value) : ""}</td>`;
+  }
+
+  return `
+    <td class="${filledClass} ${highlightClass} ${isSelected ? "dashboard-breakdown-active" : ""}" data-dashboard-field="${escapeHtml(row.field)}" data-dashboard-column="${month.key}">
+      <button
+        class="dashboard-month-cell-button"
+        type="button"
+        data-program-type="${escapeHtml(row.programType)}"
+        data-field="${escapeHtml(row.field)}"
+        data-month="${month.key}"
+        data-total="${value}"
+        aria-label="Show daily breakdown for ${escapeHtml(row.field)} ${escapeHtml(formatMonthLabel(month.key))}"
+      >
+        ${formatNumber(value)}
+      </button>
+    </td>
+  `;
+}
+
+function getDashboardRowHighlightClass(field) {
+  return selectedDashboardTableField && fieldKey(field) === fieldKey(selectedDashboardTableField) ? "dashboard-row-active" : "";
+}
+
+function getDashboardHeaderHighlightClass(column) {
+  return selectedDashboardTableColumn === column ? "dashboard-column-active" : "";
+}
+
+function getDashboardCellHighlightClass(field, column) {
+  const isRowActive = selectedDashboardTableField && fieldKey(field) === fieldKey(selectedDashboardTableField);
+  const isColumnActive = selectedDashboardTableColumn === column;
+  return [
+    isRowActive ? "dashboard-row-active" : "",
+    isColumnActive ? "dashboard-column-active" : "",
+    isRowActive && isColumnActive ? "dashboard-cell-active" : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
 }
 
 function renderDailyTrackingPanel() {
-  if (!selectedDrilldownMonth) {
+  if (!selectedDashboardBreakdown) {
     dom.dailyTrackingPanel.classList.add("hidden");
     dom.dailyTrackingPanel.innerHTML = "";
     return;
   }
 
-  const month = MONTHS_2026.find((item) => item.key === selectedDrilldownMonth);
-  const rows = getDashboardRows(selectedDashboardProgram);
-  const records = getActualRecordsForMonth(selectedDashboardProgram, selectedDrilldownMonth);
-  const plannedTotal = rows.reduce((total, row) => total + (Number(row.months[selectedDrilldownMonth]) || 0), 0);
-  const completedTotal = records.reduce((total, record) => total + (Number(record.hectares) || 0), 0);
-  const completion = plannedTotal ? (completedTotal / plannedTotal) * 100 : 0;
+  const { programType, field, monthKey, total } = selectedDashboardBreakdown;
+  const month = MONTHS_2026.find((item) => item.key === monthKey);
+  const records = getDashboardBreakdownRecords(programType, field, monthKey);
+  const distributedTotal = sumRecordHectares(records);
+  const variance = distributedTotal - total;
 
   dom.dailyTrackingPanel.classList.remove("hidden");
   dom.dailyTrackingPanel.innerHTML = `
-    <div class="daily-tracking-header">
-      <div>
-        <p class="eyebrow">Daily Tracking</p>
-        <h3>${escapeHtml(selectedDashboardProgram)} - ${escapeHtml(month?.label || "")} ${DASHBOARD_YEAR}</h3>
+    <div class="daily-tracking-content" role="dialog" aria-modal="true" aria-label="Daily activity breakdown">
+      <div class="daily-tracking-header">
+        <div>
+          <p class="eyebrow">Daily Breakdown</p>
+          <h3>${escapeHtml(field)} - ${escapeHtml(programType)} - ${escapeHtml(month?.label || "")} ${DASHBOARD_YEAR}</h3>
+        </div>
+        <button class="secondary-button compact" type="button" id="closeDailyTrackingButton">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M18 6 6 18" />
+            <path d="m6 6 12 12" />
+          </svg>
+          Close
+        </button>
       </div>
-      <button class="secondary-button compact" type="button" id="closeDailyTrackingButton">
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M18 6 6 18" />
-          <path d="m6 6 12 12" />
-        </svg>
-        Close
-      </button>
-    </div>
 
-    <div class="daily-summary">
-      <article>
-        <span>Monthly Programme</span>
-        <strong>${formatNumber(plannedTotal)}</strong>
-      </article>
-      <article>
-      <span>Approved Actual Captured</span>
-      <strong>${formatNumber(completedTotal)}</strong>
-      </article>
-      <article>
-        <span>Month Completion</span>
-        <strong>${formatPercent(completion)}</strong>
-      </article>
-      <article>
-        <span>Actual Entries</span>
-        <strong>${records.length}</strong>
-      </article>
-    </div>
+      <div class="daily-summary">
+        <article>
+          <span>Dashboard Cell Total</span>
+          <strong>${formatMonthlyHectares(total)}</strong>
+        </article>
+        <article>
+          <span>Daily Distribution</span>
+          <strong>${formatMonthlyHectares(distributedTotal)}</strong>
+        </article>
+        <article>
+          <span>Variance</span>
+          <strong class="${variance < 0 ? "negative" : "positive"}">${formatSignedMonthlyHectares(variance)}</strong>
+        </article>
+        <article>
+          <span>Entries</span>
+          <strong>${records.length}</strong>
+        </article>
+      </div>
 
-    ${
-      records.length
-        ? renderDailyRecordsTable(records)
-        : `
-          <div class="daily-empty">
-            <h4>No completion captured for this month</h4>
-        <p>Approved actual work will appear here once records dated within ${escapeHtml(month?.label || "")} ${DASHBOARD_YEAR} are approved.</p>
-          </div>
-        `
-    }
+      ${
+        records.length
+          ? renderDailyRecordsTable(records)
+          : `
+            <div class="daily-empty">
+              <h4>No daily distribution captured</h4>
+              <p>The dashboard cell has ${formatMonthlyHectares(total)} ha, but no matching Records entries are available for this field and month.</p>
+            </div>
+          `
+      }
+    </div>
   `;
 
-  document.querySelector("#closeDailyTrackingButton")?.addEventListener("click", () => {
-    selectedDrilldownMonth = "";
-    renderDashboard();
-  });
+  document.querySelector("#closeDailyTrackingButton")?.addEventListener("click", closeDashboardBreakdown);
+  dom.dailyTrackingPanel.addEventListener(
+    "click",
+    (event) => {
+      if (event.target === dom.dailyTrackingPanel) closeDashboardBreakdown();
+    },
+    { once: true },
+  );
 }
 
 function renderDailyRecordsTable(records) {
@@ -554,12 +1188,13 @@ function renderDailyRecordsTable(records) {
       <table class="daily-table">
         <thead>
           <tr>
-            <th>Date Done</th>
-            <th>Field</th>
-            <th>Completed Hectares</th>
-            <th>Remarks</th>
+            <th>Date</th>
+            <th>Week</th>
+            <th>Hectares</th>
+            <th>Reporter</th>
+            <th>Status</th>
             <th>Evidence</th>
-            <th>GPS</th>
+            <th>Remarks</th>
           </tr>
         </thead>
         <tbody>
@@ -567,12 +1202,13 @@ function renderDailyRecordsTable(records) {
             .map(
               (record) => `
                 <tr>
-                  <td>${formatDate(record.actualCompletionDate, "No date")}</td>
-                  <td><strong>${escapeHtml(record.blockField)}</strong></td>
-                  <td>${formatNumber(record.hectares)}</td>
-                  <td>${escapeHtml(record.remarks || "No remarks")}</td>
+                  <td><strong>${formatDate(record.actualCompletionDate, "No date")}</strong></td>
+                  <td>${escapeHtml(getWeekOfMonthLabel(record.actualCompletionDate))}</td>
+                  <td>${formatMonthlyHectares(record.hectares)}</td>
+                  <td>${escapeHtml(record.reporterName)}</td>
+                  <td>${escapeHtml(record.approvalStatus)}</td>
                   <td>${record.photoData ? "Attached" : "None"}</td>
-                  <td>${record.latitude && record.longitude ? `${Number(record.latitude).toFixed(5)}, ${Number(record.longitude).toFixed(5)}` : "Not captured"}</td>
+                  <td>${escapeHtml(record.remarks || "-")}</td>
                 </tr>
               `,
             )
@@ -583,73 +1219,245 @@ function renderDailyRecordsTable(records) {
   `;
 }
 
-function getActualRecordsForMonth(programType, monthKey) {
-  return getApprovedRecords(programType)
-    .filter((record) => getMonthKey(record.actualCompletionDate || record.deadline) === monthKey)
-    .sort((a, b) => {
-      const dateOrder = new Date(a.actualCompletionDate || a.deadline) - new Date(b.actualCompletionDate || b.deadline);
-      if (dateOrder !== 0) return dateOrder;
-      return a.blockField.localeCompare(b.blockField);
+function closeDashboardBreakdown() {
+  selectedDashboardBreakdown = null;
+  dom.dailyTrackingPanel.classList.add("hidden");
+  dom.dailyTrackingPanel.innerHTML = "";
+  renderProgrammeTable();
+}
+
+function downloadDashboardTableExport() {
+  const rows = getDashboardExportRows(selectedDashboardProgram);
+  if (!rows.length) {
+    showToast("No dashboard data available to export.");
+    return;
+  }
+
+  const headers = ["Field", "Category", "Ha", "Actual/Budget", "Frequency", "Completed Rounds", "Interval (months)", "Proposed Next Date", "Month", "Value"];
+  const csv = [
+    headers,
+    ...rows.map((row) => headers.map((header) => row[header])),
+  ]
+    .map((row) => row.map(csvEscape).join(","))
+    .join("\n");
+
+  const blob = new Blob([`\uFEFF${csv}`], { type: "text/csv;charset=utf-8" });
+  const link = document.createElement("a");
+  const url = URL.createObjectURL(blob);
+  link.href = url;
+  link.download = `dashboard-table-${normaliseKey(selectedDashboardProgram)}-${DASHBOARD_YEAR}.csv`;
+  document.body.append(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+  showToast("Dashboard table export downloaded.");
+}
+
+function getDashboardExportRows(programType) {
+  const programmeRows = getDashboardProgrammeRows(programType);
+  const completedRows = getDashboardCompletedRows(programType, programmeRows);
+  const completedRowByField = new Map(completedRows.map((row) => [fieldKey(row.field), row]));
+  const programmeExportRows = programmeRows.flatMap((row) =>
+    MONTHS_2026.map((month) => {
+      const value = Number(row.months[month.key]) || 0;
+      if (value <= 0) return null;
+      return toDashboardExportRow(row, month.key, value);
+    }).filter(Boolean),
+  );
+  const completedExportRows = getApprovedDashboardRecords(programType)
+    .slice()
+    .sort((a, b) => new Date(a.actualCompletionDate || a.deadline || 0) - new Date(b.actualCompletionDate || b.deadline || 0))
+    .map((record) => {
+      const completedRow = completedRowByField.get(fieldKey(record.blockField)) || buildDashboardCompletedRow(programType, record.blockField, null, [record]);
+      return toDashboardExportRow(completedRow, getMonthKey(record.actualCompletionDate || record.deadline), Number(record.hectares) || 0);
     });
+
+  return [...programmeExportRows, ...completedExportRows];
+}
+
+function toDashboardExportRow(row, monthKey, value) {
+  return {
+    Field: row.field,
+    Category: row.category,
+    Ha: formatRawNumber(row.hect),
+    "Actual/Budget": row.actualBudget,
+    Frequency: formatRawNumber(row.frequencyMonths),
+    "Completed Rounds": formatRawNumber(row.completedRounds),
+    "Interval (months)": formatRawNumber(row.intervalMonths),
+    "Proposed Next Date": row.proposedNextDate || "",
+    Month: monthKey,
+    Value: formatRawNumber(value),
+  };
+}
+
+function csvEscape(value) {
+  const text = value === null || value === undefined ? "" : String(value);
+  return /[",\n]/.test(text) ? `"${text.replaceAll('"', '""')}"` : text;
+}
+
+function getDashboardBreakdownRecords(programType, field, monthKey) {
+  return state.records
+    .filter(
+      (record) =>
+        record.approvalStatus === "Approved" &&
+        record.programType === programType &&
+        fieldKey(record.blockField) === fieldKey(field) &&
+        getMonthKey(record.actualCompletionDate || record.deadline) === monthKey,
+    )
+    .sort((a, b) => new Date(a.actualCompletionDate || a.deadline || 0) - new Date(b.actualCompletionDate || b.deadline || 0));
+}
+
+function getWeekOfMonthLabel(dateString) {
+  const day = Number((dateString || "").slice(8, 10));
+  if (!day) return "-";
+  return `Week ${Math.ceil(day / 7)}`;
 }
 
 function getDashboardRows(programType) {
-  const plannedRows = state.plannedProgrammes
-    .filter((row) => row.programType === programType)
-    .map((row) => ({ ...row, months: { ...row.months } }));
-  const plannedFields = new Set(plannedRows.map((row) => fieldKey(row.field)));
-  const actualOnlyRows = [];
-
-  getApprovedRecords(programType)
-    .forEach((record) => {
-      const key = fieldKey(record.blockField);
-      if (!key || plannedFields.has(key) || actualOnlyRows.some((row) => fieldKey(row.field) === key)) return;
-      actualOnlyRows.push({
-        id: `actual-${key}`,
-        programType,
-        field: record.blockField,
-        hect: Number(record.hectares) || 0,
-        type: "Actual Only",
-        sph: "-",
-        palms: "-",
-        machine: "-",
-        lastDone: "-",
-        months: {},
-      });
-    });
-
-  return [...plannedRows, ...actualOnlyRows];
+  const programmeRows = getDashboardProgrammeRows(programType);
+  const completedRows = getDashboardCompletedRows(programType, programmeRows);
+  return [...completedRows, ...programmeRows];
 }
 
-function getActualLookup(programType) {
-  return getApprovedRecords(programType)
-    .reduce((lookup, record) => {
-      const monthKey = getMonthKey(record.actualCompletionDate || record.deadline);
-      if (!MONTHS_2026.some((month) => month.key === monthKey)) return lookup;
-      const key = `${fieldKey(record.blockField)}|${monthKey}`;
-      lookup[key] = (lookup[key] || 0) + (Number(record.hectares) || 0);
-      return lookup;
-    }, {});
+function getDashboardProgrammeRows(programType) {
+  const sourceRows = getDashboardRowsByType(programType, "Programme");
+  if (sourceRows.length) return sourceRows.map((row) => ({ ...row, months: { ...row.months } }));
+  return buildDashboardTemplateRows(programType, "Programme");
 }
 
-function getApprovedRecords(programType = selectedDashboardProgram) {
+function buildDashboardTemplateRows(programType, actualBudget) {
+  return getTrackingFields().map((field) => buildDashboardTemplateRow(programType, field, actualBudget));
+}
+
+function buildDashboardTemplateRow(programType, field, actualBudget) {
+  return {
+    id: `${normaliseKey(programType)}-${normaliseKey(getFieldDisplayName(field))}-${normaliseKey(actualBudget)}-template`,
+    programType,
+    field: getFieldDisplayName(field),
+    category: getFieldCategory(field),
+    hect: Number(field.ha) || 0,
+    actualBudget,
+    frequencyMonths: "",
+    completedRounds: "",
+    intervalMonths: "",
+    proposedNextDate: "",
+    months: createEmptyDashboardMonths(),
+    isTemplate: true,
+  };
+}
+
+function createEmptyDashboardMonths() {
+  return MONTHS_2026.reduce((months, month) => {
+    months[month.key] = 0;
+    return months;
+  }, {});
+}
+
+function getDashboardCompletedRows(programType, programmeRows = getDashboardProgrammeRows(programType)) {
+  const recordsByField = groupApprovedDashboardRecordsByField(programType);
+  const seenFields = new Set();
+  const rows = programmeRows.map((programmeRow) => {
+    const key = fieldKey(programmeRow.field);
+    seenFields.add(key);
+    return buildDashboardCompletedRow(programType, programmeRow.field, programmeRow, recordsByField.get(key) || []);
+  });
+
+  recordsByField.forEach((records, key) => {
+    if (seenFields.has(key)) return;
+    const field = records[0]?.blockField || key;
+    rows.push(buildDashboardCompletedRow(programType, field, null, records));
+  });
+
+  return rows;
+}
+
+function groupApprovedDashboardRecordsByField(programType) {
+  return getApprovedDashboardRecords(programType).reduce((groups, record) => {
+    const key = fieldKey(record.blockField);
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(record);
+    return groups;
+  }, new Map());
+}
+
+function getApprovedDashboardRecords(programType) {
   return state.records.filter((record) => record.programType === programType && record.approvalStatus === "Approved");
 }
 
-function sumPlannedRows(rows) {
-  return rows.reduce((total, row) => total + sumRowPlanned(row), 0);
+function buildDashboardCompletedRow(programType, field, programmeRow, records) {
+  const sourceCompletedRow = findSourceDashboardRow(programType, field, "Completed");
+  const metadataRow = programmeRow || sourceCompletedRow || getDashboardFieldFallbackRow(programType, field, records[0]);
+  const manualRecords = records.filter((record) => !isExcelImportedRecord(record));
+  const latestRecord = getLatestDashboardRecord(records);
+  const shouldPreserveSourceMetadata = !manualRecords.length && sourceCompletedRow;
+  const frequencyMonths = shouldPreserveSourceMetadata ? sourceCompletedRow.frequencyMonths : sourceCompletedRow?.frequencyMonths || programmeRow?.frequencyMonths || "";
+  const completedRounds = shouldPreserveSourceMetadata ? sourceCompletedRow.completedRounds : records.length || sourceCompletedRow?.completedRounds || "";
+  const intervalMonths = shouldPreserveSourceMetadata ? sourceCompletedRow.intervalMonths : getDashboardRecordIntervalMonths(latestRecord);
+  const proposedNextDate = shouldPreserveSourceMetadata ? sourceCompletedRow.proposedNextDate : getDashboardRecordProposedNextDate(latestRecord, frequencyMonths);
+
+  return {
+    id: `${normaliseKey(programType)}-${normaliseKey(field)}-completed-approved`,
+    programType,
+    field: metadataRow.field,
+    category: metadataRow.category,
+    hect: Number(metadataRow.hect) || 0,
+    actualBudget: "Completed",
+    frequencyMonths,
+    completedRounds,
+    intervalMonths,
+    proposedNextDate,
+    isTemplate: Boolean(metadataRow.isTemplate && !records.length && !sourceCompletedRow),
+    months: MONTHS_2026.reduce((months, month) => {
+      months[month.key] = records
+        .filter((record) => getMonthKey(record.actualCompletionDate || record.deadline) === month.key)
+        .reduce((total, record) => total + (Number(record.hectares) || 0), 0);
+      return months;
+    }, {}),
+  };
 }
 
-function sumActualRows(rows, actualLookup) {
-  return rows.reduce((total, row) => total + sumRowActual(row, actualLookup), 0);
+function findSourceDashboardRow(programType, field, actualBudget) {
+  return getDashboardRowsByType(programType, actualBudget).find((row) => fieldKey(row.field) === fieldKey(field));
 }
 
-function sumRowPlanned(row) {
+function getDashboardFieldFallbackRow(programType, field, record) {
+  const mapField = getFieldMapItems().find((item) => fieldKey(item.fieldGis) === fieldKey(field) || fieldKey(item.fieldNo) === fieldKey(field));
+  return {
+    programType,
+    field: record?.blockField || mapField?.fieldNo || field,
+    category: record?.category || getFieldCategory(mapField) || "-",
+    hect: Number(mapField?.ha || record?.hectares) || 0,
+    actualBudget: "Completed",
+    frequencyMonths: "",
+    completedRounds: 0,
+    intervalMonths: "",
+    proposedNextDate: "",
+    months: {},
+  };
+}
+
+function getLatestDashboardRecord(records) {
+  return [...records].sort((a, b) => new Date(b.actualCompletionDate || b.deadline || 0) - new Date(a.actualCompletionDate || a.deadline || 0))[0] || null;
+}
+
+function getDashboardRecordIntervalMonths(record) {
+  if (!record) return "";
+  return Math.max(0, monthDiff(getMonthKey(record.actualCompletionDate || record.deadline), currentMonthKey()));
+}
+
+function getDashboardRecordProposedNextDate(record, frequencyMonths) {
+  if (!record) return "";
+  const frequency = Number(frequencyMonths);
+  if (!Number.isFinite(frequency) || frequency <= 0) return "";
+  return addMonthsToDateString(record.actualCompletionDate || record.deadline, frequency);
+}
+
+function sumDashboardRowsByType(rows, actualBudget) {
+  return rows.filter((row) => row.actualBudget === actualBudget).reduce((total, row) => total + sumDashboardRowMonths(row), 0);
+}
+
+function sumDashboardRowMonths(row) {
   return MONTHS_2026.reduce((total, month) => total + (Number(row.months[month.key]) || 0), 0);
-}
-
-function sumRowActual(row, actualLookup) {
-  return MONTHS_2026.reduce((total, month) => total + (Number(actualLookup[`${fieldKey(row.field)}|${month.key}`]) || 0), 0);
 }
 
 function renderDashboardMap() {
@@ -676,11 +1484,14 @@ function renderDashboardMap() {
     { green: 0, yellow: 0, red: 0, grey: 0 },
   );
 
+  renderDashboardMapLegend();
+  renderDashboardMapRules();
+
   dom.dashboardMapSummary.innerHTML = `
-    <article><span>On Time</span><strong>${counts.green}</strong></article>
-    <article><span>Delayed</span><strong>${counts.yellow}</strong></article>
-    <article><span>Over-Delayed</span><strong>${counts.red}</strong></article>
-    <article><span>No Data</span><strong>${counts.grey}</strong></article>
+    <article><span>Green</span><strong>${counts.green}</strong></article>
+    <article><span>Yellow</span><strong>${counts.yellow}</strong></article>
+    <article><span>Red</span><strong>${counts.red}</strong></article>
+    <article><span>No Interval</span><strong>${counts.grey}</strong></article>
   `;
 
   if (window.L) {
@@ -690,6 +1501,56 @@ function renderDashboardMap() {
   }
 
   renderMapFieldDetail(statuses.find((item) => item.field.fieldGis === selectedMapField) || statuses[0]);
+}
+
+function renderDashboardMapLegend() {
+  const rule = getMapStatusRule(selectedDashboardProgram);
+  dom.dashboardMapLegend.innerHTML = `
+    <span><i class="legend-dot green"></i>Green ${escapeHtml(rule.greenText)}</span>
+    <span><i class="legend-dot yellow"></i>Yellow ${escapeHtml(rule.yellowText)}</span>
+    <span><i class="legend-dot red"></i>Red ${escapeHtml(rule.redText)}</span>
+    <span><i class="legend-dot grey"></i>No interval</span>
+  `;
+}
+
+function renderDashboardMapRules() {
+  const isOpen = !dom.dashboardMapRulesPopover.classList.contains("hidden");
+  dom.dashboardMapRulesButton.setAttribute("aria-expanded", String(isOpen));
+  dom.dashboardMapRulesPopover.innerHTML = `
+    <h4>Map Colour Rules</h4>
+    <p>Colours are based on each field's Interval value.</p>
+    <p>Non-numeric interval values such as TBC or Immature are shown as No Interval.</p>
+    <p>Boundary months between the stated bands are treated as the next higher risk colour.</p>
+    <table>
+      <thead>
+        <tr>
+          <th>Programme</th>
+          <th>Green</th>
+          <th>Yellow</th>
+          <th>Red</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${Object.entries(MAP_STATUS_RULES)
+          .map(
+            ([program, rule]) => `
+              <tr class="${program === selectedDashboardProgram ? "active" : ""}">
+                <th scope="row">${escapeHtml(program)}</th>
+                <td>${escapeHtml(rule.greenText)}</td>
+                <td>${escapeHtml(rule.yellowText)}</td>
+                <td>${escapeHtml(rule.redText)}</td>
+              </tr>
+            `,
+          )
+          .join("")}
+      </tbody>
+    </table>
+  `;
+}
+
+function toggleDashboardMapRules() {
+  dom.dashboardMapRulesPopover.classList.toggle("hidden");
+  renderDashboardMapRules();
 }
 
 function renderLeafletDashboardMap(statuses) {
@@ -731,11 +1592,11 @@ function renderLeafletDashboardMap(statuses) {
         element.classList.add("leaflet-field-polygon");
         element.dataset.field = feature.properties.fieldGis;
       });
-      layer.bindTooltip(feature.properties.fieldGis, {
+      layer.bindTooltip(feature.properties.fieldNo || feature.properties.fieldGis, {
         className: "field-map-tooltip",
         direction: "center",
-        permanent: false,
-        sticky: true,
+        permanent: true,
+        sticky: false,
       });
       layer.bindPopup(renderLeafletPopup(item));
       layer.on("click", () => {
@@ -773,7 +1634,7 @@ function renderStaticDashboardMap(statuses) {
                     `,
                   )
                   .join("")}
-                <text class="field-map-label" x="${item.labelPoint.x}" y="${item.labelPoint.y}">${escapeHtml(item.field.fieldGis)}</text>
+                <text class="field-map-label" x="${item.labelPoint.x}" y="${item.labelPoint.y}">${escapeHtml(getFieldDisplayName(item.field))}</text>
               </g>
             `,
           )
@@ -818,6 +1679,13 @@ function fitLeafletDashboardMap() {
   const bounds = dashboardFieldLayer.getBounds();
   if (bounds.isValid()) {
     dashboardLeafletMap.fitBounds(bounds, { maxZoom: 16, padding: [22, 22] });
+    const fittedZoom = dashboardLeafletMap.getZoom();
+    const maxZoom = dashboardLeafletMap.getMaxZoom();
+    const offsetZoom = fittedZoom + DASHBOARD_MAP_DEFAULT_ZOOM_OFFSET;
+    const targetZoom = Math.min(offsetZoom, Number.isFinite(maxZoom) ? maxZoom : offsetZoom);
+    dashboardLeafletMap.setZoom(targetZoom, { animate: false });
+    dom.dashboardMap.dataset.fitZoom = String(fittedZoom);
+    dom.dashboardMap.dataset.defaultZoom = String(targetZoom);
   }
 }
 
@@ -845,7 +1713,7 @@ function buildDashboardGeoJson(statuses) {
       type: "Feature",
       properties: {
         fieldGis: item.field.fieldGis,
-        fieldNo: item.field.fieldNo,
+        fieldNo: getFieldDisplayName(item.field),
         status: item.status,
         statusLabel: item.label,
         estate: item.field.estate || "Digital Estate",
@@ -884,12 +1752,12 @@ function renderLeafletPopup(item) {
   if (!item) return "";
   return `
     <div class="field-popup">
-      <strong>${escapeHtml(item.field.fieldGis)}</strong>
+      <strong>${escapeHtml(getFieldDisplayName(item.field))}</strong>
       <span>${escapeHtml(item.label)}</span>
       <dl>
         <div><dt>GIS ha</dt><dd>${formatNumber(item.field.ha)}</dd></div>
-        <div><dt>Planned</dt><dd>${formatNumber(item.plannedToDate)}</dd></div>
-        <div><dt>Approved</dt><dd>${formatNumber(item.completedToDate)}</dd></div>
+        <div><dt>Proposed</dt><dd>${formatDashboardDate(item.proposedNextDate)}</dd></div>
+        <div><dt>Interval</dt><dd>${formatMapInterval(item.intervalValue, item.intervalMonths)}</dd></div>
       </dl>
     </div>
   `;
@@ -910,17 +1778,19 @@ function renderMapFieldDetail(item) {
     <div class="map-detail-status ${item.status}">
       <span>${escapeHtml(item.label)}</span>
     </div>
-    <h3>${escapeHtml(item.field.fieldGis)}</h3>
+    <h3>${escapeHtml(getFieldDisplayName(item.field))}</h3>
     <dl>
-      <div><dt>Field No.</dt><dd>${escapeHtml(item.field.fieldNo)}</dd></div>
+      <div><dt>Field No.</dt><dd>${escapeHtml(getFieldDisplayName(item.field))}</dd></div>
+      <div><dt>GIS ID</dt><dd>${escapeHtml(item.field.fieldGis)}</dd></div>
       <div><dt>Programme</dt><dd>${escapeHtml(selectedDashboardProgram)}</dd></div>
       <div><dt>Estate</dt><dd>${escapeHtml(item.field.estate || "Digital Estate")}</dd></div>
       <div><dt>Division</dt><dd>${escapeHtml(item.field.division || "-")}</dd></div>
       <div><dt>GIS Hectares</dt><dd>${formatNumber(item.field.ha)}</dd></div>
       <div><dt>Planned Hectares To Date</dt><dd>${formatNumber(item.plannedToDate)}</dd></div>
-      <div><dt>Approved Completed</dt><dd>${formatNumber(item.completedToDate)}</dd></div>
-      <div><dt>Latest Planned Month</dt><dd>${item.latestPlannedMonth ? formatMonthLabel(item.latestPlannedMonth) : "No plan"}</dd></div>
-      <div><dt>Last Completion</dt><dd>${item.lastCompletionDate ? formatDate(item.lastCompletionDate, "No date") : "No approved completion"}</dd></div>
+      <div><dt>Completed To Date</dt><dd>${formatNumber(item.completedToDate)}</dd></div>
+      <div><dt>Proposed Next Date</dt><dd>${formatDashboardDate(item.proposedNextDate)}</dd></div>
+      <div><dt>Interval</dt><dd>${formatMapInterval(item.intervalValue, item.intervalMonths)}</dd></div>
+      <div><dt>Rule Applied</dt><dd>${escapeHtml(item.ruleLabel)}</dd></div>
     </dl>
     <p>${escapeHtml(item.message)}</p>
   `;
@@ -928,86 +1798,132 @@ function renderMapFieldDetail(item) {
 
 function getMapFieldStatus(row, field) {
   const currentMonth = currentMonthKey();
-  const fieldCode = field?.fieldGis || row?.field || "";
-  const approved = getApprovedRecords(selectedDashboardProgram).filter((record) => fieldKey(record.blockField) === fieldKey(fieldCode));
+  const completedRow = findDashboardRowForMapField(field, selectedDashboardProgram, "Completed");
+  const rule = getMapStatusRule(selectedDashboardProgram);
   const plannedToDate = MONTHS_2026.filter((month) => month.key <= currentMonth).reduce(
     (total, month) => total + (Number(row?.months?.[month.key]) || 0),
     0,
   );
-  const completedToDate = approved
-    .filter((record) => getMonthKey(record.actualCompletionDate || record.deadline) <= currentMonth)
-    .reduce((total, record) => total + (Number(record.hectares) || 0), 0);
+  const completedToDate = MONTHS_2026.filter((month) => month.key <= currentMonth).reduce(
+    (total, month) => total + (Number(completedRow?.months?.[month.key]) || 0),
+    0,
+  );
   const latestPlannedMonth = row ? getLatestPlannedMonth(row, currentMonth) : "";
-  const completionDates = approved
-    .map((record) => record.actualCompletionDate || record.deadline)
-    .filter(Boolean)
-    .sort();
-  const lastCompletionDate = completionDates[completionDates.length - 1];
+  const latestCompletedMonth = completedRow ? getLatestCompletedMonth(completedRow, currentMonth) : "";
+  const proposedNextDate = completedRow?.proposedNextDate || row?.proposedNextDate || "";
+  const intervalMonths = completedRow?.intervalMonths || row?.intervalMonths || "";
+  const intervalValue = getIntervalValue(intervalMonths);
+  const ruleLabel = getMapRuleLabel(rule);
 
-  if (!latestPlannedMonth) {
+  if (!row && !completedRow) {
     return {
       status: "grey",
       label: "No planned data",
       plannedToDate,
       completedToDate,
       latestPlannedMonth,
-      lastCompletionDate,
-      message: "No planned programme is available for this field in the current period.",
+      latestCompletedMonth,
+      proposedNextDate,
+      intervalMonths,
+      intervalValue,
+      ruleLabel,
+      message: "No programme data is available for this field.",
     };
   }
 
-  if (plannedToDate > 0 && completedToDate >= plannedToDate) {
+  if (intervalValue === null) {
     return {
-      status: "green",
-      label: "On time / completed",
+      status: "grey",
+      label: "No interval",
       plannedToDate,
       completedToDate,
       latestPlannedMonth,
-      lastCompletionDate,
-      message: "Approved completion meets or exceeds planned hectarage to date.",
+      latestCompletedMonth,
+      proposedNextDate,
+      intervalMonths,
+      intervalValue,
+      ruleLabel,
+      message: "No valid Interval value is available, so this field is not colour-rated.",
     };
   }
 
-  const dueMonth = getFirstUnmetPlannedMonth(row, currentMonth, completedToDate) || latestPlannedMonth;
-  const delayMonths = monthDiff(dueMonth, currentMonth);
-  if (delayMonths > 3) {
+  if (rule.isConfigured === false) {
     return {
-      status: "red",
-      label: "Over-delayed",
+      status: "grey",
+      label: "No rule configured",
       plannedToDate,
       completedToDate,
       latestPlannedMonth,
-      lastCompletionDate,
-      message: "Planned work is more than three months behind approved completion.",
+      latestCompletedMonth,
+      proposedNextDate,
+      intervalMonths,
+      intervalValue,
+      ruleLabel,
+      message: "No colour rule has been configured for this work programme yet.",
     };
   }
 
-  if (delayMonths >= 1) {
-    return {
-      status: "yellow",
-      label: "Delayed",
-      plannedToDate,
-      completedToDate,
-      latestPlannedMonth,
-      lastCompletionDate,
-      message: "Planned work is delayed by one to three months.",
-    };
-  }
+  const status = getRuleStatus(intervalValue, rule);
+  const label = getRuleStatusLabel(status);
 
   return {
-    status: "green",
-    label: "Current programme",
+    status,
+    label,
     plannedToDate,
     completedToDate,
     latestPlannedMonth,
-    lastCompletionDate,
-    message: "Latest planned work is within the current programme month.",
+    latestCompletedMonth,
+    proposedNextDate,
+    intervalMonths,
+    intervalValue,
+    ruleLabel,
+    message: `${label} based on ${formatMapInterval(intervalValue, intervalMonths)} interval.`,
   };
+}
+
+function getMapStatusRule(programType) {
+  return MAP_STATUS_RULES[programType] || DEFAULT_MAP_STATUS_RULE;
+}
+
+function getRuleStatus(intervalValue, rule) {
+  if (intervalValue < rule.greenBelow) return "green";
+  if (intervalValue <= rule.yellowTo) return "yellow";
+  return "red";
+}
+
+function getRuleStatusLabel(status) {
+  const labels = {
+    green: "Green",
+    yellow: "Yellow",
+    red: "Red",
+    grey: "No interval",
+  };
+  return labels[status] || labels.grey;
+}
+
+function getMapRuleLabel(rule) {
+  if (rule.isConfigured === false) return "Not configured";
+  return `Green ${rule.greenText}; Yellow ${rule.yellowText}; Red ${rule.redText}`;
+}
+
+function getIntervalValue(intervalMonths) {
+  const value = Number(intervalMonths);
+  return Number.isFinite(value) ? value : null;
+}
+
+function formatMapInterval(value, rawValue) {
+  if (value === null || value === undefined) return formatDashboardValue(rawValue);
+  return `${formatDashboardValue(value)} month${Number(value) === 1 ? "" : "s"}`;
 }
 
 function getLatestPlannedMonth(row, currentMonth) {
   const plannedMonths = MONTHS_2026.map((month) => month.key).filter((key) => key <= currentMonth && Number(row.months[key]) > 0);
   return plannedMonths[plannedMonths.length - 1];
+}
+
+function getLatestCompletedMonth(row, currentMonth) {
+  const completedMonths = MONTHS_2026.map((month) => month.key).filter((key) => key <= currentMonth && Number(row.months[key]) > 0);
+  return completedMonths[completedMonths.length - 1];
 }
 
 function getFirstUnmetPlannedMonth(row, currentMonth, completedToDate) {
@@ -1024,8 +1940,57 @@ function getFieldMapItems() {
   return window.FIELD_MAP_DATA?.fields || [];
 }
 
+function getTrackingFields() {
+  return [...getFieldMapItems()].sort((a, b) => getFieldDisplayName(a).localeCompare(getFieldDisplayName(b), undefined, { numeric: true }));
+}
+
+function getFieldDisplayName(field) {
+  return field?.fieldNo || field?.fieldGis || "-";
+}
+
+function getFieldCategory(field) {
+  if (!field?.fieldType) return "";
+  return String(field.fieldType).includes("IMMATURE") ? "Immature" : "Mature";
+}
+
+function getFieldGpsDefaults(fieldCode) {
+  const field = getFieldMapItems().find((item) => fieldKey(item.fieldGis) === fieldKey(fieldCode) || fieldKey(item.fieldNo) === fieldKey(fieldCode));
+  const center = field ? getFieldCenterLatLng(field) : null;
+  return center
+    ? {
+        latitude: Number(center.lat.toFixed(6)),
+        longitude: Number(center.lng.toFixed(6)),
+      }
+    : {
+        latitude: "",
+        longitude: "",
+      };
+}
+
+function getFieldCenterLatLng(field) {
+  let totalLat = 0;
+  let totalLng = 0;
+  let count = 0;
+  field.polygons.forEach((polygon) => {
+    polygon.forEach(([lng, lat]) => {
+      totalLat += lat;
+      totalLng += lng;
+      count += 1;
+    });
+  });
+  return count ? { lat: totalLat / count, lng: totalLng / count } : null;
+}
+
 function findPlannedRowForMapField(field, programType) {
-  return getDashboardRows(programType).find(
+  return findDashboardRowForMapField(field, programType, "Programme");
+}
+
+function findDashboardRowForMapField(field, programType, actualBudget) {
+  const rows =
+    actualBudget === "Completed"
+      ? getDashboardRows(programType).filter((row) => row.actualBudget === "Completed")
+      : getDashboardProgrammeRows(programType);
+  return rows.find(
     (row) => fieldKey(row.field) === fieldKey(field.fieldGis) || fieldKey(row.field) === fieldKey(field.fieldNo),
   );
 }
@@ -1069,27 +2034,47 @@ function getFieldLabelPoint(field) {
   };
 }
 
-function renderRecords() {
+function renderRecordsOutputs() {
+  renderApprovalTabs();
+  renderRecords();
+  renderMapOutput();
+}
+
+function recordMatchesSearchAndType(record) {
   const query = dom.searchInput.value.trim().toLowerCase();
   const typeFilter = dom.typeFilter.value;
-  const approvalFilter = dom.stageFilter.value;
+  const fieldFilter = dom.fieldFilter.value;
 
-  const filtered = state.records.filter((record) => {
-    const matchesText = [record.reporterName, record.programType, record.blockField, record.taskName, record.approvalStatus, record.remarks]
-      .join(" ")
-      .toLowerCase()
-      .includes(query);
-    const matchesType = !typeFilter || record.programType === typeFilter;
-    const matchesApproval = !approvalFilter || record.approvalStatus === approvalFilter;
-    return matchesText && matchesType && matchesApproval;
-  });
+  const matchesText = [record.reporterName, record.programType, record.blockField, record.taskName, record.approvalStatus, record.remarks]
+    .join(" ")
+    .toLowerCase()
+    .includes(query);
+  const matchesType = !typeFilter || record.programType === typeFilter;
+  const matchesField = !fieldFilter || fieldKey(record.blockField) === fieldKey(fieldFilter);
+  return matchesText && matchesType && matchesField;
+}
+
+function getFilteredRecords() {
+  return state.records.filter((record) => recordMatchesSearchAndType(record) && record.approvalStatus === selectedApprovalStatus);
+}
+
+function getMapRecords() {
+  return state.records.filter(recordMatchesSearchAndType);
+}
+
+function renderRecords() {
+  const filtered = getFilteredRecords();
 
   dom.recordsTable.innerHTML = "";
   dom.recordsCardList.innerHTML = "";
   dom.recordsEmpty.classList.toggle("hidden", filtered.length > 0);
+  dom.recordsScrollButton.classList.toggle("hidden", filtered.length <= 5);
 
   filtered.forEach((record) => {
     const tr = document.createElement("tr");
+    tr.className = selectedRecordId === record.id ? "record-row-active" : "";
+    tr.dataset.recordId = record.id;
+    tr.tabIndex = 0;
     const gps =
       record.latitude && record.longitude
         ? `${Number(record.latitude).toFixed(5)}, ${Number(record.longitude).toFixed(5)}${record.gpsAccuracy ? ` | +/- ${Number(record.gpsAccuracy).toFixed(1)}m` : ""}`
@@ -1122,22 +2107,279 @@ function renderRecords() {
         </div>
       </td>
     `;
+    tr.addEventListener("click", (event) => {
+      if (event.target.closest("[data-action]")) return;
+      selectRecord(record.id, { focusMap: false, scrollRecords: false });
+    });
+    tr.addEventListener("keydown", (event) => {
+      if (event.key !== "Enter" && event.key !== " ") return;
+      event.preventDefault();
+      selectRecord(record.id, { focusMap: false, scrollRecords: false });
+    });
     dom.recordsTable.append(tr);
-    dom.recordsCardList.append(renderRecordCard(record, gps));
-  });
 
-  document.querySelectorAll("[data-action][data-id]").forEach((button) => {
+    const card = renderRecordCard(record, gps);
+    card.addEventListener("click", (event) => {
+      if (event.target.closest("[data-action]")) return;
+      selectRecord(record.id, { focusMap: false, scrollRecords: false });
+    });
+    card.addEventListener("keydown", (event) => {
+      if (event.key !== "Enter" && event.key !== " ") return;
+      event.preventDefault();
+      selectRecord(record.id, { focusMap: false, scrollRecords: false });
+    });
+    dom.recordsCardList.append(card);
+  });
+}
+
+function renderMonthlyTrackingTable() {
+  const fields = getTrackingFields();
+  const dayCount = getDaysInMonth(selectedMonthlyMonth);
+  const recordsByFieldDay = getMonthlyRecordsByFieldDay(selectedMonthlyProgram, selectedMonthlyMonth);
+  const dayTotals = Array(dayCount).fill(0);
+  let grandTotal = 0;
+
+  dom.monthlyTrackingHead.innerHTML = `
+    <tr>
+      <th class="monthly-field-head">Field No</th>
+      ${Array.from(
+        { length: dayCount },
+        (_, index) => `
+          <th data-monthly-day="${index + 1}">
+            <button class="monthly-day-button" type="button" data-monthly-day="${index + 1}" aria-label="Highlight day ${index + 1}">
+              ${index + 1}
+            </button>
+          </th>
+        `,
+      ).join("")}
+      <th class="monthly-total-head">Total</th>
+    </tr>
+  `;
+
+  if (!fields.length) {
+    dom.monthlyTrackingBody.innerHTML = `
+      <tr>
+        <td colspan="${dayCount + 2}" class="monthly-empty">No field map data available.</td>
+      </tr>
+    `;
+    dom.monthlyTrackingFoot.innerHTML = "";
+    return;
+  }
+
+  dom.monthlyTrackingBody.innerHTML = fields
+    .map((field) => {
+      const fieldRecords = recordsByFieldDay.get(fieldKey(field.fieldGis)) || new Map();
+      const fieldId = fieldKey(field.fieldGis);
+      const fieldLabel = getFieldDisplayName(field);
+      let fieldTotal = 0;
+      const firstRecordDay = [...fieldRecords.keys()].sort((a, b) => a - b)[0] || "";
+      const firstRecord = firstRecordDay ? getPrimaryMonthlyRecord(fieldRecords.get(firstRecordDay) || []) : null;
+      const dayCells = Array.from({ length: dayCount }, (_, index) => {
+        const day = index + 1;
+        const records = fieldRecords.get(day) || [];
+        const cellTotal = sumRecordHectares(records);
+        fieldTotal += cellTotal;
+        dayTotals[index] += cellTotal;
+        return renderMonthlyTrackingCell(records, fieldId, day, fieldLabel);
+      }).join("");
+      grandTotal += fieldTotal;
+      return `
+        <tr data-monthly-field="${escapeHtml(fieldId)}">
+          <th scope="row">
+            <button class="monthly-field-button" type="button" data-monthly-field="${escapeHtml(fieldId)}" data-monthly-day="${firstRecordDay}" data-record-id="${escapeHtml(firstRecord?.id || "")}" aria-label="Highlight field ${escapeHtml(fieldLabel)}">
+              ${escapeHtml(fieldLabel)}
+            </button>
+          </th>
+          ${dayCells}
+          <td class="monthly-total-cell">${fieldTotal ? formatMonthlyHectares(fieldTotal) : ""}</td>
+        </tr>
+      `;
+    })
+    .join("");
+
+  dom.monthlyTrackingFoot.innerHTML = `
+    <tr>
+      <th scope="row">Total</th>
+      ${dayTotals
+        .map((total, index) => `<td class="monthly-total-cell" data-monthly-day="${index + 1}">${total ? formatMonthlyHectares(total) : ""}</td>`)
+        .join("")}
+      <td class="monthly-total-cell monthly-grand-total">${grandTotal ? formatMonthlyHectares(grandTotal) : ""}</td>
+    </tr>
+  `;
+
+  bindMonthlyTrackingSelection();
+  const selectedRecord = state.records.find((record) => record.id === selectedRecordId);
+  if (selectedRecord) applySelectedRecordHighlights(selectedRecord);
+}
+
+function getMonthlyRecordsByFieldDay(programType, monthKey) {
+  return state.records
+    .filter((record) => record.programType === programType && getMonthKey(record.actualCompletionDate || record.deadline) === monthKey)
+    .reduce((lookup, record) => {
+      const day = Number((record.actualCompletionDate || record.deadline || "").slice(8, 10));
+      const key = fieldKey(record.blockField);
+      if (!key || !day) return lookup;
+      if (!lookup.has(key)) lookup.set(key, new Map());
+      const dayLookup = lookup.get(key);
+      dayLookup.set(day, [...(dayLookup.get(day) || []), record]);
+      return lookup;
+    }, new Map());
+}
+
+function sumRecordHectares(records) {
+  return sumDecimalValues(records.map((record) => record.hectares));
+}
+
+function getPrimaryMonthlyRecord(records) {
+  return [...records].sort((a, b) => {
+    const statusWeight = (a.approvalStatus === "Approved" ? 1 : 0) - (b.approvalStatus === "Approved" ? 1 : 0);
+    if (statusWeight) return statusWeight;
+    return new Date(b.updatedAt || b.actualCompletionDate || 0) - new Date(a.updatedAt || a.actualCompletionDate || 0);
+  })[0] || null;
+}
+
+function getMonthlyStatusClass(records) {
+  if (!records.length) return "";
+  return records.some((record) => record.approvalStatus !== "Approved") ? "pending" : "approved";
+}
+
+function renderMonthlyTrackingCell(records, fieldId, day, fieldLabel) {
+  const hectares = sumRecordHectares(records);
+  const primaryRecord = getPrimaryMonthlyRecord(records);
+  const statusClass = getMonthlyStatusClass(records);
+  const details = records
+    .map(
+      (record) =>
+        `${record.approvalStatus} | ${record.programType} | ${record.blockField} | ${formatDate(record.actualCompletionDate, "No date")} | ${formatMonthlyHectares(record.hectares)} ha | ${record.reporterName} | ${record.taskName}`,
+    )
+    .join("\n");
+  const title = details || `${fieldLabel} | Day ${day} | No keyed-in record`;
+  return `
+    <td class="${records.length ? `monthly-entry-cell ${statusClass}` : ""}" data-monthly-field="${escapeHtml(fieldId)}" data-monthly-day="${day}" data-record-id="${escapeHtml(primaryRecord?.id || "")}">
+      <button class="monthly-cell-button" type="button" data-monthly-field="${escapeHtml(fieldId)}" data-monthly-day="${day}" data-record-id="${escapeHtml(primaryRecord?.id || "")}" title="${escapeHtml(title)}" aria-label="Highlight ${escapeHtml(fieldLabel)} day ${day}">
+        ${records.length ? `<span class="monthly-entry ${statusClass}">${formatMonthlyHectares(hectares)}</span>` : ""}
+      </button>
+    </td>
+  `;
+}
+
+function bindMonthlyTrackingSelection() {
+  const table = dom.monthlyTrackingBody.closest(".monthly-tracking-table");
+  if (!table) return;
+
+  table.querySelectorAll(".monthly-field-button, .monthly-day-button, .monthly-cell-button").forEach((button) => {
     button.addEventListener("click", () => {
-      if (button.dataset.action === "edit") editRecord(button.dataset.id);
-      if (button.dataset.action === "approve") approveRecord(button.dataset.id);
-      if (button.dataset.action === "delete") deleteRecord(button.dataset.id);
+      if (button.dataset.recordId) {
+        selectRecord(button.dataset.recordId, { syncMonthly: false, focusMap: false, scrollRecords: false, syncApproval: true });
+        return;
+      }
+      selectedRecordId = "";
+      applyMonthlyTrackingHighlight(button.dataset.monthlyField || "", button.dataset.monthlyDay || "");
     });
   });
 }
 
+function applyMonthlyTrackingHighlight(fieldId, day, recordId = "") {
+  const table = dom.monthlyTrackingBody.closest(".monthly-tracking-table");
+  if (!table) return;
+
+  table.querySelectorAll("tbody tr").forEach((row) => {
+    row.classList.toggle("monthly-row-active", Boolean(fieldId) && row.dataset.monthlyField === fieldId);
+  });
+
+  table.querySelectorAll("[data-monthly-day]").forEach((element) => {
+    element.classList.toggle("monthly-column-active", Boolean(day) && element.dataset.monthlyDay === day);
+  });
+
+  table.querySelectorAll("td[data-monthly-field][data-monthly-day]").forEach((cell) => {
+    cell.classList.toggle("monthly-cell-active", Boolean(fieldId && day) && cell.dataset.monthlyField === fieldId && cell.dataset.monthlyDay === day);
+    cell.classList.toggle("monthly-record-active", Boolean(recordId) && cell.dataset.recordId === recordId);
+  });
+}
+
+function selectRecord(recordId, options = {}) {
+  const { syncMonthly = true, syncApproval = true, focusMap = true, scrollRecords = false, preserveViewport = true } = options;
+  const record = state.records.find((item) => item.id === recordId);
+  if (!record) return;
+  const previousScrollX = window.scrollX;
+  const previousScrollY = window.scrollY;
+
+  selectedRecordId = recordId;
+  let shouldRenderRecords = false;
+  let shouldRenderMonthly = false;
+
+  if (syncApproval && selectedApprovalStatus !== record.approvalStatus) {
+    selectedApprovalStatus = record.approvalStatus;
+    shouldRenderRecords = true;
+  }
+
+  if (syncMonthly) {
+    const recordMonth = getMonthKey(record.actualCompletionDate || record.deadline);
+    if (record.programType !== selectedMonthlyProgram) {
+      selectedMonthlyProgram = record.programType;
+      dom.monthlyProgramFilter.value = selectedMonthlyProgram;
+      shouldRenderMonthly = true;
+    }
+    if (MONTHS_2026.some((month) => month.key === recordMonth) && recordMonth !== selectedMonthlyMonth) {
+      selectedMonthlyMonth = recordMonth;
+      dom.monthlyMonthFilter.value = selectedMonthlyMonth;
+      shouldRenderMonthly = true;
+    }
+  }
+
+  if (shouldRenderRecords) renderRecordsOutputs();
+  if (shouldRenderMonthly) renderMonthlyTrackingTable();
+
+  applySelectedRecordHighlights(record);
+  if (focusMap) focusRecordsMapPin(recordId);
+  if (scrollRecords) scrollSelectedRecordIntoView(recordId);
+  if (preserveViewport && !scrollRecords) {
+    window.requestAnimationFrame(() => window.scrollTo(previousScrollX, previousScrollY));
+  }
+}
+
+function applySelectedRecordHighlights(record) {
+  if (!record) return;
+  const day = Number((record.actualCompletionDate || record.deadline || "").slice(8, 10)) || "";
+  const fieldId = fieldKey(record.blockField);
+
+  document.querySelectorAll("[data-record-id], [data-record-card]").forEach((element) => {
+    const id = element.dataset.recordId || element.dataset.recordCard;
+    if (!id) return;
+    element.classList.toggle("record-selected", id === record.id);
+  });
+
+  document.querySelectorAll("tr[data-record-id]").forEach((row) => {
+    row.classList.toggle("record-row-active", row.dataset.recordId === record.id);
+  });
+
+  document.querySelectorAll(".map-record[data-record-id]").forEach((item) => {
+    item.classList.toggle("active", item.dataset.recordId === record.id);
+  });
+
+  applyMonthlyTrackingHighlight(fieldId, String(day), record.id);
+  refreshRecordsMarkerStyles();
+}
+
+function scrollRecordsList() {
+  const tableWrap = document.querySelector(".records-table-wrap");
+  const tableVisible = tableWrap && getComputedStyle(tableWrap).display !== "none";
+  const target = tableVisible ? tableWrap : dom.recordsCardList;
+  target.scrollBy({ top: Math.max(220, target.clientHeight * 0.8), behavior: "smooth" });
+}
+
+function scrollSelectedRecordIntoView(recordId) {
+  const row = Array.from(document.querySelectorAll("tr[data-record-id]")).find((item) => item.dataset.recordId === recordId);
+  const card = Array.from(document.querySelectorAll("[data-record-card]")).find((item) => item.dataset.recordCard === recordId);
+  const target = row || card;
+  if (target) target.scrollIntoView({ block: "nearest", behavior: "smooth" });
+}
+
 function renderRecordCard(record, gps) {
   const article = document.createElement("article");
-  article.className = "record-card";
+  article.className = selectedRecordId === record.id ? "record-card record-selected" : "record-card";
+  article.dataset.recordCard = record.id;
+  article.tabIndex = 0;
   article.innerHTML = `
     <div class="record-card-header">
       <div>
@@ -1175,57 +2417,306 @@ function renderRecordCard(record, gps) {
 
 function renderMapOutput() {
   const mapOutput = document.querySelector("#mapOutput");
-  const points = state.records.filter((record) => record.latitude && record.longitude);
+  const fields = getFieldMapItems();
+  const points = getMapRecords().map(getRecordMapPoint).filter(Boolean);
+  destroyRecordsLeafletMap();
 
-  if (!points.length) {
-    mapOutput.innerHTML = `
-      <div class="empty-state">
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M12 21s7-6.1 7-12A7 7 0 0 0 5 9c0 5.9 7 12 7 12Z" />
-          <path d="M12 12a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" />
-        </svg>
-        <h3>No GPS records</h3>
-        <p>Capture latitude and longitude to populate the map output.</p>
+  mapOutput.innerHTML = `
+    <div class="records-map-canvas" id="recordsMapCanvas"></div>
+    <aside class="records-map-panel">
+      <div class="records-map-legend">
+        ${state.programTypes
+          .map(
+            (type) => `
+              <span>
+                <i style="background:${getProgramColor(type.name)}"></i>
+                ${escapeHtml(type.name)}
+              </span>
+            `,
+          )
+          .join("")}
+      </div>
+      <div class="map-records" id="mapRecords"></div>
+    </aside>
+  `;
+
+  if (window.L && fields.length) {
+    renderLeafletRecordsMap(fields, points);
+  } else {
+    renderStaticRecordsMap(fields, points);
+  }
+
+  renderRecordsMapList(points);
+}
+
+function renderLeafletRecordsMap(fields, points) {
+  const mapCanvas = document.querySelector("#recordsMapCanvas");
+  recordsLeafletMap = L.map(mapCanvas, {
+    attributionControl: true,
+    scrollWheelZoom: false,
+    tap: true,
+    zoomControl: true,
+  });
+
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    maxZoom: 22,
+  }).addTo(recordsLeafletMap);
+
+  recordsFieldLayer = L.geoJSON(buildFieldBoundaryGeoJson(fields), {
+    style: () => getLeafletFieldStyle("grey"),
+    onEachFeature: (feature, layer) => {
+      layer.bindTooltip(feature.properties.fieldNo || feature.properties.fieldGis, {
+        className: "field-map-tooltip",
+        direction: "center",
+        permanent: false,
+        sticky: true,
+      });
+      layer.bindPopup(renderFieldBoundaryPopup(feature.properties));
+    },
+  }).addTo(recordsLeafletMap);
+
+  recordsMarkerLayer = L.layerGroup().addTo(recordsLeafletMap);
+  recordsMarkerLookup = new Map();
+  points.forEach((point) => {
+    const marker = L.marker([point.lat, point.lng], {
+      icon: createRecordPinIcon(point.record.programType, selectedRecordId === point.record.id),
+      keyboard: true,
+      title: `${point.record.blockField} - ${point.record.programType}`,
+    })
+      .bindTooltip(renderRecordMapTooltip(point.record), {
+        direction: "top",
+        opacity: 0.95,
+        sticky: true,
+      })
+      .bindPopup(renderRecordMapPopup(point.record))
+      .addTo(recordsMarkerLayer);
+    marker.on("click", () => selectRecord(point.record.id, { syncMonthly: true, syncApproval: true, focusMap: true, scrollRecords: false }));
+    recordsMarkerLookup.set(point.record.id, marker);
+  });
+
+  fitRecordsLeafletMap();
+  window.setTimeout(fitRecordsLeafletMap, 0);
+  refreshRecordsMarkerStyles();
+}
+
+function renderStaticRecordsMap(fields, points) {
+  const mapCanvas = document.querySelector("#recordsMapCanvas");
+  if (!fields.length) {
+    mapCanvas.innerHTML = `
+      <div class="map-detail-empty">
+        <h3>No field map</h3>
+        <p>Field map data will appear here once a KMZ or GeoJSON layer is available.</p>
       </div>
     `;
     return;
   }
 
-  const latitudes = points.map((record) => Number(record.latitude));
-  const longitudes = points.map((record) => Number(record.longitude));
-  const minLat = Math.min(...latitudes);
-  const maxLat = Math.max(...latitudes);
-  const minLng = Math.min(...longitudes);
-  const maxLng = Math.max(...longitudes);
-  const latRange = Math.max(maxLat - minLat, 0.0001);
-  const lngRange = Math.max(maxLng - minLng, 0.0001);
+  mapCanvas.innerHTML = `
+    <svg class="kml-map-svg" viewBox="0 0 1000 1000" role="img" aria-label="Records field map">
+      ${fields
+        .map(
+          (field) => `
+            <g>
+              ${field.polygons.map((polygon) => `<path class="field-polygon grey" d="${polygonToPath(polygon)}"></path>`).join("")}
+              <text class="field-map-label" x="${getFieldLabelPoint(field).x}" y="${getFieldLabelPoint(field).y}">${escapeHtml(getFieldDisplayName(field))}</text>
+            </g>
+          `,
+        )
+        .join("")}
+      ${points
+        .map((point) => {
+          const projected = projectCoordinate([point.lng, point.lat]);
+          return `
+            <g class="static-map-pin" transform="translate(${(projected.x - 12).toFixed(2)} ${(projected.y - 24).toFixed(2)})">
+              <path style="fill:${getProgramColor(point.record.programType)}" d="M12 22s7-6.1 7-12A7 7 0 0 0 5 10c0 5.9 7 12 7 12Z"><title>${escapeHtml(renderRecordMapTooltip(point.record))}</title></path>
+              <circle cx="12" cy="10" r="3.2"></circle>
+            </g>
+          `;
+        })
+        .join("")}
+    </svg>
+  `;
+}
 
-  mapOutput.innerHTML = `<div class="map-canvas" id="mapCanvas"></div><div class="map-records" id="mapRecords"></div>`;
-  const mapCanvas = document.querySelector("#mapCanvas");
+function renderRecordsMapList(points) {
   const mapRecords = document.querySelector("#mapRecords");
-  points.forEach((record) => {
-    const x = 8 + ((Number(record.longitude) - minLng) / lngRange) * 84;
-    const y = 92 - ((Number(record.latitude) - minLat) / latRange) * 84;
-    const accuracyRadius = Math.min(38, Math.max(14, Number(record.gpsAccuracy || 14)));
-    const point = document.createElement("button");
-    point.className = "map-point";
-    point.type = "button";
-    point.style.left = `${x}%`;
-    point.style.top = `${y}%`;
-    point.style.setProperty("--accuracy-radius", `${accuracyRadius}px`);
-    point.title = `${record.programType} - ${record.blockField}`;
-    point.setAttribute("aria-label", `${record.programType} - ${record.blockField}`);
-    mapCanvas.append(point);
-
-    const recordItem = document.createElement("article");
-    recordItem.className = "map-record";
-    recordItem.innerHTML = `
-      <strong>${escapeHtml(record.blockField)} - ${escapeHtml(record.programType)}</strong>
-      <span>${Number(record.latitude).toFixed(5)}, ${Number(record.longitude).toFixed(5)}</span>
-      <span>${record.gpsAccuracy ? `Accuracy +/- ${Number(record.gpsAccuracy).toFixed(1)}m` : "Accuracy not captured"}</span>
+  if (!points.length) {
+    mapRecords.innerHTML = `
+      <div class="map-record-empty">
+        <strong>No GPS records</strong>
+        <span>Capture latitude and longitude to show programme pins.</span>
+      </div>
     `;
-    mapRecords.append(recordItem);
+    return;
+  }
+
+  mapRecords.innerHTML = points
+    .map(
+      ({ record }) => `
+        <article class="map-record ${selectedRecordId === record.id ? "active" : ""}" data-record-id="${escapeHtml(record.id)}">
+          <button class="map-record-main" type="button" data-record-id="${escapeHtml(record.id)}" aria-label="View ${escapeHtml(record.blockField)} ${escapeHtml(record.programType)} on map">
+            <strong><i style="background:${getProgramColor(record.programType)}"></i>${escapeHtml(record.blockField)} - ${escapeHtml(record.programType)}</strong>
+            <span>${formatDate(record.actualCompletionDate, "No date")} | ${formatNumber(record.hectares)} ha | ${escapeHtml(record.reporterName)}</span>
+            <span>${Number(record.latitude).toFixed(5)}, ${Number(record.longitude).toFixed(5)}${record.gpsAccuracy ? ` | +/- ${Number(record.gpsAccuracy).toFixed(1)}m` : ""}</span>
+          </button>
+          <div class="map-record-actions">
+            <button class="secondary-button compact" type="button" data-action="edit" data-id="${escapeHtml(record.id)}">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4l10.5-10.5a2.1 2.1 0 0 0-3-3L5 17v3Z"/><path d="m14 7 3 3"/></svg>
+              Edit
+            </button>
+            ${
+              record.approvalStatus === "Approved"
+                ? ""
+                : `<button class="primary-button compact" type="button" data-action="approve" data-id="${escapeHtml(record.id)}">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5 10 17 19 7"/></svg>
+                    Approve
+                  </button>`
+            }
+          </div>
+        </article>
+      `,
+    )
+    .join("");
+
+  mapRecords.querySelectorAll(".map-record-main[data-record-id]").forEach((button) => {
+    button.addEventListener("click", () => selectRecord(button.dataset.recordId, { focusMap: true, scrollRecords: false }));
   });
+}
+
+function destroyRecordsLeafletMap() {
+  recordsMarkerLookup = new Map();
+  if (!recordsLeafletMap) {
+    recordsFieldLayer = null;
+    recordsMarkerLayer = null;
+    return;
+  }
+  recordsLeafletMap.remove();
+  recordsLeafletMap = null;
+  recordsFieldLayer = null;
+  recordsMarkerLayer = null;
+}
+
+function focusRecordsMapPin(recordId) {
+  if (!recordsLeafletMap || !recordId) return;
+  const marker = recordsMarkerLookup.get(recordId);
+  if (!marker) return;
+
+  const latLng = marker.getLatLng();
+  const targetZoom = Math.max(recordsLeafletMap.getZoom(), 18);
+  recordsLeafletMap.setView(latLng, targetZoom, { animate: true });
+  marker.openTooltip();
+  marker.openPopup();
+
+  refreshRecordsMarkerStyles();
+  document.querySelectorAll(".map-record[data-record-id]").forEach((item) => item.classList.toggle("active", item.dataset.recordId === recordId));
+}
+
+function refreshRecordsMarkerStyles() {
+  recordsMarkerLookup.forEach((marker, recordId) => {
+    const isSelected = recordId === selectedRecordId;
+    const record = state.records.find((item) => item.id === recordId);
+    if (record) marker.setIcon(createRecordPinIcon(record.programType, isSelected));
+    marker.setZIndexOffset(isSelected ? 1000 : 0);
+  });
+}
+
+function createRecordPinIcon(programType, selected = false) {
+  const size = selected ? [34, 42] : [28, 36];
+  const anchor = selected ? [17, 41] : [14, 35];
+  return L.divIcon({
+    className: `record-pin-icon ${selected ? "selected" : ""}`,
+    html: `
+      <svg class="record-pin" viewBox="0 0 24 24" style="--pin-color:${getProgramColor(programType)}" aria-hidden="true">
+        <path class="record-pin-fill" d="M12 22s7-6.1 7-12A7 7 0 0 0 5 10c0 5.9 7 12 7 12Z"></path>
+        <circle class="record-pin-dot" cx="12" cy="10" r="3.2"></circle>
+      </svg>
+    `,
+    iconSize: size,
+    iconAnchor: anchor,
+    popupAnchor: [0, -anchor[1] + 4],
+    tooltipAnchor: [0, -anchor[1] + 4],
+  });
+}
+
+function fitRecordsLeafletMap() {
+  if (!recordsLeafletMap || !recordsFieldLayer) return;
+  recordsLeafletMap.invalidateSize();
+  const bounds = recordsFieldLayer.getBounds();
+  if (bounds.isValid()) {
+    recordsLeafletMap.fitBounds(bounds, { maxZoom: 16, padding: [22, 22] });
+  }
+}
+
+function buildFieldBoundaryGeoJson(fields) {
+  return {
+    type: "FeatureCollection",
+    features: fields.map((field) => ({
+      type: "Feature",
+      properties: {
+        fieldGis: field.fieldGis,
+        fieldNo: getFieldDisplayName(field),
+        estate: field.estate || "Digital Estate",
+        division: field.division || "-",
+        ha: field.ha,
+      },
+      geometry: getFieldGeometry(field),
+    })),
+  };
+}
+
+function getRecordMapPoint(record) {
+  const lat = Number(record.latitude);
+  const lng = Number(record.longitude);
+  if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
+  return { record, lat, lng };
+}
+
+function renderRecordMapTooltip(record) {
+  return `${record.programType} | ${record.blockField} | ${formatDate(record.actualCompletionDate, "No date")} | ${formatNumber(record.hectares)} ha`;
+}
+
+function renderRecordMapPopup(record) {
+  return `
+    <div class="field-popup">
+      <strong>${escapeHtml(record.blockField)} - ${escapeHtml(record.programType)}</strong>
+      <span>${escapeHtml(record.taskName)}</span>
+      <dl>
+        <div><dt>Date</dt><dd>${formatDate(record.actualCompletionDate, "No date")}</dd></div>
+        <div><dt>Hectares</dt><dd>${formatNumber(record.hectares)}</dd></div>
+        <div><dt>Reporter</dt><dd>${escapeHtml(record.reporterName)}</dd></div>
+        <div><dt>Status</dt><dd>${escapeHtml(record.approvalStatus)}</dd></div>
+      </dl>
+      <p>${escapeHtml(record.remarks || "No remarks")}</p>
+      <div class="popup-actions">
+        <button class="secondary-button compact" type="button" data-action="edit" data-id="${escapeHtml(record.id)}">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4l10.5-10.5a2.1 2.1 0 0 0-3-3L5 17v3Z"/><path d="m14 7 3 3"/></svg>
+          Edit
+        </button>
+        ${
+          record.approvalStatus === "Approved"
+            ? ""
+            : `<button class="primary-button compact" type="button" data-action="approve" data-id="${escapeHtml(record.id)}">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5 10 17 19 7"/></svg>
+                Approve
+              </button>`
+        }
+      </div>
+    </div>
+  `;
+}
+
+function renderFieldBoundaryPopup(properties) {
+  return `
+    <div class="field-popup">
+      <strong>${escapeHtml(properties.fieldNo || properties.fieldGis)}</strong>
+      <span>${escapeHtml(properties.estate)} | ${escapeHtml(properties.division)}</span>
+      <dl>
+        <div><dt>Source</dt><dd>KMZ field boundary</dd></div>
+        <div><dt>Hectares</dt><dd>${formatNumber(properties.ha)}</dd></div>
+      </dl>
+    </div>
+  `;
 }
 
 function renderConfiguration() {
@@ -1247,13 +2738,14 @@ function renderConfiguration() {
 function saveRecord(event) {
   event.preventDefault();
   clearFieldErrors();
+  const programType = dom.programType.value;
 
   const data = {
     id: dom.recordId.value || createId(),
     reporterName: dom.reporterName.value.trim(),
-    programType: dom.programType.value,
+    programType,
     blockField: dom.blockField.value.trim(),
-    taskName: dom.taskName.value.trim(),
+    taskName: getDefaultTaskName(programType),
     schedulerStage: "Completed",
     hectares: Number(dom.hectares.value),
     actualCompletionDate: dom.actualCompletionDate.value,
@@ -1284,7 +2776,10 @@ function saveRecord(event) {
   }
 
   persist();
+  selectedApprovalStatus = data.approvalStatus;
+  selectedRecordId = data.id;
   renderAll();
+  selectRecord(data.id, { syncMonthly: true, syncApproval: false, focusMap: false, scrollRecords: false, preserveViewport: false });
   resetForm();
   setView("records");
   showToast(data.syncStatus === "Pending Sync" ? "Record saved offline and queued for approval." : "Record submitted for approval.");
@@ -1296,10 +2791,14 @@ function validateRecord(data) {
   if (!data.programType) errors.push({ field: dom.programType, message: "Select a Work Program type." });
   if (data.programType && !ALLOWED_PROGRAM_NAMES.has(data.programType)) errors.push({ field: dom.programType, message: "Select an approved Work Program type." });
   if (!data.blockField) errors.push({ field: dom.blockField, message: "Enter the block or field." });
-  if (!data.taskName) errors.push({ field: dom.taskName, message: "Enter the task." });
+  if (data.blockField && !isListedFieldName(data.blockField)) errors.push({ field: dom.blockField, message: "Select a field from the list." });
   if (!data.hectares || data.hectares <= 0) errors.push({ field: dom.hectares, message: "Enter hectares above zero." });
   if (!data.actualCompletionDate) errors.push({ field: dom.actualCompletionDate, message: "Select actual completion date." });
   return errors;
+}
+
+function getDefaultTaskName(programType) {
+  return programType ? `${programType} completion` : "Completion";
 }
 
 function setFieldError(field, message) {
@@ -1317,9 +2816,23 @@ function clearFieldErrors() {
   });
 }
 
+function handleRecordActionClick(event) {
+  const button = event.target.closest("[data-action][data-id]");
+  if (!button) return;
+
+  event.preventDefault();
+  event.stopPropagation();
+  const { action, id } = button.dataset;
+  selectRecord(id, { focusMap: false, scrollRecords: false });
+  if (action === "edit") editRecord(id);
+  if (action === "approve") approveRecord(id);
+  if (action === "delete") deleteRecord(id);
+}
+
 function editRecord(id) {
   const record = state.records.find((item) => item.id === id);
   if (!record) return;
+  selectedRecordId = id;
 
   dom.formHeading.textContent = "Edit Work Program";
   dom.recordId.value = record.id;
@@ -1350,6 +2863,7 @@ function deleteRecord(id) {
   if (!confirmed) return;
 
   state.records = state.records.filter((item) => item.id !== id);
+  if (selectedRecordId === id) selectedRecordId = "";
   persist();
   renderAll();
   showToast("Record deleted.");
@@ -1360,13 +2874,16 @@ function approveRecord(id) {
   if (!record) return;
   record.approvalStatus = "Approved";
   record.updatedAt = new Date().toISOString();
+  selectedApprovalStatus = "Approved";
+  selectedRecordId = id;
   persist();
   renderAll();
+  selectRecord(id, { syncMonthly: true, syncApproval: false, focusMap: false, scrollRecords: false });
   showToast("Record approved and included in the dashboard.");
 }
 
 function resetForm() {
-  dom.formHeading.textContent = "Capture Work Program";
+  dom.formHeading.textContent = "Program Tracker";
   dom.recordForm.reset();
   dom.recordId.value = "";
   dom.actualCompletionDate.value = todayDate();
@@ -1485,75 +3002,7 @@ function refreshConnectionStatus() {
 }
 
 function buildDefaultPlannedProgrammes() {
-  return [
-    ...buildProgrammeRows("Pruning", [
-      ["Field P07", 9.2, "Frond", 110, 1012, "Manual", "Jan 26", 0],
-      ["Field P11", 15.6, "Frond", 116, 1810, "Manual", "Feb 26", 1],
-      ["Field P19", 21.3, "Frond", 120, 2556, "Manual", "Mar 26", 2],
-    ]),
-    ...buildProgrammeRows("Raking", [
-      ["Block A12", 18.5, "Field upkeep", 108, 1998, "Manual", "Jan 26", 0],
-      ["Block B04", 22.75, "Field upkeep", 112, 2548, "Manual", "Feb 26", 1],
-      ["Block C09", 31.4, "Field upkeep", 118, 3705, "Manual", "Mar 26", 2],
-    ]),
-    ...buildProgrammeRows(SPRAYING_PROGRAM, getSprayingPlanRows()),
-    ...buildProgrammeRows("Harvesting", [
-      ["Block H01", 14.6, "FFB", 115, 1679, "Manual", "Jan 26", 0],
-      ["Block H08", 26.2, "FFB", 118, 3092, "Manual", "Feb 26", 1],
-      ["Block H15", 33.8, "FFB", 121, 4090, "Manual", "Mar 26", 2],
-    ]),
-  ];
-}
-
-function getSprayingPlanRows() {
-  const mapFields = typeof window !== "undefined" ? window.FIELD_MAP_DATA?.fields || [] : [];
-  if (mapFields.length) {
-    return mapFields.map((field, index) => [
-      field.fieldGis,
-      field.ha,
-      field.fieldType || "Mature",
-      "-",
-      "-",
-      "STGEO",
-      "Dec 25",
-      index % 3,
-    ]);
-  }
-
-  return [
-    ["P02D1", 40.9395, "OP-MATURE", "-", "-", "STGEO", "Dec 25", 2],
-    ["P05C1", 46.8695, "OP-MATURE", "-", "-", "STGEO", "Dec 25", 0],
-    ["P06B", 74.9819, "OP-MATURE", "-", "-", "STGEO", "July 25", 1],
-    ["P06C", 62.4727, "OP-MATURE", "-", "-", "STGEO", "Nov 25", 0],
-    ["P07B1", 64.0017, "OP-MATURE", "-", "-", "STGEO", "Sep 25", 1],
-    ["P07B3", 60.41, "OP-MATURE", "-", "-", "STGEO", "Sep 25", 2],
-    ["P07B3A", 91.1074, "OP-MATURE", "-", "-", "STGEO", "Dec 25", 2],
-    ["P07B3B", 49.9303, "OP-MATURE", "-", "-", "STGEO", "Sep 25", 1],
-  ];
-}
-
-function buildProgrammeRows(programType, rows) {
-  return rows.map(([field, hect, type, sph, palms, machine, lastDone, offset]) => ({
-    id: `${normaliseKey(programType)}-${normaliseKey(field)}`,
-    programType,
-    field,
-    hect,
-    type,
-    sph,
-    palms,
-    machine,
-    lastDone,
-    months: buildQuarterlyMonths(hect, offset),
-  }));
-}
-
-function buildQuarterlyMonths(hect, offset) {
-  const months = {};
-  for (let monthIndex = offset; monthIndex < 12; monthIndex += 3) {
-    const key = `${DASHBOARD_YEAR}-${String(monthIndex + 1).padStart(2, "0")}`;
-    months[key] = hect;
-  }
-  return months;
+  return getDashboardRowsByType("", "Programme").map((row) => ({ ...row, months: { ...row.months } }));
 }
 
 function daysUntil(dateString) {
@@ -1566,15 +3015,80 @@ function daysUntil(dateString) {
 
 function formatDate(dateString, fallback = "No deadline") {
   if (!dateString) return fallback;
+  const date = new Date(`${dateString}T00:00:00`);
+  if (Number.isNaN(date.getTime())) return fallback;
   return new Intl.DateTimeFormat("en-MY", {
     day: "2-digit",
     month: "short",
     year: "numeric",
-  }).format(new Date(`${dateString}T00:00:00`));
+  }).format(date);
+}
+
+function formatDashboardDate(value) {
+  if (!value) return "-";
+  const text = String(value).trim();
+  if (/^\d{4}-\d{2}-\d{2}$/.test(text)) return formatDate(text, "-");
+  return escapeHtml(text);
+}
+
+function formatDashboardTemplateDate(row, key) {
+  if (row.isTemplate && !row[key]) return "";
+  return formatDashboardDate(row[key]);
+}
+
+function formatDashboardTemplateValue(row, key) {
+  if (row.isTemplate && (row[key] === null || row[key] === undefined || row[key] === "")) return "";
+  return formatDashboardValue(row[key]);
+}
+
+function isIsoDate(value) {
+  const text = String(value || "").trim();
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(text)) return false;
+  return !Number.isNaN(parseIsoDate(text).getTime());
+}
+
+function parseIsoDate(value) {
+  return new Date(`${value}T00:00:00`);
+}
+
+function addMonthsToDateString(dateString, months) {
+  if (!isIsoDate(dateString)) return "";
+  const monthCount = Number(months);
+  if (!Number.isFinite(monthCount)) return "";
+  const source = parseIsoDate(dateString);
+  const target = new Date(source);
+  const sourceDay = source.getDate();
+  target.setMonth(target.getMonth() + monthCount);
+  if (target.getDate() !== sourceDay) target.setDate(0);
+  return toIsoDateString(target);
+}
+
+function toIsoDateString(date) {
+  return [
+    date.getFullYear(),
+    String(date.getMonth() + 1).padStart(2, "0"),
+    String(date.getDate()).padStart(2, "0"),
+  ].join("-");
+}
+
+function formatDashboardValue(value) {
+  if (value === null || value === undefined || value === "") return "-";
+  const number = Number(value);
+  if (Number.isFinite(number)) {
+    return number.toLocaleString("en-MY", {
+      maximumFractionDigits: 2,
+    });
+  }
+  return escapeHtml(value);
 }
 
 function getMonthKey(dateString) {
   return dateString ? dateString.slice(0, 7) : "";
+}
+
+function getMonthEndDate(monthKey) {
+  const day = String(getDaysInMonth(monthKey)).padStart(2, "0");
+  return `${monthKey}-${day}`;
 }
 
 function currentMonthKey() {
@@ -1592,6 +3106,16 @@ function monthDiff(fromMonth, toMonth) {
 function formatMonthLabel(monthKey) {
   const month = MONTHS_2026.find((item) => item.key === monthKey);
   return month ? `${month.label} ${DASHBOARD_YEAR}` : monthKey;
+}
+
+function getDefaultMonthlyMonth() {
+  const currentMonth = currentMonthKey();
+  return MONTHS_2026.some((month) => month.key === currentMonth) ? currentMonth : MONTHS_2026[0].key;
+}
+
+function getDaysInMonth(monthKey) {
+  const [year, month] = monthKey.split("-").map(Number);
+  return new Date(year, month, 0).getDate();
 }
 
 function todayDate() {
@@ -1620,6 +3144,52 @@ function formatNumber(value) {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   });
+}
+
+function formatCompactNumber(value) {
+  const number = Number(value);
+  if (!Number.isFinite(number)) return "";
+  return number.toLocaleString("en-MY", {
+    maximumFractionDigits: number >= 10 ? 0 : 1,
+  });
+}
+
+function formatMonthlyHectares(value) {
+  const number = Number(value);
+  if (!Number.isFinite(number)) return "";
+  const safeNumber = Math.round((number + Number.EPSILON) * 1000000) / 1000000;
+  return safeNumber.toLocaleString("en-MY", {
+    maximumFractionDigits: 6,
+  });
+}
+
+function formatRawNumber(value) {
+  if (value === null || value === undefined || value === "") return "";
+  const number = Number(value);
+  return Number.isFinite(number) ? String(number) : String(value);
+}
+
+function formatSignedMonthlyHectares(value) {
+  const number = Number(value) || 0;
+  const prefix = number > 0 ? "+" : "";
+  return `${prefix}${formatMonthlyHectares(number)}`;
+}
+
+function sumDecimalValues(values) {
+  const numericValues = values.map((value) => Number(value) || 0);
+  const maxDecimals = Math.min(6, Math.max(0, ...values.map(getDecimalPlaces)));
+  const scale = 10 ** maxDecimals;
+  return numericValues.reduce((total, value) => total + Math.round(value * scale), 0) / scale;
+}
+
+function getDecimalPlaces(value) {
+  const text = String(value ?? "").trim();
+  if (!text || text.includes("e")) return 0;
+  return text.includes(".") ? text.split(".")[1].replace(/0+$/, "").length : 0;
+}
+
+function getProgramColor(programType) {
+  return PROGRAM_COLORS[programType] || "#5f6f65";
 }
 
 function formatSignedNumber(value) {

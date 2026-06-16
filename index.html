@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Work Program Tracker</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <link rel="stylesheet" href="./styles.css" />
+    <link rel="stylesheet" href="./styles.css?v=dashboard-type-pmv-20260616" />
   </head>
   <body>
     <div class="app-shell">
@@ -48,7 +48,16 @@
               <path d="M12 5v14" />
               <path d="M5 12h14" />
             </svg>
-            Capture
+            Program Tracker
+          </button>
+          <button class="nav-button" type="button" data-view="pmv">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M4 5h16v14H4V5Z" />
+              <path d="M8 9h8" />
+              <path d="M8 13h5" />
+              <path d="M8 17h7" />
+            </svg>
+            PMV Tracker
           </button>
           <button class="nav-button" type="button" data-view="settings">
             <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -107,13 +116,26 @@
         </section>
 
         <section class="view active" id="dashboardView">
-          <section class="panel programme-dashboard-panel">
+          <section class="panel dashboard-selector-panel">
+            <label for="dashboardTypeSelect">
+              <span>Dashboard</span>
+              <select id="dashboardTypeSelect" aria-label="Dashboard type selector">
+                <option value="work-program">Work Program</option>
+                <option value="pmv">PMV Dashboard</option>
+              </select>
+            </label>
+          </section>
+
+          <section class="panel programme-dashboard-panel dashboard-main-view" id="workProgramDashboardView">
             <div class="programme-title">
               <p>DIGITAL ESTATE</p>
               <h3 id="programmeDashboardTitle">WORK PROGRAMME FY 2026</h3>
             </div>
 
-            <div class="dashboard-tabs" id="dashboardProgramTabs" aria-label="Dashboard programme selector"></div>
+            <div class="dashboard-program-control">
+              <label for="dashboardProgramSelect">Work Program</label>
+              <select id="dashboardProgramSelect" aria-label="Dashboard programme selector"></select>
+            </div>
 
             <div class="dashboard-mode-toggle" role="group" aria-label="Dashboard view">
               <button class="dashboard-mode-button active" type="button" id="dashboardMapButton" data-dashboard-mode="map">
@@ -136,11 +158,22 @@
 
             <div class="dashboard-mode-view active" id="dashboardMapView">
               <div class="map-dashboard-summary" id="dashboardMapSummary"></div>
-              <div class="map-legend">
-                <span><i class="legend-dot green"></i>On time / completed</span>
-                <span><i class="legend-dot yellow"></i>Delayed 1-3 months</span>
-                <span><i class="legend-dot red"></i>Over-delayed &gt;3 months</span>
-                <span><i class="legend-dot grey"></i>No planned data</span>
+              <div class="map-rules-control">
+                <button class="map-rules-button" type="button" id="dashboardMapRulesButton" aria-expanded="false" aria-controls="dashboardMapRulesPopover">
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M12 17v-5" />
+                    <path d="M12 8h.01" />
+                    <path d="M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20Z" />
+                  </svg>
+                  Rules
+                </button>
+                <div class="map-rules-popover hidden" id="dashboardMapRulesPopover" role="dialog" aria-label="Dashboard map colour rules"></div>
+              </div>
+              <div class="map-legend" id="dashboardMapLegend">
+                <span><i class="legend-dot green"></i>Green by selected programme rule</span>
+                <span><i class="legend-dot yellow"></i>Yellow by selected programme rule</span>
+                <span><i class="legend-dot red"></i>Red by selected programme rule</span>
+                <span><i class="legend-dot grey"></i>No interval</span>
               </div>
               <div class="estate-map-shell">
                 <div class="kml-estate-map" id="dashboardMap"></div>
@@ -151,13 +184,50 @@
             <div class="dashboard-mode-view" id="dashboardTableView">
               <div class="programme-summary" id="programmeSummary"></div>
 
+              <div class="programme-table-toolbar">
+                <button class="secondary-button programme-export-button" type="button" id="dashboardExportButton">
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M12 3v12" />
+                    <path d="m7 10 5 5 5-5" />
+                    <path d="M5 21h14" />
+                  </svg>
+                  Download Excel
+                </button>
+                <button class="secondary-button programme-rows-toggle" type="button" id="programmeRowsToggle" aria-expanded="false">
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M6 9l6 6 6-6" />
+                  </svg>
+                  Show Programme Rows
+                </button>
+              </div>
+
               <div class="daily-tracking-panel hidden" id="dailyTrackingPanel"></div>
 
               <div class="programme-table-wrap">
                 <table class="programme-table">
+                  <colgroup>
+                    <col class="programme-col-field" />
+                    <col class="programme-col-category" />
+                    <col class="programme-col-ha" />
+                    <col class="programme-col-status" />
+                    <col class="programme-col-frequency" />
+                    <col class="programme-col-rounds" />
+                    <col class="programme-col-interval" />
+                    <col class="programme-col-proposed" />
+                    <col class="programme-col-month" span="12" />
+                  </colgroup>
                   <thead id="programmeDashboardHead"></thead>
                   <tbody id="programmeDashboardBody"></tbody>
                 </table>
+              </div>
+            </div>
+          </section>
+
+          <section class="panel dashboard-main-view hidden" id="pmvDashboardView">
+            <div class="panel-header">
+              <div>
+                <h3>PMV Dashboard</h3>
+                <p>PMV dashboard workspace will be configured in the next phase</p>
               </div>
             </div>
           </section>
@@ -172,10 +242,11 @@
               </div>
               <div class="filter-row">
                 <select id="typeFilter" aria-label="Filter by type"></select>
-                <select id="stageFilter" aria-label="Filter by approval status"></select>
+                <select id="fieldFilter" aria-label="Filter by field"></select>
+                <div class="approval-tabs" id="approvalTabs" role="group" aria-label="Approval status navigation"></div>
               </div>
             </div>
-            <div class="table-wrap">
+            <div class="table-wrap records-table-wrap">
               <table>
                 <thead>
                   <tr>
@@ -193,6 +264,13 @@
                 <tbody id="recordsTable"></tbody>
               </table>
             </div>
+            <button class="secondary-button records-scroll-button hidden" type="button" id="recordsScrollButton">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M12 5v14" />
+                <path d="m6 13 6 6 6-6" />
+              </svg>
+              Scroll Down
+            </button>
             <div class="record-card-list" id="recordsCardList"></div>
             <div class="empty-state hidden" id="recordsEmpty">
               <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -204,13 +282,33 @@
               <h3>No matching records</h3>
               <p>Adjust the filters or capture a new Work Program entry.</p>
             </div>
+
+            <section class="monthly-tracking-section">
+              <div class="subsection-header split">
+                <div>
+                  <h3>Monthly Field Tracking</h3>
+                  <p>Review keyed-in work by field and day of month</p>
+                </div>
+                <div class="filter-row">
+                  <select id="monthlyProgramFilter" aria-label="Filter monthly tracking by program"></select>
+                  <select id="monthlyMonthFilter" aria-label="Filter monthly tracking by month"></select>
+                </div>
+              </div>
+              <div class="monthly-table-wrap">
+                <table class="monthly-tracking-table">
+                  <thead id="monthlyTrackingHead"></thead>
+                  <tbody id="monthlyTrackingBody"></tbody>
+                  <tfoot id="monthlyTrackingFoot"></tfoot>
+                </table>
+              </div>
+            </section>
           </section>
 
           <section class="panel map-panel">
             <div class="panel-header">
               <div>
                 <h3>Map Output</h3>
-                <p>GPS-enabled records plotted by field coordinate and accuracy</p>
+                <p>GPS-enabled records plotted on the estate field map by programme</p>
               </div>
             </div>
             <div class="map-output" id="mapOutput"></div>
@@ -221,7 +319,7 @@
           <section class="panel form-panel">
             <div class="panel-header">
               <div>
-                <h3 id="formHeading">Capture Work Program</h3>
+                <h3 id="formHeading">Program Tracker</h3>
                 <p>Mobile-friendly field submission for Field Officer or Mandore</p>
               </div>
               <button class="secondary-button" type="button" id="resetFormButton">
@@ -250,14 +348,11 @@
                 </label>
                 <label>
                   <span>Field *</span>
-                  <input id="blockField" type="text" required placeholder="Example: P02D1" />
+                  <input id="blockField" type="text" list="fieldOptions" required placeholder="Select or type field" />
+                  <datalist id="fieldOptions"></datalist>
                   <small class="field-error"></small>
                 </label>
-                <label>
-                  <span>Task *</span>
-                  <input id="taskName" type="text" required placeholder="Example: Circle spraying round 1" />
-                  <small class="field-error"></small>
-                </label>
+                <input id="taskName" type="hidden" />
                 <label>
                   <span>Hectares Covered *</span>
                   <input id="hectares" type="number" min="0.01" step="0.01" required placeholder="0.00" />
@@ -334,6 +429,17 @@
           </section>
         </section>
 
+        <section class="view" id="pmvView">
+          <section class="panel">
+            <div class="panel-header">
+              <div>
+                <h3>PMV Tracker</h3>
+                <p>PMV tracking workspace will be configured in the next phase</p>
+              </div>
+            </div>
+          </section>
+        </section>
+
         <section class="view" id="settingsView">
           <div class="content-grid">
             <section class="panel">
@@ -354,6 +460,6 @@
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="./field-map-data.js?v=gis-map"></script>
-    <script src="./app.js?v=gis-map"></script>
+    <script src="./app.js?v=dashboard-type-pmv-20260616"></script>
   </body>
 </html>
