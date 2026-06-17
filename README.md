@@ -29,10 +29,12 @@ Digital Estate operational tracking prototype for Work Program and PMV reporting
 
 ## Data Storage
 
-- Historical PMV data is stored in `pmv-data.js`.
+- PMV production data is stored in Supabase table `public.pmv_records`.
+- Historical PMV Excel data was seeded into Supabase using `supabase/002_seed_pmv_historical_records.sql`.
+- `pmv-data.js` remains in the repository as the historical source/reference backup for now.
 - Work Program seed/template data is stored in `work-program-data.js`.
 - Field boundary data is stored in `field-map-data.js`.
-- New browser submissions are stored in localStorage under:
+- Work Program browser submissions are stored in localStorage under:
 
 ```text
 sdg-work-program-tracker-v1
@@ -40,11 +42,12 @@ sdg-work-program-tracker-v1
 
 Current PMV behaviour:
 
-- If Vercel Supabase API is configured, PMV submissions are saved to Supabase through `/api/pmv-records`.
-- If the API is unavailable, PMV submissions fall back to localStorage.
+- Supabase is the PMV source of truth when `/api/pmv-records` responds successfully.
+- New PMV submissions are saved to Supabase through the Vercel API route.
+- Browser localStorage is not used as the normal PMV data source; it is only a temporary fallback if the API is unavailable.
 - Work Program submissions are still localStorage-backed until the next Supabase integration phase.
 
-Supabase setup scripts are in `supabase/`.
+Supabase setup and seed scripts are in `supabase/`.
 
 ## Running The App
 

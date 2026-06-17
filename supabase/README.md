@@ -24,7 +24,25 @@ supabase/001_pmv_records.sql
 
 This creates `public.pmv_records`, indexes, an `updated_at` trigger, and enables Row Level Security.
 
-## Step 3: Deploy
+## Step 3: Seed Historical PMV Records
+
+After the table exists, open Supabase SQL Editor and run:
+
+```text
+supabase/002_seed_pmv_historical_records.sql
+```
+
+This imports the Excel-derived historical PMV records into `public.pmv_records`.
+
+Expected result:
+
+```text
+historical_pmv_records = 514
+```
+
+The seed script is idempotent and upserts by `id`, so it can be rerun if needed.
+
+## Step 4: Deploy
 
 Push the code to GitHub so Vercel redeploys.
 
@@ -36,7 +54,7 @@ The browser app will then call:
 
 The Vercel API route will read/write PMV records in Supabase.
 
-## Step 4: Validation
+## Step 5: Validation
 
 After deployment:
 
@@ -45,14 +63,21 @@ After deployment:
 3. Confirm it appears in Supabase table `pmv_records`.
 4. Confirm PMV Dashboard updates after refresh.
 
-## Current MVP Behaviour
+Useful SQL checks:
 
-- If Supabase API is available, PMV submissions are saved to Supabase.
-- If Supabase API is unavailable, the app falls back to localStorage.
-- Historical PMV data remains in `pmv-data.js` until a formal migration/seed step is run.
+```sql
+select count(*) as total_records from public.pmv_records;
+select count(*) as historical_pmv_records from public.pmv_records where source = 'Excel PMV historical';
+```
+
+## Current PMV Behaviour
+
+- Supabase is the PMV source of truth when the API is available.
+- New PMV submissions are saved to Supabase through `/api/pmv-records`.
+- Browser localStorage is only a temporary fallback if the API is unavailable.
+- Historical PMV data remains in `pmv-data.js` as a source/reference backup for now.
 
 ## Next Phase
 
-- Add a one-time PMV historical seed process.
 - Add Work Program Supabase tables and API routes.
 - Add authentication and manager/driver permissions.
