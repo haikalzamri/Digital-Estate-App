@@ -199,9 +199,7 @@ async function syncPmvRecordsFromApi() {
   if (!window.digitalEstateApi?.listPmvRecords) return;
   try {
     const remoteRecords = normalizePmvRecords(await window.digitalEstateApi.listPmvRecords());
-    if (!remoteRecords.length) return;
-    const localManualRecords = state.pmvRecords.filter((record) => !isPmvHistoricalRecord(record));
-    state.pmvRecords = mergePmvRecordSets(buildDefaultPmvRecords(), localManualRecords, remoteRecords);
+    state.pmvRecords = remoteRecords;
     selectedPmvDashboardDate = getLatestPmvReportDate();
     persist();
     renderAll();
