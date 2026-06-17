@@ -175,7 +175,16 @@ function mergeDefaultPmvRecords(records) {
   const importedRecords = buildDefaultPmvRecords();
   const importedIds = new Set(importedRecords.map((record) => record.id));
   const manualRecords = normalizePmvRecords(records).filter((record) => !importedIds.has(record.id) && !isPmvHistoricalRecord(record));
-  return [...importedRecords, ...manualRecords].sort(sortPmvRecordsDescending);
+  return mergePmvRecordSets(importedRecords, manualRecords);
+}
+
+function mergePmvRecordSets(...recordSets) {
+  const recordsById = new Map();
+  recordSets.flat().forEach((record) => {
+    const normalized = normalizePmvRecord(record);
+    if (normalized?.id) recordsById.set(normalized.id, normalized);
+  });
+  return [...recordsById.values()].sort(sortPmvRecordsDescending);
 }
 
 function isPmvHistoricalRecord(record) {
@@ -184,6 +193,21 @@ function isPmvHistoricalRecord(record) {
 
 function sortPmvRecordsDescending(a, b) {
   return new Date(b.completionTime || b.updatedAt || b.reportDate || 0) - new Date(a.completionTime || a.updatedAt || a.reportDate || 0);
+}
+
+async function syncPmvRecordsFromApi() {
+  if (!window.digitalEstateApi?.listPmvRecords) return;
+  try {
+    const remoteRecords = normalizePmvRecords(await window.digitalEstateApi.listPmvRecords());
+    if (!remoteRecords.length) return;
+    const localManualRecords = state.pmvRecords.filter((record) => !isPmvHistoricalRecord(record));
+    state.pmvRecords = mergePmvRecordSets(buildDefaultPmvRecords(), localManualRecords, remoteRecords);
+    selectedPmvDashboardDate = getLatestPmvReportDate();
+    persist();
+    renderAll();
+  } catch (error) {
+    console.warn("PMV Supabase sync unavailable:", error.message);
+  }
 }
 
 function renderPmvDashboard() {
@@ -752,7 +776,7 @@ function renderPmvStatusFields() {
   });
 }
 
-function savePmvRecord(event) {
+async function savePmvRecord(event) {
   event.preventDefault();
   clearFieldErrors();
   clearPmvGroupErrors();
@@ -795,7 +819,19 @@ function savePmvRecord(event) {
     return;
   }
 
-  const normalized = normalizePmvRecord(data);
+  let normalized = normalizePmvRecord(data);
+  let savedToSupabase = false;
+
+  if (window.digitalEstateApi?.upsertPmvRecord) {
+    try {
+      const remoteRecord = await window.digitalEstateApi.upsertPmvRecord(normalized);
+      normalized = normalizePmvRecord(remoteRecord) || normalized;
+      savedToSupabase = true;
+    } catch (error) {
+      console.warn("PMV Supabase save unavailable:", error.message);
+    }
+  }
+
   const existingIndex = state.pmvRecords.findIndex((record) => record.id === normalized.id);
   if (existingIndex >= 0) {
     state.pmvRecords[existingIndex] = normalized;
@@ -809,7 +845,7 @@ function savePmvRecord(event) {
   selectedPmvDashboardStatus = "";
   renderAll();
   resetPmvForm();
-  showToast("PMV record saved.");
+  showToast(savedToSupabase ? "PMV record saved to Supabase." : "PMV record saved locally. Supabase sync unavailable.");
 }
 
 function validatePmvRecord(data) {
@@ -962,7 +998,7 @@ function handlePmvRecordActionClick(event) {
   if (button.dataset.pmvAction === "delete") deletePmvRecord(button.dataset.id);
 }
 
-function deletePmvRecord(id) {
+async function deletePmvRecord(id) {
   const record = state.pmvRecords.find((item) => item.id === id);
   if (!record) return;
   if (isPmvHistoricalRecord(record)) {
@@ -971,6 +1007,13 @@ function deletePmvRecord(id) {
   }
   const confirmed = confirm(`Delete PMV record for ${getPmvMachineLabel(record)}?`);
   if (!confirmed) return;
+  if (window.digitalEstateApi?.deletePmvRecord) {
+    try {
+      await window.digitalEstateApi.deletePmvRecord(id);
+    } catch (error) {
+      console.warn("PMV Supabase delete unavailable:", error.message);
+    }
+  }
   state.pmvRecords = state.pmvRecords.filter((item) => item.id !== id);
   persist();
   renderAll();
@@ -990,4 +1033,3 @@ function resetPmvForm() {
   clearPmvGroupErrors();
   renderPmvStatusFields();
 }
-

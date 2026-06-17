@@ -153,6 +153,7 @@ function initialize() {
   bindEvents();
   refreshConnectionStatus();
   renderAll();
+  hydrateRemoteData();
 }
 
 function bindEvents() {
@@ -392,6 +393,11 @@ function renderDashboard() {
   renderProgrammeSummary();
   renderProgrammeTable();
   renderDailyTrackingPanel();
+}
+
+async function hydrateRemoteData() {
+  if (typeof syncPmvRecordsFromApi !== "function") return;
+  await syncPmvRecordsFromApi();
 }
 
 function refreshConnectionStatus() {
