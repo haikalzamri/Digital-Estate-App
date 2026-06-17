@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Work Program Tracker</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <link rel="stylesheet" href="./styles.css?v=dashboard-type-pmv-20260616" />
+    <link rel="stylesheet" href="./styles.css?v=pmv-summary-popup-20260617" />
   </head>
   <body>
     <div class="app-shell">
@@ -26,14 +26,20 @@
         </div>
 
         <nav class="nav-list">
-          <button class="nav-button active" type="button" data-view="dashboard">
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M4 13h7V4H4v9Z" />
-              <path d="M13 20h7V4h-7v16Z" />
-              <path d="M4 20h7v-5H4v5Z" />
-            </svg>
-            Dashboard
-          </button>
+          <div class="nav-group dashboard-nav-group active" id="dashboardNavGroup">
+            <button class="nav-button active" type="button" data-view="dashboard" aria-expanded="true" aria-controls="dashboardNavOptions">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M4 13h7V4H4v9Z" />
+                <path d="M13 20h7V4h-7v16Z" />
+                <path d="M4 20h7v-5H4v5Z" />
+              </svg>
+              Dashboard
+            </button>
+            <div class="dashboard-nav-options" id="dashboardNavOptions" aria-label="Dashboard options">
+              <button class="dashboard-nav-option active" type="button" data-dashboard-type="work-program">Work Program</button>
+              <button class="dashboard-nav-option" type="button" data-dashboard-type="pmv">PMV Dashboard</button>
+            </div>
+          </div>
           <button class="nav-button" type="button" data-view="records">
             <svg viewBox="0 0 24 24" aria-hidden="true">
               <path d="M5 4h14v16H5V4Z" />
@@ -116,16 +122,6 @@
         </section>
 
         <section class="view active" id="dashboardView">
-          <section class="panel dashboard-selector-panel">
-            <label for="dashboardTypeSelect">
-              <span>Dashboard</span>
-              <select id="dashboardTypeSelect" aria-label="Dashboard type selector">
-                <option value="work-program">Work Program</option>
-                <option value="pmv">PMV Dashboard</option>
-              </select>
-            </label>
-          </section>
-
           <section class="panel programme-dashboard-panel dashboard-main-view" id="workProgramDashboardView">
             <div class="programme-title">
               <p>DIGITAL ESTATE</p>
@@ -227,7 +223,110 @@
             <div class="panel-header">
               <div>
                 <h3>PMV Dashboard</h3>
-                <p>PMV dashboard workspace will be configured in the next phase</p>
+                <p>Daily machine readiness, breakdown causes, and repeated PMV issues for management action</p>
+              </div>
+              <button class="secondary-button" type="button" id="pmvDashboardExportButton">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M12 3v12" />
+                  <path d="m7 10 5 5 5-5" />
+                  <path d="M5 21h14" />
+                </svg>
+                Download Excel
+              </button>
+            </div>
+
+            <div class="pmv-dashboard-controls">
+              <label>
+                <span>Report Date</span>
+                <input id="pmvDashboardDateFilter" type="date" />
+              </label>
+              <label>
+                <span>Machine</span>
+                <select id="pmvDashboardMachineFilter" aria-label="Filter PMV dashboard by machine"></select>
+              </label>
+              <label>
+                <span>Status</span>
+                <select id="pmvDashboardStatusFilter" aria-label="Filter PMV dashboard by status">
+                  <option value="">All status</option>
+                  <option value="working">Working (Jalan)</option>
+                  <option value="breakdown">Breakdown (Rusak)</option>
+                  <option value="idle">Idle (Diam)</option>
+                </select>
+              </label>
+            </div>
+
+            <div class="pmv-dashboard-summary" id="pmvDashboardSummary"></div>
+
+            <div class="pmv-summary-modal hidden" id="pmvSummaryModal" role="dialog" aria-modal="true" aria-labelledby="pmvSummaryModalTitle">
+              <div class="pmv-summary-dialog">
+                <div class="pmv-summary-dialog-header">
+                  <div>
+                    <h4 id="pmvSummaryModalTitle">Machines Reported</h4>
+                    <p id="pmvSummaryModalMeta"></p>
+                  </div>
+                  <button class="icon-button" type="button" id="pmvSummaryModalClose" aria-label="Close PMV machine list">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                      <path d="M6 6l12 12" />
+                      <path d="M18 6 6 18" />
+                    </svg>
+                  </button>
+                </div>
+                <div class="pmv-summary-machine-list" id="pmvSummaryModalList"></div>
+              </div>
+            </div>
+
+            <div class="pmv-dashboard-layout">
+              <section class="pmv-dashboard-section pmv-action-section">
+                <div class="pmv-dashboard-section-header">
+                  <h4>Manager Action Queue</h4>
+                  <span>Breakdown, idle, and Kurang Baik items</span>
+                </div>
+                <div class="pmv-action-list" id="pmvActionQueue"></div>
+              </section>
+
+              <section class="pmv-dashboard-section">
+                <div class="pmv-dashboard-section-header">
+                  <h4>Breakdown Reasons</h4>
+                  <span>Selected date</span>
+                </div>
+                <div class="pmv-reason-list" id="pmvBreakdownReasons"></div>
+              </section>
+
+              <section class="pmv-dashboard-section">
+                <div class="pmv-dashboard-section-header">
+                  <h4>14-Day Status Trend</h4>
+                  <span>By report count</span>
+                </div>
+                <div class="pmv-trend-list" id="pmvStatusTrend"></div>
+              </section>
+
+              <section class="pmv-dashboard-section">
+                <div class="pmv-dashboard-section-header">
+                  <h4>Repeat Machine Issues</h4>
+                  <span>Last 30 days</span>
+                </div>
+                <div class="pmv-repeat-list" id="pmvRepeatIssues"></div>
+              </section>
+
+              <section class="pmv-dashboard-section">
+                <div class="pmv-dashboard-section-header">
+                  <h4>Checklist Risk</h4>
+                  <span>Kurang Baik frequency</span>
+                </div>
+                <div class="pmv-risk-list" id="pmvChecklistRisk"></div>
+              </section>
+            </div>
+
+            <div class="pmv-records-dashboard">
+              <div class="pmv-dashboard-section-header">
+                <h4>Reported List</h4>
+                <span>Filtered PMV submissions</span>
+              </div>
+              <div class="pmv-dashboard-table-wrap">
+                <table class="pmv-dashboard-table">
+                  <thead id="pmvDashboardTableHead"></thead>
+                  <tbody id="pmvDashboardTableBody"></tbody>
+                </table>
               </div>
             </div>
           </section>
@@ -430,13 +529,129 @@
         </section>
 
         <section class="view" id="pmvView">
-          <section class="panel">
+          <section class="panel pmv-panel">
             <div class="panel-header">
               <div>
                 <h3>PMV Tracker</h3>
-                <p>PMV tracking workspace will be configured in the next phase</p>
+                <p>Fast mobile submission for daily machine status and PMV checklist</p>
               </div>
+              <button class="secondary-button" type="button" id="pmvClearButton">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M3 12a9 9 0 0 1 15.5-6.2L21 8" />
+                  <path d="M21 3v5h-5" />
+                  <path d="M21 12a9 9 0 0 1-15.5 6.2L3 16" />
+                  <path d="M3 21v-5h5" />
+                </svg>
+                Clear
+              </button>
             </div>
+
+            <form class="pmv-form" id="pmvForm" novalidate>
+              <input id="pmvRecordId" type="hidden" />
+              <input id="pmvReportDate" type="hidden" />
+
+              <fieldset class="pmv-question">
+                <legend>1. Pilih nama anda *</legend>
+                <div class="pmv-option-grid pmv-name-grid" id="pmvReporterOptions"></div>
+                <small class="field-error" id="pmvReporterError"></small>
+              </fieldset>
+
+              <fieldset class="pmv-question">
+                <legend>2. Pilih Mesin Anda *</legend>
+                <div class="pmv-option-grid pmv-machine-grid" id="pmvMachineOptions"></div>
+                <small class="field-error" id="pmvMachineError"></small>
+              </fieldset>
+
+              <fieldset class="pmv-question pmv-status-question">
+                <legend>3. Status Mesin *</legend>
+                <div class="pmv-segmented pmv-status-options">
+                  <label>
+                    <input type="radio" name="pmvMachineStatus" value="working" checked />
+                    <span>Working (Jalan)</span>
+                  </label>
+                  <label>
+                    <input type="radio" name="pmvMachineStatus" value="breakdown" />
+                    <span>Breakdown (Rusak)</span>
+                  </label>
+                  <label>
+                    <input type="radio" name="pmvMachineStatus" value="idle" />
+                    <span>Idle (Diam)</span>
+                  </label>
+                </div>
+              </fieldset>
+
+              <section class="pmv-conditional" id="pmvWorkingFields" data-pmv-status-section="working">
+                <div class="pmv-section-heading">
+                  <h4>Working</h4>
+                  <p>Checklist default kepada Baik. Tukar kepada Kurang Baik hanya jika ada isu.</p>
+                </div>
+
+                <fieldset class="pmv-inline-question">
+                  <legend>4. IPS Battery Voltmeter &gt;13v *</legend>
+                  <div class="pmv-segmented pmv-yes-no">
+                    <label><input type="radio" name="pmvIpsBattery" value="Yes" /><span>Yes</span></label>
+                    <label><input type="radio" name="pmvIpsBattery" value="No" /><span>No</span></label>
+                  </div>
+                  <small class="field-error" id="pmvIpsBatteryError"></small>
+                </fieldset>
+
+                <fieldset class="pmv-inline-question">
+                  <legend>5. PMV Checklist</legend>
+                  <div class="pmv-checklist-table" id="pmvChecklist"></div>
+                </fieldset>
+              </section>
+
+              <section class="pmv-conditional hidden" id="pmvBreakdownFields" data-pmv-status-section="breakdown">
+                <div class="pmv-section-heading">
+                  <h4>Mesin Rosak</h4>
+                  <p>Pilih komponen rosak. Pilihan boleh lebih daripada satu.</p>
+                </div>
+
+                <fieldset class="pmv-chip-group">
+                  <legend>7. Component rosak (Mesin Rusak) *</legend>
+                  <div class="pmv-option-grid pmv-component-grid" id="pmvDamagedComponentOptions"></div>
+                </fieldset>
+                <small class="field-error" id="pmvDamagedComponentError"></small>
+              </section>
+
+              <section class="pmv-conditional hidden" id="pmvIdleFields" data-pmv-status-section="idle">
+                <div class="pmv-section-heading">
+                  <h4>Idle</h4>
+                  <p>Pilih sebab mesin idle.</p>
+                </div>
+
+                <fieldset class="pmv-inline-question">
+                  <legend>8. Machine Idle *</legend>
+                  <div class="pmv-option-grid pmv-idle-grid" id="pmvIdleReasonOptions"></div>
+                  <small class="field-error" id="pmvIdleReasonError"></small>
+                </fieldset>
+              </section>
+
+              <label class="pmv-notes">
+                <span>6. Catatan utk tuan assistant</span>
+                <textarea id="pmvAssistantNotes" rows="4" placeholder="Ringkasan isu, tindakan diperlukan, atau maklumat tambahan"></textarea>
+              </label>
+
+              <div class="form-actions pmv-actions">
+                <button class="primary-button" type="submit">
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M5 12.5 10 17 19 7" />
+                  </svg>
+                  Save PMV Record
+                </button>
+              </div>
+            </form>
+          </section>
+
+          <section class="panel pmv-records-panel">
+            <div class="panel-header">
+              <div>
+                <h3>Recent PMV Records</h3>
+                <p>Latest machine submissions saved on this device</p>
+              </div>
+              <span class="pill" id="pmvRecordCount">0 records</span>
+            </div>
+            <div class="pmv-record-list" id="pmvRecordList"></div>
           </section>
         </section>
 
@@ -460,6 +675,7 @@
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="./field-map-data.js?v=gis-map"></script>
-    <script src="./app.js?v=dashboard-type-pmv-20260616"></script>
+    <script src="./pmv-data.js?v=pmv-history-20260617"></script>
+    <script src="./app.js?v=pmv-summary-popup-20260617"></script>
   </body>
 </html>
