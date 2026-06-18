@@ -136,6 +136,7 @@ function normalizePmvRecord(record) {
     damagedComponents: status === "breakdown" ? normalizePmvComponents(record.damagedComponents) : [],
     idleReason: status === "idle" ? String(record.idleReason || "").trim() : "",
     assistantNotes: String(record.assistantNotes || "").trim(),
+    syncStatus: record.syncStatus || "Synced",
     updatedAt: record.updatedAt || new Date().toISOString(),
   };
 }
@@ -195,11 +196,82 @@ function sortPmvRecordsDescending(a, b) {
   return new Date(b.completionTime || b.updatedAt || b.reportDate || 0) - new Date(a.completionTime || a.updatedAt || a.reportDate || 0);
 }
 
+function getPendingPmvDeleteIds() {
+  const queuedIds = Array.isArray(state.pendingPmvDeletes) ? state.pendingPmvDeletes : [];
+  return new Set(queuedIds.filter(Boolean));
+}
+
+function queuePmvDelete(id) {
+  if (!id) return;
+  const queuedIds = getPendingPmvDeleteIds();
+  queuedIds.add(id);
+  state.pendingPmvDeletes = [...queuedIds];
+}
+
+function getPendingPmvRecords() {
+  const queuedDeleteIds = getPendingPmvDeleteIds();
+  return state.pmvRecords.filter((record) => record.syncStatus === "Pending Sync" && !queuedDeleteIds.has(record.id));
+}
+
+function getPendingPmvSyncCount() {
+  return getPendingPmvRecords().length + getPendingPmvDeleteIds().size;
+}
+
+async function syncPendingPmvDeletes() {
+  const queuedIds = [...getPendingPmvDeleteIds()];
+  if (!queuedIds.length || !window.digitalEstateApi?.deletePmvRecord) return;
+
+  const remainingIds = [];
+  for (const id of queuedIds) {
+    try {
+      await window.digitalEstateApi.deletePmvRecord(id);
+    } catch (error) {
+      remainingIds.push(id);
+      console.warn("PMV pending delete unavailable:", error.message);
+    }
+  }
+
+  state.pendingPmvDeletes = remainingIds;
+  if (remainingIds.length !== queuedIds.length) persist();
+}
+
+async function syncPendingPmvUploads() {
+  const pendingRecords = getPendingPmvRecords();
+  if (!pendingRecords.length || !window.digitalEstateApi?.upsertPmvRecord) {
+    return { failedRecords: pendingRecords };
+  }
+
+  const failedRecords = [];
+  let syncedAny = false;
+  for (const record of pendingRecords) {
+    try {
+      const payload = {
+        ...record,
+        syncStatus: "Synced",
+        updatedAt: record.updatedAt || new Date().toISOString(),
+      };
+      const remoteRecord = await window.digitalEstateApi.upsertPmvRecord(payload);
+      const normalized = normalizePmvRecord(remoteRecord || payload);
+      state.pmvRecords = state.pmvRecords.map((item) => (item.id === normalized.id ? normalized : item));
+      syncedAny = true;
+    } catch (error) {
+      failedRecords.push(normalizePmvRecord(record));
+      console.warn("PMV pending upload unavailable:", error.message);
+    }
+  }
+
+  if (syncedAny) persist();
+  return { failedRecords };
+}
+
 async function syncPmvRecordsFromApi() {
   if (!window.digitalEstateApi?.listPmvRecords) return;
   try {
-    const remoteRecords = normalizePmvRecords(await window.digitalEstateApi.listPmvRecords());
-    state.pmvRecords = remoteRecords;
+    await syncPendingPmvDeletes();
+    const pendingUploadResult = await syncPendingPmvUploads();
+    const pendingDeleteIds = getPendingPmvDeleteIds();
+    const remoteRecords = normalizePmvRecords(await window.digitalEstateApi.listPmvRecords()).filter((record) => !pendingDeleteIds.has(record.id));
+    state.pmvRecords = mergePmvRecordSets(remoteRecords, pendingUploadResult.failedRecords);
     selectedPmvDashboardDate = getLatestPmvReportDate();
     persist();
     renderAll();
@@ -826,8 +898,11 @@ async function savePmvRecord(event) {
       normalized = normalizePmvRecord(remoteRecord) || normalized;
       savedToSupabase = true;
     } catch (error) {
+      normalized.syncStatus = "Pending Sync";
       console.warn("PMV Supabase save unavailable:", error.message);
     }
+  } else {
+    normalized.syncStatus = "Pending Sync";
   }
 
   const existingIndex = state.pmvRecords.findIndex((record) => record.id === normalized.id);
@@ -1005,17 +1080,21 @@ async function deletePmvRecord(id) {
   }
   const confirmed = confirm(`Delete PMV record for ${getPmvMachineLabel(record)}?`);
   if (!confirmed) return;
+
+  let deletedFromSupabase = false;
   if (window.digitalEstateApi?.deletePmvRecord) {
     try {
       await window.digitalEstateApi.deletePmvRecord(id);
+      deletedFromSupabase = true;
     } catch (error) {
       console.warn("PMV Supabase delete unavailable:", error.message);
     }
   }
+  if (!deletedFromSupabase) queuePmvDelete(id);
   state.pmvRecords = state.pmvRecords.filter((item) => item.id !== id);
   persist();
   renderAll();
-  showToast("PMV record deleted.");
+  showToast(deletedFromSupabase ? "PMV record deleted from Supabase." : "PMV record deleted locally. Supabase sync unavailable.");
 }
 
 function resetPmvForm() {

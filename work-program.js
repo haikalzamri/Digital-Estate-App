@@ -247,6 +247,7 @@ function normalizeRecord(record) {
     gpsAccuracy: "",
     photoData: "",
     remarks: "",
+    syncStatus: "Synced",
     ...record,
   };
   normalized.programType = normalizeProgramTypeName(normalized.programType);
@@ -267,6 +268,22 @@ function mergeDefaultRecords(records) {
   return [...importedRecords, ...manualRecords];
 }
 
+function mergeWorkProgramRecordSets(...recordSets) {
+  const recordsById = new Map();
+  recordSets.flat().forEach((record) => {
+    const normalized = normalizeRecord(record);
+    if (normalized?.id) recordsById.set(normalized.id, normalized);
+  });
+  return [...recordsById.values()].sort(sortWorkProgramRecordsDescending);
+}
+
+function sortWorkProgramRecordsDescending(a, b) {
+  return (
+    new Date(b.actualCompletionDate || b.updatedAt || 0) - new Date(a.actualCompletionDate || a.updatedAt || 0) ||
+    a.programType.localeCompare(b.programType)
+  );
+}
+
 function isExcelImportedRecord(record) {
   return record.source === EXCEL_RECORD_SOURCE || String(record.id || "").startsWith(`${EXCEL_RECORD_PREFIX}-`);
 }
@@ -278,11 +295,84 @@ function isFirstDraftDemoRecord(record) {
   );
 }
 
+function getPendingWorkProgramDeleteIds() {
+  const queuedIds = Array.isArray(state.pendingWorkProgramDeletes) ? state.pendingWorkProgramDeletes : [];
+  return new Set(queuedIds.filter(Boolean));
+}
+
+function queueWorkProgramDelete(id) {
+  if (!id) return;
+  const queuedIds = getPendingWorkProgramDeleteIds();
+  queuedIds.add(id);
+  state.pendingWorkProgramDeletes = [...queuedIds];
+}
+
+function getPendingWorkProgramRecords() {
+  const queuedDeleteIds = getPendingWorkProgramDeleteIds();
+  return state.records.filter((record) => record.syncStatus === "Pending Sync" && !queuedDeleteIds.has(record.id));
+}
+
+function getPendingWorkProgramSyncCount() {
+  return getPendingWorkProgramRecords().length + getPendingWorkProgramDeleteIds().size;
+}
+
+async function syncPendingWorkProgramDeletes() {
+  const queuedIds = [...getPendingWorkProgramDeleteIds()];
+  if (!queuedIds.length || !window.digitalEstateApi?.deleteWorkProgramRecord) return;
+
+  const remainingIds = [];
+  for (const id of queuedIds) {
+    try {
+      await window.digitalEstateApi.deleteWorkProgramRecord(id);
+    } catch (error) {
+      remainingIds.push(id);
+      console.warn("Work Program pending delete unavailable:", error.message);
+    }
+  }
+
+  state.pendingWorkProgramDeletes = remainingIds;
+  if (remainingIds.length !== queuedIds.length) persist();
+}
+
+async function syncPendingWorkProgramUploads() {
+  const pendingRecords = getPendingWorkProgramRecords();
+  if (!pendingRecords.length || !window.digitalEstateApi?.upsertWorkProgramRecord) {
+    return { failedRecords: pendingRecords };
+  }
+
+  const failedRecords = [];
+  let syncedAny = false;
+  for (const record of pendingRecords) {
+    try {
+      const payload = {
+        ...record,
+        syncStatus: "Synced",
+        updatedAt: record.updatedAt || new Date().toISOString(),
+      };
+      const remoteRecord = await window.digitalEstateApi.upsertWorkProgramRecord(payload);
+      const normalized = normalizeRecord(remoteRecord || payload);
+      state.records = state.records.map((item) => (item.id === normalized.id ? normalized : item));
+      syncedAny = true;
+    } catch (error) {
+      failedRecords.push(normalizeRecord(record));
+      console.warn("Work Program pending upload unavailable:", error.message);
+    }
+  }
+
+  if (syncedAny) persist();
+  return { failedRecords };
+}
+
 async function syncWorkProgramRecordsFromApi() {
   if (!window.digitalEstateApi?.listWorkProgramRecords) return;
   try {
-    const remoteRecords = (await window.digitalEstateApi.listWorkProgramRecords()).map(normalizeRecord);
-    state.records = remoteRecords;
+    await syncPendingWorkProgramDeletes();
+    const pendingUploadResult = await syncPendingWorkProgramUploads();
+    const pendingDeleteIds = getPendingWorkProgramDeleteIds();
+    const remoteRecords = (await window.digitalEstateApi.listWorkProgramRecords())
+      .map(normalizeRecord)
+      .filter((record) => !pendingDeleteIds.has(record.id));
+    state.records = mergeWorkProgramRecordSets(remoteRecords, pendingUploadResult.failedRecords);
     selectedApprovalStatus = getInitialApprovalStatus();
     if (selectedRecordId && !state.records.some((record) => record.id === selectedRecordId)) selectedRecordId = "";
     persist();
@@ -2363,6 +2453,7 @@ async function deleteRecord(id) {
     }
   }
 
+  if (!deletedFromSupabase) queueWorkProgramDelete(id);
   state.records = state.records.filter((item) => item.id !== id);
   if (selectedRecordId === id) selectedRecordId = "";
   persist();
@@ -2487,33 +2578,30 @@ function removePhoto() {
   renderPhotoPreview();
 }
 
-function syncPendingRecords() {
+async function syncPendingRecords() {
   if (!navigator.onLine) {
     showToast("You are offline. Sync can run when the connection is restored.");
     return;
   }
 
-  const pending = state.records.filter((record) => record.syncStatus === "Pending Sync");
-  if (!pending.length) {
+  const pendingCount =
+    getPendingWorkProgramSyncCount() + (typeof getPendingPmvSyncCount === "function" ? getPendingPmvSyncCount() : 0);
+  if (!pendingCount) {
     showToast("No offline records pending sync.");
     return;
   }
 
-  state.records = state.records.map((record) =>
-    record.syncStatus === "Pending Sync"
-      ? {
-          ...record,
-          syncStatus: "Synced",
-          updatedAt: new Date().toISOString(),
-        }
-      : record,
+  await hydrateRemoteData();
+  const remainingCount =
+    getPendingWorkProgramSyncCount() + (typeof getPendingPmvSyncCount === "function" ? getPendingPmvSyncCount() : 0);
+  const syncedCount = pendingCount - remainingCount;
+  showToast(
+    syncedCount > 0
+      ? `${syncedCount} offline change${syncedCount === 1 ? "" : "s"} synced to Supabase.`
+      : "Supabase sync is still unavailable. Offline changes are kept locally.",
   );
-  persist();
-  renderAll();
-  showToast(`${pending.length} record${pending.length === 1 ? "" : "s"} synced.`);
 }
 
 function buildDefaultPlannedProgrammes() {
   return getDashboardRowsByType("", "Programme").map((row) => ({ ...row, months: { ...row.months } }));
 }
-

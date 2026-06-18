@@ -91,7 +91,12 @@ After deployment:
 2. Submit one PMV Tracker record and confirm it appears in `pmv_records`.
 3. Submit one Work Program record and confirm it appears in `work_program_records`.
 4. Delete one Work Program test record from the web and confirm it is deleted in Supabase.
-5. Refresh the production app and confirm dashboards still load from Supabase.
+5. Test offline queue behaviour:
+   - Turn browser network offline.
+   - Submit one PMV or Work Program test record.
+   - Turn browser network online again.
+   - Confirm the record syncs into the correct Supabase table.
+6. Refresh the production app and confirm dashboards still load from Supabase.
 
 Useful SQL checks:
 
@@ -108,7 +113,9 @@ select count(*) as work_program_seed_records from public.work_program_records wh
 - Supabase is the Work Program source of truth when `/api/work-program-records` is available.
 - New PMV and Work Program submissions are saved to Supabase through Vercel API routes.
 - Work Program approve/delete actions update Supabase.
-- Browser localStorage is only a temporary fallback if the API is unavailable.
+- Browser localStorage is a temporary offline queue if the browser is offline or the API is unavailable.
+- Pending PMV and Work Program uploads/deletes automatically retry when the browser reconnects or the Sync button is used.
+- Offline queue data is device/browser-specific and depends on the user not clearing site data.
 - `pmv-data.js` and `work-program-data.js` remain as source/reference backups for now.
 
 ## Next Phase

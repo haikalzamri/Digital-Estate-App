@@ -36,7 +36,7 @@ Digital Estate operational tracking prototype for Work Program and PMV reporting
 - Work Program baseline data was seeded into Supabase using `supabase/004_seed_work_program_records.sql`.
 - `pmv-data.js` and `work-program-data.js` remain in the repository as source/reference backups for now.
 - Field boundary data is stored in `field-map-data.js`.
-- Browser localStorage remains available only as a temporary fallback under:
+- Browser localStorage remains available as a temporary offline fallback under:
 
 ```text
 sdg-work-program-tracker-v1
@@ -47,7 +47,9 @@ Current Supabase behaviour:
 - PMV uses Supabase as the source of truth when `/api/pmv-records` responds successfully.
 - Work Program uses Supabase as the source of truth when `/api/work-program-records` responds successfully.
 - New PMV and Work Program submissions are saved to Supabase through Vercel API routes.
-- Browser localStorage is not used as the normal data source for PMV or Work Program when the API is available.
+- If the browser is offline or the API is temporarily unavailable, new PMV and Work Program changes are queued in localStorage.
+- Pending offline uploads and deletes automatically retry when the browser reconnects, or when the Sync button is used.
+- Offline queue data stays on the same browser/device only and will be lost if the user clears site data.
 
 Supabase setup and seed scripts are in `supabase/`.
 
@@ -83,4 +85,5 @@ http://10.211.55.3:4177/
 - Confirm Records monthly tracking and map output render.
 - Confirm PMV Dashboard renders.
 - Confirm PMV summary popups list machine and reporter names.
+- Confirm an offline test submission queues locally, then syncs to Supabase when the browser reconnects.
 - Confirm browser console has no errors.

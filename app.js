@@ -11,6 +11,8 @@ const defaultState = {
   plannedProgrammes: buildDefaultPlannedProgrammes(),
   records: buildDefaultRecords(),
   pmvRecords: buildDefaultPmvRecords(),
+  pendingWorkProgramDeletes: [],
+  pendingPmvDeletes: [],
 };
 
 let state = loadState();
@@ -38,6 +40,7 @@ let recordsMarkerLayer = null;
 let recordsMarkerLookup = new Map();
 let offlineSaveMode = false;
 let currentPhotoData = "";
+let remoteHydrationInProgress = false;
 
 const dom = {
   viewTitle: document.querySelector("#viewTitle"),
@@ -232,7 +235,7 @@ function bindEvents() {
   });
 
   dom.syncButton.addEventListener("click", syncPendingRecords);
-  window.addEventListener("online", refreshConnectionStatus);
+  window.addEventListener("online", handleOnlineReconnect);
   window.addEventListener("offline", refreshConnectionStatus);
 
   dom.recordForm.addEventListener("submit", saveRecord);
@@ -255,13 +258,23 @@ function loadState() {
 
   try {
     const parsed = JSON.parse(saved);
+    const pendingWorkProgramDeletes = Array.isArray(parsed.pendingWorkProgramDeletes) ? parsed.pendingWorkProgramDeletes : [];
+    const pendingPmvDeletes = Array.isArray(parsed.pendingPmvDeletes) ? parsed.pendingPmvDeletes : [];
+    const pendingWorkProgramDeleteIds = new Set(pendingWorkProgramDeletes);
+    const pendingPmvDeleteIds = new Set(pendingPmvDeletes);
     return {
       ...defaultState,
       ...parsed,
       programTypes: getDefaultProgramTypes(),
       plannedProgrammes: normalizePlannedProgrammes(parsed.plannedProgrammes?.length ? parsed.plannedProgrammes : defaultState.plannedProgrammes),
-      records: mergeDefaultRecords(Array.isArray(parsed.records) ? parsed.records : defaultState.records),
-      pmvRecords: mergeDefaultPmvRecords(Array.isArray(parsed.pmvRecords) ? parsed.pmvRecords : defaultState.pmvRecords),
+      records: mergeDefaultRecords(Array.isArray(parsed.records) ? parsed.records : defaultState.records).filter(
+        (record) => !pendingWorkProgramDeleteIds.has(record.id),
+      ),
+      pmvRecords: mergeDefaultPmvRecords(Array.isArray(parsed.pmvRecords) ? parsed.pmvRecords : defaultState.pmvRecords).filter(
+        (record) => !pendingPmvDeleteIds.has(record.id),
+      ),
+      pendingWorkProgramDeletes,
+      pendingPmvDeletes,
     };
   } catch {
     return defaultState;
@@ -396,8 +409,20 @@ function renderDashboard() {
 }
 
 async function hydrateRemoteData() {
-  if (typeof syncWorkProgramRecordsFromApi === "function") await syncWorkProgramRecordsFromApi();
-  if (typeof syncPmvRecordsFromApi === "function") await syncPmvRecordsFromApi();
+  if (remoteHydrationInProgress) return;
+  remoteHydrationInProgress = true;
+  try {
+    if (typeof syncWorkProgramRecordsFromApi === "function") await syncWorkProgramRecordsFromApi();
+    if (typeof syncPmvRecordsFromApi === "function") await syncPmvRecordsFromApi();
+  } finally {
+    remoteHydrationInProgress = false;
+    refreshConnectionStatus();
+  }
+}
+
+async function handleOnlineReconnect() {
+  refreshConnectionStatus();
+  await hydrateRemoteData();
 }
 
 function refreshConnectionStatus() {
