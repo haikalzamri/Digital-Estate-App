@@ -32,6 +32,18 @@ This project uses a VM-first development and validation workflow. The Mac is the
 7. Validate changes in the Ubuntu VM before pushing to GitHub.
 8. Treat Vercel as the production-ready environment after deployment.
 
+## Standard Development Pattern For New Modules
+
+Apply this pattern to future modules unless the user explicitly approves a different approach:
+
+- Supabase is the production source of truth after a module is integrated.
+- Frontend code must call Vercel API routes under `api/`; never expose Supabase service-role keys, passwords, tokens, or other secrets in browser code.
+- Use localStorage only as a browser/device-specific offline queue for pending uploads and deletes.
+- Pending offline changes should retry when the browser reconnects and when the user uses the Sync button.
+- Excel/static JavaScript data files may remain as source references or seed inputs, but should not be the normal production data source after migration.
+- Each module integration should include the relevant Supabase SQL setup script, optional seed script, Vercel API route, browser adapter method, offline queue handling, documentation update, and VM validation.
+- Keep UI changes separate from data/integration work unless the user explicitly approves UI changes.
+
 ## Deployment Workflow
 
 1. Make approved file changes in the Dropbox-synced project folder.

@@ -53,6 +53,30 @@ Current Supabase behaviour:
 
 Supabase setup and seed scripts are in `supabase/`.
 
+## Standard Development Pattern For New Modules
+
+Use this pattern for future modules unless a different design is explicitly approved.
+
+| Area | Standard |
+| --- | --- |
+| Production data | Supabase is the production source of truth. |
+| Backend access | Browser code calls Vercel API routes under `api/`; frontend code must not contain Supabase service keys or other secrets. |
+| Offline behaviour | localStorage is used as a browser/device-specific offline queue for pending uploads and deletes. |
+| Sync behaviour | Pending offline changes retry when the browser reconnects or when the Sync button is used. |
+| Seed data | Excel/static JavaScript data files are source references or seed inputs, not the normal production data source after Supabase migration. |
+| Validation | Development checks, runtime checks, and local servers should run in the Ubuntu Parallels VM. |
+| Git/deployment | Commit and push approved changes to GitHub, then validate the Vercel production deployment. |
+
+Recommended module setup:
+
+1. Create the Supabase table and indexes with an idempotent SQL script in `supabase/`.
+2. Add any approved seed/import SQL script in `supabase/`.
+3. Add a Vercel API route in `api/` for list, upsert, and delete operations.
+4. Add browser adapter methods in `supabase-api.js`.
+5. Update the module logic to use Supabase through the API route.
+6. Add localStorage offline queue handling for failed uploads/deletes.
+7. Update documentation and validate from the Ubuntu VM before pushing.
+
 ## Running The App
 
 Serve the project root with a static web server and open `index.html`.
