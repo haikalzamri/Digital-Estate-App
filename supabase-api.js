@@ -4,6 +4,9 @@ window.digitalEstateApi = {
   listPmvRecords,
   upsertPmvRecord,
   deletePmvRecord,
+  listWorkProgramRecords,
+  upsertWorkProgramRecord,
+  deleteWorkProgramRecord,
 };
 
 async function listPmvRecords() {
@@ -29,6 +32,40 @@ async function upsertPmvRecord(record) {
 
 async function deletePmvRecord(id) {
   const response = await fetch("/api/pmv-records", {
+    method: "DELETE",
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ id }),
+  });
+  return readApiResponse(response);
+}
+
+
+async function listWorkProgramRecords() {
+  const response = await fetch("/api/work-program-records", {
+    headers: { Accept: "application/json" },
+  });
+  const data = await readApiResponse(response);
+  return Array.isArray(data.records) ? data.records : [];
+}
+
+async function upsertWorkProgramRecord(record) {
+  const response = await fetch("/api/work-program-records", {
+    method: "POST",
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ record }),
+  });
+  const data = await readApiResponse(response);
+  return Array.isArray(data.records) ? data.records[0] : null;
+}
+
+async function deleteWorkProgramRecord(id) {
+  const response = await fetch("/api/work-program-records", {
     method: "DELETE",
     headers: {
       Accept: "application/json",

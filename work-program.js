@@ -278,6 +278,20 @@ function isFirstDraftDemoRecord(record) {
   );
 }
 
+async function syncWorkProgramRecordsFromApi() {
+  if (!window.digitalEstateApi?.listWorkProgramRecords) return;
+  try {
+    const remoteRecords = (await window.digitalEstateApi.listWorkProgramRecords()).map(normalizeRecord);
+    state.records = remoteRecords;
+    selectedApprovalStatus = getInitialApprovalStatus();
+    if (selectedRecordId && !state.records.some((record) => record.id === selectedRecordId)) selectedRecordId = "";
+    persist();
+    renderAll();
+  } catch (error) {
+    console.warn("Work Program Supabase sync unavailable:", error.message);
+  }
+}
+
 function normalizePlannedProgrammes(plannedProgrammes) {
   return buildDefaultPlannedProgrammes();
 }
@@ -2198,12 +2212,12 @@ function renderConfiguration() {
   });
 }
 
-function saveRecord(event) {
+async function saveRecord(event) {
   event.preventDefault();
   clearFieldErrors();
   const programType = dom.programType.value;
 
-  const data = {
+  let data = {
     id: dom.recordId.value || createId(),
     reporterName: dom.reporterName.value.trim(),
     programType,
@@ -2231,6 +2245,20 @@ function saveRecord(event) {
     return;
   }
 
+  let savedToSupabase = false;
+  if (window.digitalEstateApi?.upsertWorkProgramRecord) {
+    try {
+      const remoteRecord = await window.digitalEstateApi.upsertWorkProgramRecord(data);
+      if (remoteRecord) data = normalizeRecord(remoteRecord);
+      savedToSupabase = true;
+    } catch (error) {
+      data.syncStatus = "Pending Sync";
+      console.warn("Work Program Supabase save unavailable:", error.message);
+    }
+  } else {
+    data.syncStatus = "Pending Sync";
+  }
+
   const existingIndex = state.records.findIndex((record) => record.id === data.id);
   if (existingIndex >= 0) {
     state.records[existingIndex] = data;
@@ -2245,7 +2273,7 @@ function saveRecord(event) {
   selectRecord(data.id, { syncMonthly: true, syncApproval: false, focusMap: false, scrollRecords: false, preserveViewport: false });
   resetForm();
   setView("records");
-  showToast(data.syncStatus === "Pending Sync" ? "Record saved offline and queued for approval." : "Record submitted for approval.");
+  showToast(savedToSupabase ? "Record submitted for approval." : "Record saved locally. Supabase sync unavailable.");
 }
 
 function validateRecord(data) {
@@ -2319,30 +2347,58 @@ function editRecord(id) {
   setView("capture");
 }
 
-function deleteRecord(id) {
+async function deleteRecord(id) {
   const record = state.records.find((item) => item.id === id);
   if (!record) return;
   const confirmed = confirm(`Delete ${record.programType} record for ${record.blockField}?`);
   if (!confirmed) return;
 
+  let deletedFromSupabase = false;
+  if (window.digitalEstateApi?.deleteWorkProgramRecord) {
+    try {
+      await window.digitalEstateApi.deleteWorkProgramRecord(id);
+      deletedFromSupabase = true;
+    } catch (error) {
+      console.warn("Work Program Supabase delete unavailable:", error.message);
+    }
+  }
+
   state.records = state.records.filter((item) => item.id !== id);
   if (selectedRecordId === id) selectedRecordId = "";
   persist();
   renderAll();
-  showToast("Record deleted.");
+  showToast(deletedFromSupabase ? "Record deleted from Supabase." : "Record deleted locally. Supabase sync unavailable.");
 }
 
-function approveRecord(id) {
+async function approveRecord(id) {
   const record = state.records.find((item) => item.id === id);
   if (!record) return;
   record.approvalStatus = "Approved";
   record.updatedAt = new Date().toISOString();
+
+  let savedToSupabase = false;
+  if (window.digitalEstateApi?.upsertWorkProgramRecord) {
+    try {
+      const remoteRecord = await window.digitalEstateApi.upsertWorkProgramRecord(record);
+      if (remoteRecord) {
+        const existingIndex = state.records.findIndex((item) => item.id === id);
+        if (existingIndex >= 0) state.records[existingIndex] = normalizeRecord(remoteRecord);
+      }
+      savedToSupabase = true;
+    } catch (error) {
+      record.syncStatus = "Pending Sync";
+      console.warn("Work Program Supabase approval unavailable:", error.message);
+    }
+  } else {
+    record.syncStatus = "Pending Sync";
+  }
+
   selectedApprovalStatus = "Approved";
   selectedRecordId = id;
   persist();
   renderAll();
   selectRecord(id, { syncMonthly: true, syncApproval: false, focusMap: false, scrollRecords: false });
-  showToast("Record approved and included in the dashboard.");
+  showToast(savedToSupabase ? "Record approved and included in the dashboard." : "Record approved locally. Supabase sync unavailable.");
 }
 
 function resetForm() {

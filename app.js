@@ -396,8 +396,8 @@ function renderDashboard() {
 }
 
 async function hydrateRemoteData() {
-  if (typeof syncPmvRecordsFromApi !== "function") return;
-  await syncPmvRecordsFromApi();
+  if (typeof syncWorkProgramRecordsFromApi === "function") await syncWorkProgramRecordsFromApi();
+  if (typeof syncPmvRecordsFromApi === "function") await syncPmvRecordsFromApi();
 }
 
 function refreshConnectionStatus() {
