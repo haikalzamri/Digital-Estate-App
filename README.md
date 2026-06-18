@@ -24,6 +24,7 @@ Digital Estate operational tracking prototype for Work Program and PMV reporting
 | `pmv.js` | PMV Tracker, PMV Dashboard, popup, and export logic. |
 | `supabase-api.js` | Browser adapter that calls Vercel API routes. |
 | `api/pmv-records.js` | Vercel serverless API route for PMV Supabase read/write. |
+| `api/work-program-records.js` | Vercel serverless API route for Work Program Supabase read/write. |
 | `supabase/` | Supabase SQL setup scripts and setup guide. |
 | `field-map-data.js` | KMZ/GIS-derived field boundary data. |
 
@@ -31,21 +32,22 @@ Digital Estate operational tracking prototype for Work Program and PMV reporting
 
 - PMV production data is stored in Supabase table `public.pmv_records`.
 - Historical PMV Excel data was seeded into Supabase using `supabase/002_seed_pmv_historical_records.sql`.
-- `pmv-data.js` remains in the repository as the historical source/reference backup for now.
-- Work Program seed/template data is stored in `work-program-data.js`.
+- Work Program production data is stored in Supabase table `public.work_program_records`.
+- Work Program baseline data was seeded into Supabase using `supabase/004_seed_work_program_records.sql`.
+- `pmv-data.js` and `work-program-data.js` remain in the repository as source/reference backups for now.
 - Field boundary data is stored in `field-map-data.js`.
-- Work Program browser submissions are stored in localStorage under:
+- Browser localStorage remains available only as a temporary fallback under:
 
 ```text
 sdg-work-program-tracker-v1
 ```
 
-Current PMV behaviour:
+Current Supabase behaviour:
 
-- Supabase is the PMV source of truth when `/api/pmv-records` responds successfully.
-- New PMV submissions are saved to Supabase through the Vercel API route.
-- Browser localStorage is not used as the normal PMV data source; it is only a temporary fallback if the API is unavailable.
-- Work Program submissions are still localStorage-backed until the next Supabase integration phase.
+- PMV uses Supabase as the source of truth when `/api/pmv-records` responds successfully.
+- Work Program uses Supabase as the source of truth when `/api/work-program-records` responds successfully.
+- New PMV and Work Program submissions are saved to Supabase through Vercel API routes.
+- Browser localStorage is not used as the normal data source for PMV or Work Program when the API is available.
 
 Supabase setup and seed scripts are in `supabase/`.
 
