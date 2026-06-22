@@ -171,7 +171,14 @@ SUPABASE_URL
 SUPABASE_SERVICE_ROLE_KEY
 ```
 
-Optional portal return URLs:
+Default Back to Portal destinations:
+
+| Module audience | Destination |
+| --- | --- |
+| Management modules | `https://palm-digital.vercel.app/hub/manager/` |
+| User-input modules | `https://palm-digital.vercel.app/hub/worker` |
+
+Optional Vercel variables can override these defaults without changing the code:
 
 ```text
 NEXT_PUBLIC_MANAGEMENT_PORTAL_URL

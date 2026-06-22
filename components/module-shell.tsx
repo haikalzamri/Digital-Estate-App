@@ -14,9 +14,9 @@ type ModuleShellProps = {
   syncBusy?: boolean;
 };
 
-const portalUrls: Record<Audience, string | undefined> = {
-  management: process.env.NEXT_PUBLIC_MANAGEMENT_PORTAL_URL,
-  input: process.env.NEXT_PUBLIC_INPUT_PORTAL_URL,
+const portalUrls: Record<Audience, string> = {
+  management: process.env.NEXT_PUBLIC_MANAGEMENT_PORTAL_URL || "https://palm-digital.vercel.app/hub/manager/",
+  input: process.env.NEXT_PUBLIC_INPUT_PORTAL_URL || "https://palm-digital.vercel.app/hub/worker",
 };
 
 export function ModuleShell({ audience, title, subtitle, children, onSync, syncBusy = false }: ModuleShellProps) {
@@ -34,12 +34,7 @@ export function ModuleShell({ audience, title, subtitle, children, onSync, syncB
   }, []);
 
   const goBackToPortal = () => {
-    const portalUrl = portalUrls[audience];
-    if (portalUrl) {
-      window.location.assign(portalUrl);
-      return;
-    }
-    window.history.back();
+    window.location.assign(portalUrls[audience]);
   };
 
   return (
