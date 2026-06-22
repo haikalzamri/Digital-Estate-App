@@ -16,7 +16,7 @@ type ModuleShellProps = {
 
 const portalUrls: Record<Audience, string> = {
   management: process.env.NEXT_PUBLIC_MANAGEMENT_PORTAL_URL || "https://palm-digital.vercel.app/hub/manager/",
-  input: process.env.NEXT_PUBLIC_INPUT_PORTAL_URL || "https://palm-digital.vercel.app/hub/worker",
+  input: process.env.NEXT_PUBLIC_INPUT_PORTAL_URL || "https://palm-digital.vercel.app/hub/worker/",
 };
 
 export function ModuleShell({ audience, title, subtitle, children, onSync, syncBusy = false }: ModuleShellProps) {

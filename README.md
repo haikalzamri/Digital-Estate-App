@@ -176,7 +176,7 @@ Default Back to Portal destinations:
 | Module audience | Destination |
 | --- | --- |
 | Management modules | `https://palm-digital.vercel.app/hub/manager/` |
-| User-input modules | `https://palm-digital.vercel.app/hub/worker` |
+| User-input modules | `https://palm-digital.vercel.app/hub/worker/` |
 
 Optional Vercel variables can override these defaults without changing the code:
 
