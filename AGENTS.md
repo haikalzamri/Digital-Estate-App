@@ -10,8 +10,23 @@ This project uses a VM-first development and validation workflow. The Mac is the
 - Shared storage model: project files are stored in Dropbox and synced between environments.
 - Development environment: Ubuntu 24.04.3 ARM64 running in Parallels.
 - VM SSH target: `parallels@10.211.55.3`
+- Required Node.js runtime: Node.js 24 LTS (`>=24 <25`)
 - Production URL: `https://digital-estate-app.vercel.app`
 - Do not store passwords, tokens, API keys, or secrets in this repository.
+
+## Framework Baseline
+
+- The `codex/nextjs-migration` branch contains the functional Next.js App Router baseline.
+- All four target module routes are migrated and share typed domain data layers.
+- The root-level static files remain a parity and source-data reference until Vercel and Supabase acceptance testing is complete.
+- Do not delete the legacy static files without explicit approval after production acceptance.
+- Target module routes:
+  - `/management/work-program`
+  - `/management/pmv`
+  - `/input/work-program`
+  - `/input/pmv`
+- The Configuration view is retired and should not be migrated.
+- Module pages do not include the legacy green sidebar. They use the shared module header and Back to Portal control.
 
 ## Environment Roles
 
@@ -49,9 +64,11 @@ Apply this pattern to future modules unless the user explicitly approves a diffe
 1. Make approved file changes in the Dropbox-synced project folder.
 2. Run development and validation checks inside the Ubuntu VM.
 3. Confirm the app works as expected before committing.
-4. Commit and push approved changes to GitHub.
-5. Confirm Vercel production deployment is live at `https://digital-estate-app.vercel.app`.
-6. Report what changed, validation performed, and any remaining risks or next steps.
+4. Commit and push approved changes to a GitHub branch.
+5. Validate the Vercel Preview deployment and Supabase data flow.
+6. Merge or promote only after preview acceptance.
+7. Confirm production is live at `https://digital-estate-app.vercel.app`.
+8. Report what changed, validation performed, and any remaining risks or next steps.
 
 ## File Handling Rules
 
@@ -74,6 +91,32 @@ ssh parallels@10.211.55.3
 
 Run project setup, dependency installation, app servers, build commands, tests, and checks from inside Ubuntu.
 
+Confirm the VM runtime before installing or validating:
+
+```bash
+node --version
+npm --version
+```
+
+Expected major versions:
+
+```text
+Node.js 24.x
+npm 11.x
+```
+
+Next.js development commands:
+
+```bash
+cd /media/psf/Dropbox/digital-estate-app
+npm install
+npm run dev
+npm run typecheck
+npm run lint
+npm run build
+npm run smoke
+```
+
 Do not run commands like these on macOS unless the user explicitly approves:
 
 ```bash
@@ -86,18 +129,23 @@ brew install
 
 ## Project Structure Preference
 
-- Keep the runnable web app entry files at the project root where practical.
-- Root-level app files may include `index.html`, `styles.css`, `app.js`, and related JavaScript data files.
-- Avoid unnecessary nested folders for simple static web assets unless the project grows and a structure is approved.
+- Use the Next.js App Router under `app/` for routes and API handlers.
+- Use `components/` for reusable UI and domain components.
+- Use `lib/` for server-only Supabase access, shared types, data transformations, and offline services.
+- Keep secrets server-side and access Supabase through Next.js Route Handlers under `app/api/`.
+- Keep `index.html`, `styles.css`, `app.js`, `work-program.js`, `pmv.js`, and related root data files as read-only parity references until production acceptance.
+- Avoid duplicating domain logic between routes; Work Program management should share one data layer across Dashboard and Records.
+- Keep PMV input lightweight: historical PMV data should load only in the management dashboard route.
 
 ## Verification Expectations
 
 Before reporting completion:
 
 1. Confirm the relevant files are in the expected location.
-2. Confirm the app references still point to valid relative paths.
-3. Run verification from the Ubuntu VM where possible.
-4. Summarise what changed, what was not changed, and any risks or next steps.
+2. Run `npm run check` and `npm run smoke` in the Ubuntu VM.
+3. Validate each affected route in the browser at desktop and mobile viewport sizes.
+4. Confirm Supabase Route Handlers and offline queue behaviour remain compatible.
+5. Summarise what changed, what was not changed, and any risks or next steps.
 
 ## Communication Style
 

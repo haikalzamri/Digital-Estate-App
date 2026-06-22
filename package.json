@@ -1,0 +1,38 @@
+{
+  "name": "digital-estate-app",
+  "version": "2.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --hostname 0.0.0.0",
+    "build": "next build",
+    "start": "next start --hostname 0.0.0.0",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "smoke": "node scripts/smoke-routes.mjs",
+    "check": "npm run typecheck && npm run lint && npm run build"
+  },
+  "engines": {
+    "node": ">=24 <25"
+  },
+  "dependencies": {
+    "leaflet": "1.9.4",
+    "lucide-react": "1.21.0",
+    "next": "16.2.9",
+    "react": "19.2.7",
+    "react-dom": "19.2.7",
+    "server-only": "0.0.1"
+  },
+  "devDependencies": {
+    "@types/geojson": "7946.0.16",
+    "@types/leaflet": "1.9.21",
+    "@types/node": "26.0.0",
+    "@types/react": "19.2.17",
+    "@types/react-dom": "19.2.3",
+    "eslint": "9.39.4",
+    "eslint-config-next": "16.2.9",
+    "typescript": "6.0.3"
+  },
+  "overrides": {
+    "postcss": "8.5.10"
+  }
+}

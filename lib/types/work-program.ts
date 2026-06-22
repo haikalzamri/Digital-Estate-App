@@ -1,0 +1,46 @@
+export type WorkProgramRecord = {
+  id: string;
+  source?: string;
+  reporterName: string;
+  programType: string;
+  blockField: string;
+  taskName?: string;
+  schedulerStage?: string;
+  hectares: number;
+  actualCompletionDate: string;
+  deadline?: string;
+  priority?: string;
+  approvalStatus?: "Pending Approval" | "Approved";
+  remarks?: string;
+  latitude?: string;
+  longitude?: string;
+  gpsAccuracy?: string;
+  photoData?: string;
+  syncStatus?: string;
+  category?: string;
+  updatedAt?: string;
+};
+
+export type WorkProgramDatabaseRecord = {
+  id: string;
+  source: string | null;
+  reporter_name: string;
+  program_type: string;
+  block_field: string;
+  task_name: string | null;
+  scheduler_stage: string | null;
+  hectares: number;
+  actual_completion_date: string;
+  deadline: string | null;
+  priority: string | null;
+  approval_status: "Pending Approval" | "Approved";
+  remarks: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  gps_accuracy: string | null;
+  photo_data: string | null;
+  sync_status: string | null;
+  category: string | null;
+  created_at?: string;
+  updated_at?: string;
+};
