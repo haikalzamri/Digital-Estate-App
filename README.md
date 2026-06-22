@@ -86,7 +86,7 @@ Use this pattern for future modules unless a different design is explicitly appr
 | Sync behaviour | Pending offline changes retry when the browser reconnects or when the Sync button is used. |
 | Seed data | Excel/static JavaScript data files are source references or seed inputs, not the normal production data source after Supabase migration. |
 | Validation | Development checks, runtime checks, and local servers should run in the Ubuntu Parallels VM. |
-| Git/deployment | Commit and push approved changes to GitHub, then validate the Vercel production deployment. |
+| Git/deployment | Keep validated changes local until the user explicitly instructs a push to `main`; Vercel then deploys Production automatically. |
 
 Recommended module setup:
 
@@ -96,7 +96,7 @@ Recommended module setup:
 4. Add typed browser data-access methods and shared record contracts under `lib/` and the relevant module components.
 5. Update the module logic to use Supabase through the Route Handler.
 6. Add localStorage offline queue handling for failed uploads/deletes.
-7. Update documentation and validate from the Ubuntu VM before pushing.
+7. Update documentation, validate from the Ubuntu VM, report the result, and wait for an explicit GitHub push instruction.
 
 ## Running The App
 
@@ -185,16 +185,17 @@ NEXT_PUBLIC_MANAGEMENT_PORTAL_URL
 NEXT_PUBLIC_INPUT_PORTAL_URL
 ```
 
-Apply the two required Supabase variables to both **Preview** and **Production** environments in Vercel. Environment-variable changes require a new deployment before they become available to the application.
+Apply the two required Supabase variables to **Production** in Vercel. Also apply them to **Preview** only when a Preview deployment is specifically requested. Environment-variable changes require a new deployment before they become available to the application.
 
 ## Deployment Workflow
 
-1. Make approved changes on a `codex/` development branch.
-2. Validate typecheck, lint, build, smoke tests, and key workflows inside the Ubuntu VM.
-3. Push the branch and verify the Vercel Preview deployment.
-4. Confirm Preview has working Supabase reads, submissions, offline sync, dashboards, maps, and exports.
-5. Fast-forward or merge the validated branch into `main`.
-6. Verify all four production routes and both API endpoints after Vercel completes the Production deployment.
+1. Make approved changes in the Dropbox-synced project and validate typecheck, lint, build, smoke tests, and key workflows inside the Ubuntu VM.
+2. Report the completed local changes and validation results. Do not push to GitHub yet.
+3. Wait until the user explicitly instructs a GitHub push.
+4. Commit any uncommitted approved work and push the release to `main`.
+5. Vercel automatically deploys Production from `main`; no manual Vercel deployment action is normally required.
+6. Verify all four production routes and both API endpoints after deployment.
+7. Use a development branch and Vercel Preview only when the user explicitly requests that workflow.
 
 ## Known Production Risk
 

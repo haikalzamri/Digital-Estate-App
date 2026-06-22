@@ -16,10 +16,10 @@ This project uses a VM-first development and validation workflow. The Mac is the
 
 ## Framework Baseline
 
-- The `codex/nextjs-migration` branch contains the functional Next.js App Router baseline.
+- The `main` branch contains the production Next.js App Router baseline.
 - All four target module routes are migrated and share typed domain data layers.
-- The root-level static files remain a parity and source-data reference until Vercel and Supabase acceptance testing is complete.
-- Do not delete the legacy static files without explicit approval after production acceptance.
+- The root-level static files remain a parity and source-data reference.
+- Do not delete the legacy static files without explicit approval.
 - Target module routes:
   - `/management/work-program`
   - `/management/pmv`
@@ -45,30 +45,32 @@ This project uses a VM-first development and validation workflow. The Mac is the
 5. Keep project source files in the Dropbox-synced project folder.
 6. Verify that Dropbox sync is complete before assuming file changes are available in both environments.
 7. Validate changes in the Ubuntu VM before pushing to GitHub.
-8. Treat Vercel as the production-ready environment after deployment.
+8. Keep validated changes local until the user explicitly instructs a GitHub push.
+9. Treat Vercel as the production-ready environment after deployment.
 
 ## Standard Development Pattern For New Modules
 
 Apply this pattern to future modules unless the user explicitly approves a different approach:
 
 - Supabase is the production source of truth after a module is integrated.
-- Frontend code must call Vercel API routes under `api/`; never expose Supabase service-role keys, passwords, tokens, or other secrets in browser code.
+- Frontend code must call Next.js Route Handlers under `app/api/`; never expose Supabase service-role keys, passwords, tokens, or other secrets in browser code.
 - Use localStorage only as a browser/device-specific offline queue for pending uploads and deletes.
 - Pending offline changes should retry when the browser reconnects and when the user uses the Sync button.
 - Excel/static JavaScript data files may remain as source references or seed inputs, but should not be the normal production data source after migration.
-- Each module integration should include the relevant Supabase SQL setup script, optional seed script, Vercel API route, browser adapter method, offline queue handling, documentation update, and VM validation.
+- Each module integration should include the relevant Supabase SQL setup script, optional seed script, Next.js Route Handler, typed browser data access, offline queue handling, documentation update, and VM validation.
 - Keep UI changes separate from data/integration work unless the user explicitly approves UI changes.
 
 ## Deployment Workflow
 
 1. Make approved file changes in the Dropbox-synced project folder.
 2. Run development and validation checks inside the Ubuntu VM.
-3. Confirm the app works as expected before committing.
-4. Commit and push approved changes to a GitHub branch.
-5. Validate the Vercel Preview deployment and Supabase data flow.
-6. Merge or promote only after preview acceptance.
-7. Confirm production is live at `https://digital-estate-app.vercel.app`.
-8. Report what changed, validation performed, and any remaining risks or next steps.
+3. Confirm the app works as expected and report the completed local changes.
+4. Do not push any branch to GitHub until the user explicitly instructs a push.
+5. When explicitly instructed, commit any uncommitted approved work and push the release to `main`.
+6. Vercel automatically deploys Production from `main`; no manual Vercel deployment action is normally required.
+7. Skip Vercel Preview by default. Use a development branch and Preview deployment only when the user explicitly requests it.
+8. Confirm production is live at `https://digital-estate-app.vercel.app` after an approved push.
+9. Report what changed, validation performed, and any remaining risks or next steps.
 
 ## File Handling Rules
 
