@@ -2,18 +2,18 @@
 
 Digital Estate operational tracking application for Work Program and PMV reporting. The active application uses Next.js App Router and provides separate management and user-input routes for field capture, approval review, dashboard monitoring, GIS map visualisation, offline queuing, and CSV export.
 
-## Next.js Baseline Status
+Production: [https://digital-estate-app.vercel.app](https://digital-estate-app.vercel.app)
 
-The `codex/nextjs-migration` branch contains the functional Next.js baseline. All four target modules are migrated. The legacy static app remains in the repository as a parity and source-data reference until Vercel and Supabase acceptance testing is complete.
+## Production Status
 
-Current target routes:
+The functional Next.js application is deployed from `main` through Vercel. All four modules and both Supabase-backed API routes were production-verified on 22 June 2026. The legacy static app remains in the repository only as a parity and source-data reference.
 
-| Audience | Route | Module |
+| Audience | Module | Production link |
 | --- | --- | --- |
-| Management | `/management/work-program` | Work Program Dashboard and Records |
-| Management | `/management/pmv` | PMV Dashboard |
-| User input | `/input/work-program` | Program Tracker |
-| User input | `/input/pmv` | PMV Tracker |
+| Management | Work Program Dashboard and Records | [Open module](https://digital-estate-app.vercel.app/management/work-program) |
+| Management | PMV Dashboard | [Open module](https://digital-estate-app.vercel.app/management/pmv) |
+| User input | Program Tracker | [Open module](https://digital-estate-app.vercel.app/input/work-program) |
+| User input | PMV Tracker | [Open module](https://digital-estate-app.vercel.app/input/pmv) |
 
 The root route redirects to `/management/work-program` for backward compatibility. The Configuration view is not included in the migration.
 
@@ -30,7 +30,7 @@ The root route redirects to `/management/work-program` for backward compatibilit
 
 | File | Purpose |
 | --- | --- |
-| `app/` | Next.js App Router pages, layouts, styles, and Route Handlers. |
+| `app/` | Next.js App Router pages, layouts, styles, and Supabase-backed Route Handlers. |
 | `components/work-program/` | Work Program dashboard, records, editor, tracker, and shared data hook. |
 | `components/pmv/` | PMV dashboard, tracker, and shared data hook. |
 | `components/maps/` | Leaflet map components for field status and record pins. |
@@ -44,7 +44,6 @@ The root route redirects to `/management/work-program` for backward compatibilit
 | `package.json` | Next.js scripts, dependencies, and Node.js runtime requirement. |
 | `index.html`, `app.js`, `work-program.js`, `pmv.js` | Legacy static parity reference; not the active Next.js runtime. |
 | `work-program-data.js`, `pmv-data.js` | Original source/reference data used by extraction scripts. |
-| `api/` | Legacy Vercel API reference retained during migration. |
 | `supabase/` | Supabase SQL setup scripts and setup guide. |
 | `field-map-data.js` | Original KMZ/GIS-derived field boundary reference. |
 
@@ -82,7 +81,7 @@ Use this pattern for future modules unless a different design is explicitly appr
 | Area | Standard |
 | --- | --- |
 | Production data | Supabase is the production source of truth. |
-| Backend access | Browser code calls Vercel API routes under `api/`; frontend code must not contain Supabase service keys or other secrets. |
+| Backend access | Browser code calls Next.js Route Handlers under `app/api/`; frontend code must not contain Supabase service keys or other secrets. |
 | Offline behaviour | localStorage is used as a browser/device-specific offline queue for pending uploads and deletes. |
 | Sync behaviour | Pending offline changes retry when the browser reconnects or when the Sync button is used. |
 | Seed data | Excel/static JavaScript data files are source references or seed inputs, not the normal production data source after Supabase migration. |
@@ -93,13 +92,17 @@ Recommended module setup:
 
 1. Create the Supabase table and indexes with an idempotent SQL script in `supabase/`.
 2. Add any approved seed/import SQL script in `supabase/`.
-3. Add a Vercel API route in `api/` for list, upsert, and delete operations.
-4. Add browser adapter methods in `supabase-api.js`.
-5. Update the module logic to use Supabase through the API route.
+3. Add a Next.js Route Handler under `app/api/` for list, upsert, and delete operations.
+4. Add typed browser data-access methods and shared record contracts under `lib/` and the relevant module components.
+5. Update the module logic to use Supabase through the Route Handler.
 6. Add localStorage offline queue handling for failed uploads/deletes.
 7. Update documentation and validate from the Ubuntu VM before pushing.
 
 ## Running The App
+
+### Production
+
+Use the production links listed under [Production Status](#production-status). The production root redirects to the Work Program management module.
 
 ### Next.js Application
 
@@ -137,9 +140,9 @@ npm run build
 npm run smoke
 ```
 
-### Legacy Static App
+### Legacy Static Reference
 
-Serve the project root with a static web server and open `index.html`.
+The root-level static files are retained for parity and historical reference. They are not the active Vercel application.
 
 Example from the Ubuntu Parallels VM:
 
@@ -175,6 +178,23 @@ NEXT_PUBLIC_MANAGEMENT_PORTAL_URL
 NEXT_PUBLIC_INPUT_PORTAL_URL
 ```
 
+Apply the two required Supabase variables to both **Preview** and **Production** environments in Vercel. Environment-variable changes require a new deployment before they become available to the application.
+
+## Deployment Workflow
+
+1. Make approved changes on a `codex/` development branch.
+2. Validate typecheck, lint, build, smoke tests, and key workflows inside the Ubuntu VM.
+3. Push the branch and verify the Vercel Preview deployment.
+4. Confirm Preview has working Supabase reads, submissions, offline sync, dashboards, maps, and exports.
+5. Fast-forward or merge the validated branch into `main`.
+6. Verify all four production routes and both API endpoints after Vercel completes the Production deployment.
+
+## Known Production Risk
+
+- Supabase service-role credentials remain server-side and are not exposed to browser code.
+- User authentication and role-based permissions are not yet implemented for the API endpoints.
+- Authentication and manager/driver access control should be prioritised before distributing the modules broadly.
+
 ## Validation Checklist
 
 - Confirm the four Next.js module routes load directly and after browser refresh.
@@ -191,3 +211,10 @@ NEXT_PUBLIC_INPUT_PORTAL_URL
 - Confirm Work Program and PMV CSV exports preserve one record per data row.
 - Confirm an offline test submission queues locally, then syncs to Supabase when the browser reconnects.
 - Confirm browser console has no errors.
+
+Last production API verification on 22 June 2026:
+
+```text
+/api/work-program-records: HTTP 200, 78 records
+/api/pmv-records: HTTP 200, 514 records
+```
