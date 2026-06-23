@@ -4,6 +4,7 @@ const routeChecks = [
   ["/management/work-program", ["Work Program Dashboard"]],
   ["/management/work-program?view=records", ["Work Program Records", "Monthly Field Tracking", "Map Output"]],
   ["/management/pmv", ["Machines Reported", "Manager Action Queue", "Daily Reports"]],
+  ["/management/harvesting-interval", ["Harvesting Interval Report", "Monthly Interval Grid", "QC + C1 activities"]],
   ["/input/work-program", ["Submit field completion", "Submit record"]],
   ["/input/pmv", ["Daily machine report", "Status Mesin", "Hantar Laporan"]],
 ];
