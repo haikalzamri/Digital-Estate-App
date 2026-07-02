@@ -1,5 +1,8 @@
 import type {
+  HarvestingIntervalActivityMetrics,
+  HarvestingIntervalBalanceMetrics,
   HarvestingIntervalCell,
+  HarvestingIntervalDispatchMetrics,
   HarvestingIntervalField,
   HarvestingIntervalMonthReport,
   HarvestingIntervalSource,
@@ -24,25 +27,49 @@ export function getHarvestingIntervalReport(source: HarvestingIntervalSource, se
   const monthStart = new Date(Date.UTC(year, monthNumber - 1, 1));
   const monthEnd = new Date(Date.UTC(year, monthNumber, 0));
   const calculationStart = addDays(baseDate, 1);
-  const activitySets = new Map(
-    Object.entries(source.activityByField).map(([field, dates]) => [field, new Set(dates)]),
-  );
 
   const templateFields = source.fields.filter((field) => field.hasReferenceBaseline);
   const fields = templateFields.map((field) =>
-    buildFieldReport(field, activitySets.get(field.field) || new Set<string>(), baseDate, calculationStart, monthStart, monthEnd),
+    buildFieldReport(
+      field,
+      source.activityByField[field.field] || {},
+      source.dispatchByField?.[field.field] || {},
+      source.overlayByField?.[field.field] || {},
+      baseDate,
+      calculationStart,
+      monthStart,
+      monthEnd,
+    ),
   );
   const days = fields[0]?.cells.map((cell) => ({ ...cell })) || buildMonthDays(monthStart, monthEnd);
   const visibleFieldNames = new Set(fields.map((field) => field.field));
   const sourceMonthActivity = [...visibleFieldNames].map((field) =>
-    (source.activityByField[field] || []).filter((date) => date.startsWith(selectedMonth)).length,
+    Object.keys(source.activityByField[field] || {}).filter((date) => date.startsWith(selectedMonth)).length,
   );
+  const dailyTotals = Object.fromEntries(
+    days.map((day) => [day.date, source.dailyTotals?.[day.date] || emptyMetrics()]),
+  );
+  const dispatchDailyTotals = Object.fromEntries(
+    days.map((day) => [day.date, source.dispatchDailyTotals?.[day.date] || emptyDispatchMetrics()]),
+  );
+  const dailyBalances = Object.fromEntries(
+    days.map((day) => [day.date, calculateBalance(dailyTotals[day.date], dispatchDailyTotals[day.date])]),
+  );
+  const monthlyTotals = sumMetrics(Object.values(dailyTotals));
+  const monthlyDispatchTotals = sumDispatchMetrics(Object.values(dispatchDailyTotals));
+  const monthlyBalances = calculateBalance(monthlyTotals, monthlyDispatchTotals);
 
   return {
     month: selectedMonth,
     monthLabel: formatHarvestingMonth(selectedMonth),
     days,
     fields,
+    dailyTotals,
+    dispatchDailyTotals,
+    dailyBalances,
+    monthlyTotals,
+    monthlyDispatchTotals,
+    monthlyBalances,
     activeFields: fields.filter((field) => field.harvestCount > 0).length,
     totalHarvests: fields.reduce((total, field) => total + field.harvestCount, 0),
     sourceActiveFields: sourceMonthActivity.filter((count) => count > 0).length,
@@ -82,7 +109,9 @@ export function getHarvestingDayGroups(fields: HarvestingIntervalField[]) {
 
 function buildFieldReport(
   field: HarvestingIntervalField,
-  activityDates: Set<string>,
+  activityByDate: Record<string, HarvestingIntervalActivityMetrics>,
+  dispatchByDate: Record<string, HarvestingIntervalDispatchMetrics>,
+  overlayByDate: Record<string, string[]>,
   baseDate: Date,
   calculationStart: Date,
   monthStart: Date,
@@ -96,7 +125,10 @@ function buildFieldReport(
   for (let day = new Date(calculationStart); day <= monthEnd; day = addDays(day, 1)) {
     const isoDate = toIsoDate(day);
     const dayIndex = diffDays(day, baseDate);
-    const harvest = activityDates.has(isoDate);
+    const activity = activityByDate[isoDate] || null;
+    const dispatch = dispatchByDate[isoDate] || null;
+    const overlays = overlayByDate[isoDate] || [];
+    const harvest = Boolean(activity);
 
     if (harvest) {
       currentInterval = lastHarvestIndex === null || dayIndex - lastHarvestIndex > 5 ? 1 : currentInterval + 1;
@@ -115,6 +147,10 @@ function buildFieldReport(
         harvest,
         interval: currentInterval,
         isSunday: day.getUTCDay() === 0,
+        activity,
+        dispatch,
+        balance: calculateBalance(activity || emptyMetrics(), dispatch || emptyDispatchMetrics()),
+        overlays,
       });
     }
   }
@@ -124,6 +160,8 @@ function buildFieldReport(
     bfDisplay,
     cells,
     harvestCount: cells.filter((cell) => cell.harvest).length,
+    monthlyHectareTotal: roundMetric(cells.reduce((total, cell) => total + (cell.activity?.hectare || 0), 0), 2),
+    monthlyDispatchHectareTotal: roundMetric(cells.reduce((total, cell) => total + (cell.dispatch?.hectare || 0), 0), 2),
     endInterval: cells.at(-1)?.interval || currentInterval,
     maxInterval: Math.max(...cells.map((cell) => cell.interval), 0),
   };
@@ -139,9 +177,53 @@ function buildMonthDays(monthStart: Date, monthEnd: Date): HarvestingIntervalCel
       harvest: false,
       interval: 0,
       isSunday: day.getUTCDay() === 0,
+      activity: null,
+      dispatch: null,
+      balance: { hectare: 0, bunches: 0, kg: 0 },
+      overlays: [],
     });
   }
   return days;
+}
+
+function emptyMetrics(): HarvestingIntervalActivityMetrics {
+  return { hectare: 0, bunches: 0, tonnage: 0 };
+}
+
+function emptyDispatchMetrics(): HarvestingIntervalDispatchMetrics {
+  return { hectare: 0, bunches: 0, kg: 0 };
+}
+
+function calculateBalance(
+  production: HarvestingIntervalActivityMetrics,
+  dispatch: HarvestingIntervalDispatchMetrics,
+): HarvestingIntervalBalanceMetrics {
+  return {
+    hectare: roundMetric(production.hectare - dispatch.hectare, 2),
+    bunches: roundMetric(production.bunches - dispatch.bunches, 0),
+    kg: roundMetric(production.tonnage * 1000 - dispatch.kg, 0),
+  };
+}
+
+function sumMetrics(metrics: HarvestingIntervalActivityMetrics[]): HarvestingIntervalActivityMetrics {
+  return {
+    hectare: roundMetric(metrics.reduce((total, value) => total + value.hectare, 0), 2),
+    bunches: roundMetric(metrics.reduce((total, value) => total + value.bunches, 0), 0),
+    tonnage: roundMetric(metrics.reduce((total, value) => total + value.tonnage, 0), 3),
+  };
+}
+
+function sumDispatchMetrics(metrics: HarvestingIntervalDispatchMetrics[]): HarvestingIntervalDispatchMetrics {
+  return {
+    hectare: roundMetric(metrics.reduce((total, value) => total + value.hectare, 0), 2),
+    bunches: roundMetric(metrics.reduce((total, value) => total + value.bunches, 0), 0),
+    kg: roundMetric(metrics.reduce((total, value) => total + value.kg, 0), 0),
+  };
+}
+
+function roundMetric(value: number, decimals: number) {
+  const multiplier = 10 ** decimals;
+  return Math.round((value + Number.EPSILON) * multiplier) / multiplier;
 }
 
 function parseIsoDate(value: string) {
