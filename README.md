@@ -1,17 +1,18 @@
 # Digital Estate App
 
-Digital Estate operational tracking application for Work Program and PMV reporting. The active application uses Next.js App Router and provides separate management and user-input routes for field capture, approval review, dashboard monitoring, GIS map visualisation, offline queuing, and CSV export.
+Digital Estate operational tracking application for Work Program, PMV, and Harvesting Interval reporting. The active application uses Next.js App Router and provides separate management and user-input routes for field capture, approval review, dashboard monitoring, GIS map visualisation, offline queuing, and CSV export.
 
 Production: [https://digital-estate-app.vercel.app](https://digital-estate-app.vercel.app)
 
 ## Production Status
 
-The functional Next.js application is deployed from `main` through Vercel. All four modules and both Supabase-backed API routes were production-verified on 22 June 2026. The legacy static app remains in the repository only as a parity and source-data reference.
+The functional Next.js application is deployed from `main` through Vercel. Work Program, PMV, and both Supabase-backed API routes were production-verified on 22 June 2026. Harvesting Interval is available as a management prototype module using static Excel-extracted data. The legacy static app remains in the repository only as a parity and source-data reference.
 
 | Audience | Module | Production link |
 | --- | --- | --- |
 | Management | Work Program Dashboard and Records | [Open module](https://digital-estate-app.vercel.app/management/work-program) |
 | Management | PMV Dashboard | [Open module](https://digital-estate-app.vercel.app/management/pmv) |
+| Management | Harvesting Interval | [Open module](https://digital-estate-app.vercel.app/management/harvesting-interval) |
 | User input | Program Tracker | [Open module](https://digital-estate-app.vercel.app/input/work-program) |
 | User input | PMV Tracker | [Open module](https://digital-estate-app.vercel.app/input/pmv) |
 
@@ -24,6 +25,7 @@ The root route redirects to `/management/work-program` for backward compatibilit
 - Work Program Dashboard with table and GIS map views.
 - PMV Tracker for driver daily machine status submission.
 - PMV Dashboard for machine readiness, breakdown/idle visibility, repeat issue tracking, action queue, and export.
+- Harvesting Interval prototype for monthly field interval review, Ha/Bunches/Tonnage toggles, dispatch comparison, activity overlays, daily totals, and rainfall placeholder.
 - Leaflet/OpenStreetMap map view with KMZ-derived field polygons.
 
 ## Project Structure
@@ -33,12 +35,14 @@ The root route redirects to `/management/work-program` for backward compatibilit
 | `app/` | Next.js App Router pages, layouts, styles, and Supabase-backed Route Handlers. |
 | `components/work-program/` | Work Program dashboard, records, editor, tracker, and shared data hook. |
 | `components/pmv/` | PMV dashboard, tracker, and shared data hook. |
+| `components/harvesting-interval/` | Harvesting Interval management dashboard and interaction layer. |
 | `components/maps/` | Leaflet map components for field status and record pins. |
 | `lib/server/` | Server-only Supabase REST utilities. |
 | `lib/types/` | Shared TypeScript record contracts. |
 | `lib/work-program/` | Work Program configuration and approved-record analytics. |
 | `lib/pmv/` | PMV configuration, record normalisation, management analytics, and export helpers. |
-| `lib/data/` | JSON extracted from the approved Work Program and PMV source files. |
+| `lib/harvesting-interval/` | Harvesting Interval month, interval, total, dispatch, and balance calculations. |
+| `lib/data/` | JSON extracted from approved source files for Work Program, PMV, and Harvesting Interval prototype data. |
 | `public/data/` | Browser-served KMZ-derived field GeoJSON. |
 | `scripts/` | Source extraction and route smoke-test scripts. |
 | `package.json` | Next.js scripts, dependencies, and Node.js runtime requirement. |
@@ -54,6 +58,7 @@ The root route redirects to `/management/work-program` for backward compatibilit
 - Work Program production data is stored in Supabase table `public.work_program_records`.
 - Work Program baseline data was seeded into Supabase using `supabase/004_seed_work_program_records.sql`.
 - `lib/data/pmv-source.json` and `lib/data/work-program-source.json` provide the Next.js historical fallback datasets.
+- `lib/data/harvesting-interval-source.json` provides the static Harvesting Interval prototype dataset extracted from Excel.
 - Field boundary data is served from `public/data/field-map-data.geojson`.
 - Browser localStorage remains available as a device-specific offline queue under:
 
@@ -73,6 +78,27 @@ Current Supabase behaviour:
 - Offline queue data stays on the same browser/device only and will be lost if the user clears site data.
 
 Supabase setup and seed scripts are in `supabase/`.
+
+### Harvesting Interval Prototype Data
+
+Harvesting Interval currently uses static source data instead of Supabase. It is suitable for prototype and stakeholder review, but should be integrated into a governed source-of-truth flow before production operations.
+
+| Source file | Current use |
+| --- | --- |
+| `ZCKR_HRVINFO.xlsx` | Production harvesting activity by date and field, including Actual Covered Ha, Harvesting Bunches, and Tonnage. |
+| `ztbl_ckrhrvint.xlsx` | Dispatch comparison layer by date and field, including dispatch Ha, bunches, and KG. |
+| `ALL_Harvester_260702.xlsx` | Additional activity overlay layer for HM, QF, QG, R1, and PM1501. |
+
+Current Harvesting Interval behaviour:
+
+- Default display is Actual Covered Ha with 2 decimal places.
+- Users can toggle the grid metric between Ha, Bunches, and Tonnage.
+- Clicking a production cell opens production, dispatch, and difference details.
+- Daily total columns can expand to show dispatch and difference values by metric.
+- Date rows can expand to show dispatch values for that day only.
+- Overlay buttons highlight selected activities without changing interval or total calculations.
+- `PM1501` is shown as a green filled cell overlay; other activities are border-only overlays.
+- `Rainfall Data` is included as a placeholder column and displays `-` until a rainfall source is approved.
 
 ## Standard Development Pattern For New Modules
 
@@ -115,11 +141,12 @@ npm install
 npm run dev
 ```
 
-Open the four modules:
+Open the modules:
 
 ```text
 http://10.211.55.3:3000/management/work-program
 http://10.211.55.3:3000/management/pmv
+http://10.211.55.3:3000/management/harvesting-interval
 http://10.211.55.3:3000/input/work-program
 http://10.211.55.3:3000/input/pmv
 ```
@@ -202,6 +229,7 @@ Apply the two required Supabase variables to **Production** in Vercel. Also appl
 - Supabase service-role credentials remain server-side and are not exposed to browser code.
 - User authentication and role-based permissions are not yet implemented for the API endpoints.
 - Authentication and manager/driver access control should be prioritised before distributing the modules broadly.
+- Harvesting Interval is currently a static Excel-based prototype; data refresh, rainfall integration, and Supabase/API integration are not yet automated.
 
 ## Validation Checklist
 
@@ -217,6 +245,7 @@ Apply the two required Supabase variables to **Production** in Vercel. Also appl
 - Confirm PMV Working, Breakdown, and Idle submissions reach the PMV Dashboard.
 - Confirm PMV metric popups list machine and reporter names.
 - Confirm Work Program and PMV CSV exports preserve one record per data row.
+- Confirm Harvesting Interval loads `/management/harvesting-interval`, month filtering works, Ha values show 2 decimal places, dispatch expansion works, activity overlays render correctly, Rainfall Data displays `-`, and CSV export includes the displayed grid data.
 - Confirm an offline test submission queues locally, then syncs to Supabase when the browser reconnects.
 - Confirm browser console has no errors.
 
