@@ -1,9 +1,9 @@
 {
   "metadata": {
     "module": "Harvesting Interval",
-    "activitySourceFile": "ZCKR_HRVINFO.xlsx",
+    "activitySourceFile": "Latest_HRVINFO.xlsx",
     "referenceTemplateFile": "Harvesting_Interval_.xlsm",
-    "sourceDescription": "QC and C1 harvesting productivity from ZCKR_HRVINFO, with optional dispatch comparison from ztbl_ckrhrvint.",
+    "sourceDescription": "QC and C1 harvesting productivity from Latest_HRVINFO, with optional dispatch comparison from ztbl_ckrhrvint.",
     "baseDate": "2026-03-31",
     "startDate": "2026-04-01",
     "lastActivityDate": "2026-06-30",
@@ -14,7 +14,7 @@
       "2026-06"
     ],
     "templateDescription": "HD screenshot-aligned D1-D9 harvesting interval report template.",
-    "activityRows": 393,
+    "activityRows": 487,
     "dispatchSourceFile": "ztbl_ckrhrvint.xlsx",
     "lastDispatchDate": "2026-06-30",
     "dispatchRows": 514,
@@ -470,28 +470,36 @@
       "2026-06-05": {
         "hectare": 10,
         "bunches": 454,
-        "tonnage": 0,
+        "tonnage": 8.823,
         "activityCode": "PH4007",
         "monthHectare": 38.17
       },
       "2026-06-06": {
         "hectare": 20,
         "bunches": 1115,
-        "tonnage": 0,
+        "tonnage": 21.668,
         "activityCode": "PH4007",
         "monthHectare": 38.17
       },
       "2026-06-08": {
         "hectare": 8.17,
         "bunches": 74,
-        "tonnage": 0,
+        "tonnage": 1.438,
         "activityCode": "PH4007",
         "monthHectare": 38.17
       },
-      "2026-06-30": {
-        "hectare": 0,
-        "bunches": 0,
-        "tonnage": 67.103,
+      "2026-06-18": {
+        "hectare": 30.17,
+        "bunches": 1036,
+        "tonnage": 20.133,
+        "activityCode": "PH4007",
+        "monthHectare": 38.17
+      },
+      "2026-06-19": {
+        "hectare": 8,
+        "bunches": 774,
+        "tonnage": 15.041,
+        "activityCode": "PH4007",
         "monthHectare": 38.17
       }
     },
@@ -562,14 +570,22 @@
       "2026-06-08": {
         "hectare": 44.9,
         "bunches": 1659,
-        "tonnage": 0,
+        "tonnage": 30.968,
         "activityCode": "PH4007",
         "monthHectare": 44.9
       },
-      "2026-06-30": {
-        "hectare": 0,
-        "bunches": 0,
-        "tonnage": 61.451,
+      "2026-06-19": {
+        "hectare": 20,
+        "bunches": 951,
+        "tonnage": 17.752,
+        "activityCode": "PH4007",
+        "monthHectare": 44.9
+      },
+      "2026-06-20": {
+        "hectare": 17,
+        "bunches": 682,
+        "tonnage": 12.731,
+        "activityCode": "PH4007",
         "monthHectare": 44.9
       }
     },
@@ -647,14 +663,43 @@
       "2026-06-03": {
         "hectare": 61.2,
         "bunches": 1577,
-        "tonnage": 0,
+        "tonnage": 27.704,
         "activityCode": "PH4007",
         "monthHectare": 61.2
       },
-      "2026-06-30": {
-        "hectare": 0,
-        "bunches": 0,
-        "tonnage": 116.244,
+      "2026-06-15": {
+        "hectare": 26.1,
+        "bunches": 1318,
+        "tonnage": 23.154,
+        "activityCode": "PH4007",
+        "monthHectare": 61.2
+      },
+      "2026-06-16": {
+        "hectare": 33.1,
+        "bunches": 1048,
+        "tonnage": 18.411,
+        "activityCode": "PH4007",
+        "monthHectare": 61.2
+      },
+      "2026-06-27": {
+        "hectare": 30,
+        "bunches": 851,
+        "tonnage": 14.95,
+        "activityCode": "PH4007",
+        "monthHectare": 61.2
+      },
+      "2026-06-28": {
+        "hectare": 7.1,
+        "bunches": 534,
+        "tonnage": 9.381,
+        "activityCode": "PH4007",
+        "monthHectare": 61.2
+      },
+      "2026-06-29": {
+        "hectare": 22,
+        "bunches": 1289,
+        "tonnage": 22.644,
+        "activityCode": "PH4007",
         "monthHectare": 61.2
       }
     },
@@ -718,14 +763,43 @@
       "2026-06-02": {
         "hectare": 18,
         "bunches": 864,
-        "tonnage": 0,
+        "tonnage": 13.84,
         "activityCode": "PH4007",
         "monthHectare": 57.74
       },
-      "2026-06-30": {
-        "hectare": 0,
-        "bunches": 0,
-        "tonnage": 86.13,
+      "2026-06-13": {
+        "hectare": 6,
+        "bunches": 759,
+        "tonnage": 12.158,
+        "activityCode": "PH4007",
+        "monthHectare": 57.74
+      },
+      "2026-06-14": {
+        "hectare": 31.74,
+        "bunches": 1509,
+        "tonnage": 24.172,
+        "activityCode": "PH4007",
+        "monthHectare": 57.74
+      },
+      "2026-06-25": {
+        "hectare": 5,
+        "bunches": 633,
+        "tonnage": 10.14,
+        "activityCode": "PH4007",
+        "monthHectare": 57.74
+      },
+      "2026-06-26": {
+        "hectare": 5,
+        "bunches": 699,
+        "tonnage": 11.197,
+        "activityCode": "PH4007",
+        "monthHectare": 57.74
+      },
+      "2026-06-28": {
+        "hectare": 32.74,
+        "bunches": 913,
+        "tonnage": 14.623,
+        "activityCode": "PH4007",
         "monthHectare": 57.74
       }
     },
@@ -810,14 +884,50 @@
       "2026-06-02": {
         "hectare": 61.62,
         "bunches": 1010,
-        "tonnage": 0,
+        "tonnage": 15.385,
         "activityCode": "PH4007",
         "monthHectare": 86.62
       },
-      "2026-06-30": {
-        "hectare": 0,
-        "bunches": 0,
-        "tonnage": 105.457,
+      "2026-06-12": {
+        "hectare": 5,
+        "bunches": 222,
+        "tonnage": 3.382,
+        "activityCode": "PH4007",
+        "monthHectare": 86.62
+      },
+      "2026-06-13": {
+        "hectare": 15,
+        "bunches": 414,
+        "tonnage": 6.306,
+        "activityCode": "PH4007",
+        "monthHectare": 86.62
+      },
+      "2026-06-14": {
+        "hectare": 66.62,
+        "bunches": 1648,
+        "tonnage": 25.104,
+        "activityCode": "PH4007",
+        "monthHectare": 86.62
+      },
+      "2026-06-25": {
+        "hectare": 40,
+        "bunches": 983,
+        "tonnage": 14.974,
+        "activityCode": "PH4007",
+        "monthHectare": 86.62
+      },
+      "2026-06-26": {
+        "hectare": 10,
+        "bunches": 1544,
+        "tonnage": 23.52,
+        "activityCode": "PH4007",
+        "monthHectare": 86.62
+      },
+      "2026-06-27": {
+        "hectare": 36.62,
+        "bunches": 1102,
+        "tonnage": 16.786,
+        "activityCode": "PH4007",
         "monthHectare": 86.62
       }
     },
@@ -895,21 +1005,64 @@
       "2026-06-02": {
         "hectare": 18.18,
         "bunches": 545,
-        "tonnage": 0,
+        "tonnage": 9.011,
         "activityCode": "PH4007",
         "monthHectare": 48.96
       },
       "2026-06-03": {
         "hectare": 18.18,
         "bunches": 466,
-        "tonnage": 0,
+        "tonnage": 7.704,
         "activityCode": "PH4007",
         "monthHectare": 48.96
       },
-      "2026-06-30": {
-        "hectare": 0,
-        "bunches": 0,
-        "tonnage": 95.032,
+      "2026-06-13": {
+        "hectare": 10,
+        "bunches": 567,
+        "tonnage": 9.374,
+        "activityCode": "PH4007",
+        "monthHectare": 48.96
+      },
+      "2026-06-14": {
+        "hectare": 4.96,
+        "bunches": 980,
+        "tonnage": 16.202,
+        "activityCode": "PH4007",
+        "monthHectare": 48.96
+      },
+      "2026-06-15": {
+        "hectare": 4,
+        "bunches": 773,
+        "tonnage": 12.78,
+        "activityCode": "PH4007",
+        "monthHectare": 48.96
+      },
+      "2026-06-25": {
+        "hectare": 10,
+        "bunches": 682,
+        "tonnage": 11.276,
+        "activityCode": "PH4007",
+        "monthHectare": 48.96
+      },
+      "2026-06-26": {
+        "hectare": 10,
+        "bunches": 310,
+        "tonnage": 5.125,
+        "activityCode": "PH4007",
+        "monthHectare": 48.96
+      },
+      "2026-06-27": {
+        "hectare": 8.96,
+        "bunches": 1111,
+        "tonnage": 18.368,
+        "activityCode": "PH4007",
+        "monthHectare": 48.96
+      },
+      "2026-06-28": {
+        "hectare": 20,
+        "bunches": 314,
+        "tonnage": 5.192,
+        "activityCode": "PH4007",
         "monthHectare": 48.96
       }
     },
@@ -980,21 +1133,36 @@
       "2026-06-06": {
         "hectare": 20,
         "bunches": 321,
-        "tonnage": 0,
+        "tonnage": 5.985,
         "activityCode": "PH4007",
         "monthHectare": 36.26
       },
       "2026-06-08": {
         "hectare": 16.26,
         "bunches": 1096,
-        "tonnage": 0,
+        "tonnage": 20.436,
         "activityCode": "PH4007",
         "monthHectare": 36.26
       },
-      "2026-06-30": {
-        "hectare": 0,
-        "bunches": 0,
-        "tonnage": 55.454,
+      "2026-06-19": {
+        "hectare": 3,
+        "bunches": 615,
+        "tonnage": 11.467,
+        "activityCode": "PH4007",
+        "monthHectare": 36.26
+      },
+      "2026-06-20": {
+        "hectare": 3,
+        "bunches": 253,
+        "tonnage": 4.718,
+        "activityCode": "PH4007",
+        "monthHectare": 36.26
+      },
+      "2026-06-22": {
+        "hectare": 3,
+        "bunches": 689,
+        "tonnage": 12.848,
+        "activityCode": "PH4007",
         "monthHectare": 36.26
       }
     },
@@ -1121,35 +1289,71 @@
       "2026-06-05": {
         "hectare": 17.27,
         "bunches": 874,
-        "tonnage": 0,
+        "tonnage": 14.201,
         "activityCode": "PH4007",
         "monthHectare": 69.09
       },
       "2026-06-06": {
         "hectare": 20,
         "bunches": 344,
-        "tonnage": 0,
+        "tonnage": 5.59,
         "activityCode": "PH4007",
         "monthHectare": 69.09
       },
       "2026-06-08": {
         "hectare": 14.28,
         "bunches": 30,
-        "tonnage": 0,
+        "tonnage": 0.487,
         "activityCode": "PH4007",
         "monthHectare": 69.09
       },
       "2026-06-09": {
         "hectare": 17,
         "bunches": 2390,
-        "tonnage": 0,
+        "tonnage": 38.834,
+        "activityCode": "PH4007",
+        "monthHectare": 69.09
+      },
+      "2026-06-17": {
+        "hectare": 9,
+        "bunches": 545,
+        "tonnage": 8.855,
+        "activityCode": "PH4007",
+        "monthHectare": 69.09
+      },
+      "2026-06-18": {
+        "hectare": 20,
+        "bunches": 287,
+        "tonnage": 4.663,
+        "activityCode": "PH4007",
+        "monthHectare": 69.09
+      },
+      "2026-06-19": {
+        "hectare": 30,
+        "bunches": 390,
+        "tonnage": 6.337,
+        "activityCode": "PH4007",
+        "monthHectare": 69.09
+      },
+      "2026-06-20": {
+        "hectare": 30,
+        "bunches": 1282,
+        "tonnage": 20.831,
+        "activityCode": "PH4007",
+        "monthHectare": 69.09
+      },
+      "2026-06-22": {
+        "hectare": 5,
+        "bunches": 2008,
+        "tonnage": 32.627,
         "activityCode": "PH4007",
         "monthHectare": 69.09
       },
       "2026-06-30": {
-        "hectare": 0,
-        "bunches": 0,
-        "tonnage": 145.782,
+        "hectare": 26,
+        "bunches": 822,
+        "tonnage": 13.357,
+        "activityCode": "PH4007",
         "monthHectare": 69.09
       }
     },
@@ -1255,14 +1459,43 @@
       "2026-06-09": {
         "hectare": 33.15,
         "bunches": 736,
-        "tonnage": 0,
+        "tonnage": 11.919,
         "activityCode": "PH4007",
         "monthHectare": 76.15
       },
-      "2026-06-30": {
-        "hectare": 0,
-        "bunches": 0,
-        "tonnage": 146.673,
+      "2026-06-10": {
+        "hectare": 23.15,
+        "bunches": 1097,
+        "tonnage": 17.765,
+        "activityCode": "PH4007",
+        "monthHectare": 76.15
+      },
+      "2026-06-11": {
+        "hectare": 23,
+        "bunches": 2567,
+        "tonnage": 41.571,
+        "activityCode": "PH4007",
+        "monthHectare": 76.15
+      },
+      "2026-06-22": {
+        "hectare": 19.85,
+        "bunches": 1317,
+        "tonnage": 21.328,
+        "activityCode": "PH4007",
+        "monthHectare": 76.15
+      },
+      "2026-06-23": {
+        "hectare": 15,
+        "bunches": 1684,
+        "tonnage": 27.271,
+        "activityCode": "PH4007",
+        "monthHectare": 76.15
+      },
+      "2026-06-24": {
+        "hectare": 41.3,
+        "bunches": 1656,
+        "tonnage": 26.819,
+        "activityCode": "PH4007",
         "monthHectare": 76.15
       }
     },
@@ -1361,28 +1594,43 @@
       "2026-06-05": {
         "hectare": 20,
         "bunches": 688,
-        "tonnage": 0,
+        "tonnage": 10.868,
         "activityCode": "PH4007",
         "monthHectare": 77.39
       },
       "2026-06-06": {
         "hectare": 30,
         "bunches": 1899,
-        "tonnage": 0,
+        "tonnage": 29.997,
         "activityCode": "PH4007",
         "monthHectare": 77.39
       },
       "2026-06-08": {
         "hectare": 27.39,
         "bunches": 535,
-        "tonnage": 0,
+        "tonnage": 8.451,
         "activityCode": "PH4007",
         "monthHectare": 77.39
       },
-      "2026-06-30": {
-        "hectare": 0,
-        "bunches": 0,
-        "tonnage": 115.201,
+      "2026-06-18": {
+        "hectare": 20,
+        "bunches": 2519,
+        "tonnage": 39.79,
+        "activityCode": "PH4007",
+        "monthHectare": 77.39
+      },
+      "2026-06-19": {
+        "hectare": 30,
+        "bunches": 548,
+        "tonnage": 8.656,
+        "activityCode": "PH4007",
+        "monthHectare": 77.39
+      },
+      "2026-06-20": {
+        "hectare": 30,
+        "bunches": 1104,
+        "tonnage": 17.439,
+        "activityCode": "PH4007",
         "monthHectare": 77.39
       }
     },
@@ -1481,14 +1729,36 @@
       "2026-06-09": {
         "hectare": 30,
         "bunches": 1087,
-        "tonnage": 0,
+        "tonnage": 16.923,
         "activityCode": "PH4007",
         "monthHectare": 65.06
       },
-      "2026-06-30": {
-        "hectare": 0,
-        "bunches": 0,
-        "tonnage": 118.521,
+      "2026-06-10": {
+        "hectare": 5.06,
+        "bunches": 2406,
+        "tonnage": 37.457,
+        "activityCode": "PH4007",
+        "monthHectare": 65.06
+      },
+      "2026-06-22": {
+        "hectare": 5.06,
+        "bunches": 2129,
+        "tonnage": 33.145,
+        "activityCode": "PH4007",
+        "monthHectare": 65.06
+      },
+      "2026-06-23": {
+        "hectare": 30,
+        "bunches": 590,
+        "tonnage": 9.185,
+        "activityCode": "PH4007",
+        "monthHectare": 65.06
+      },
+      "2026-06-24": {
+        "hectare": 30,
+        "bunches": 1401,
+        "tonnage": 21.811,
+        "activityCode": "PH4007",
         "monthHectare": 65.06
       }
     },
@@ -1580,21 +1850,43 @@
       "2026-06-08": {
         "hectare": 20,
         "bunches": 621,
-        "tonnage": 0,
+        "tonnage": 9.99,
         "activityCode": "PH4007",
         "monthHectare": 66.77
       },
       "2026-06-09": {
         "hectare": 30,
         "bunches": 1172,
-        "tonnage": 0,
+        "tonnage": 18.854,
         "activityCode": "PH4007",
         "monthHectare": 66.77
       },
-      "2026-06-30": {
-        "hectare": 0,
-        "bunches": 0,
-        "tonnage": 145.511,
+      "2026-06-10": {
+        "hectare": 16.77,
+        "bunches": 2219,
+        "tonnage": 35.698,
+        "activityCode": "PH4007",
+        "monthHectare": 66.77
+      },
+      "2026-06-20": {
+        "hectare": 5,
+        "bunches": 797,
+        "tonnage": 12.822,
+        "activityCode": "PH4007",
+        "monthHectare": 66.77
+      },
+      "2026-06-22": {
+        "hectare": 10,
+        "bunches": 2226,
+        "tonnage": 35.811,
+        "activityCode": "PH4007",
+        "monthHectare": 66.77
+      },
+      "2026-06-23": {
+        "hectare": 30,
+        "bunches": 2010,
+        "tonnage": 32.336,
+        "activityCode": "PH4007",
         "monthHectare": 66.77
       }
     },
@@ -1693,21 +1985,43 @@
       "2026-06-08": {
         "hectare": 30,
         "bunches": 1345,
-        "tonnage": 0,
+        "tonnage": 19.716,
         "activityCode": "PH4007",
         "monthHectare": 61.89
       },
       "2026-06-09": {
         "hectare": 26.89,
         "bunches": 2642,
-        "tonnage": 0,
+        "tonnage": 38.728,
         "activityCode": "PH4007",
         "monthHectare": 61.89
       },
-      "2026-06-30": {
-        "hectare": 0,
-        "bunches": 0,
-        "tonnage": 141.381,
+      "2026-06-10": {
+        "hectare": 5,
+        "bunches": 48,
+        "tonnage": 0.704,
+        "activityCode": "PH4007",
+        "monthHectare": 61.89
+      },
+      "2026-06-20": {
+        "hectare": 5,
+        "bunches": 3357,
+        "tonnage": 49.209,
+        "activityCode": "PH4007",
+        "monthHectare": 61.89
+      },
+      "2026-06-22": {
+        "hectare": 30,
+        "bunches": 901,
+        "tonnage": 13.207,
+        "activityCode": "PH4007",
+        "monthHectare": 61.89
+      },
+      "2026-06-23": {
+        "hectare": 16.89,
+        "bunches": 1352,
+        "tonnage": 19.817,
+        "activityCode": "PH4007",
         "monthHectare": 61.89
       }
     },
@@ -1757,14 +2071,15 @@
       "2026-06-06": {
         "hectare": 7.4,
         "bunches": 581,
-        "tonnage": 0,
+        "tonnage": 9.021,
         "activityCode": "PH4007",
         "monthHectare": 7.4
       },
-      "2026-06-30": {
-        "hectare": 0,
-        "bunches": 0,
-        "tonnage": 20.387,
+      "2026-06-19": {
+        "hectare": 7.4,
+        "bunches": 732,
+        "tonnage": 11.366,
+        "activityCode": "PH4007",
         "monthHectare": 7.4
       }
     },
@@ -1849,28 +2164,57 @@
       "2026-06-02": {
         "hectare": 30,
         "bunches": 697,
-        "tonnage": 0,
+        "tonnage": 9.287,
         "activityCode": "PH4007",
         "monthHectare": 68.8
       },
       "2026-06-03": {
         "hectare": 30,
         "bunches": 1106,
-        "tonnage": 0,
+        "tonnage": 14.736,
         "activityCode": "PH4007",
         "monthHectare": 68.8
       },
       "2026-06-04": {
         "hectare": 8.8,
         "bunches": 765,
-        "tonnage": 0,
+        "tonnage": 10.193,
+        "activityCode": "PH4007",
+        "monthHectare": 68.8
+      },
+      "2026-06-15": {
+        "hectare": 50,
+        "bunches": 1205,
+        "tonnage": 16.055,
+        "activityCode": "PH4007",
+        "monthHectare": 68.8
+      },
+      "2026-06-16": {
+        "hectare": 18.8,
+        "bunches": 2217,
+        "tonnage": 29.538,
+        "activityCode": "PH4007",
+        "monthHectare": 68.8
+      },
+      "2026-06-28": {
+        "hectare": 34.4,
+        "bunches": 2325,
+        "tonnage": 30.977,
+        "activityCode": "PH4007",
+        "monthHectare": 68.8
+      },
+      "2026-06-29": {
+        "hectare": 30,
+        "bunches": 1465,
+        "tonnage": 19.519,
         "activityCode": "PH4007",
         "monthHectare": 68.8
       },
       "2026-06-30": {
-        "hectare": 0,
-        "bunches": 0,
-        "tonnage": 133.196,
+        "hectare": 9.4,
+        "bunches": 217,
+        "tonnage": 2.891,
+        "activityCode": "PH4007",
         "monthHectare": 68.8
       }
     },
@@ -1962,21 +2306,50 @@
       "2026-06-04": {
         "hectare": 20,
         "bunches": 1210,
-        "tonnage": 0,
+        "tonnage": 14.767,
         "activityCode": "PH4007",
         "monthHectare": 56
       },
       "2026-06-05": {
         "hectare": 36,
         "bunches": 1781,
+        "tonnage": 21.736,
+        "activityCode": "PH4007",
+        "monthHectare": 56
+      },
+      "2026-06-16": {
+        "hectare": 30,
+        "bunches": 598,
+        "tonnage": 7.298,
+        "activityCode": "PH4007",
+        "monthHectare": 56
+      },
+      "2026-06-17": {
+        "hectare": 16,
+        "bunches": 1544,
+        "tonnage": 18.843,
+        "activityCode": "PH4007",
+        "monthHectare": 56
+      },
+      "2026-06-18": {
+        "hectare": 5,
+        "bunches": 1258,
+        "tonnage": 15.353,
+        "activityCode": "PH4007",
+        "monthHectare": 56
+      },
+      "2026-06-19": {
+        "hectare": 5,
+        "bunches": 0,
         "tonnage": 0,
         "activityCode": "PH4007",
         "monthHectare": 56
       },
       "2026-06-30": {
-        "hectare": 0,
-        "bunches": 0,
-        "tonnage": 80.682,
+        "hectare": 3,
+        "bunches": 220,
+        "tonnage": 2.685,
+        "activityCode": "PH4007",
         "monthHectare": 56
       }
     },
@@ -2054,21 +2427,64 @@
       "2026-06-02": {
         "hectare": 50,
         "bunches": 1196,
-        "tonnage": 0,
+        "tonnage": 14.995,
         "activityCode": "PH4007",
         "monthHectare": 75.29
       },
       "2026-06-04": {
         "hectare": 25.29,
         "bunches": 1850,
-        "tonnage": 0,
+        "tonnage": 23.194,
         "activityCode": "PH4007",
         "monthHectare": 75.29
       },
-      "2026-06-30": {
-        "hectare": 0,
-        "bunches": 0,
-        "tonnage": 160.215,
+      "2026-06-14": {
+        "hectare": 20,
+        "bunches": 2225,
+        "tonnage": 27.896,
+        "activityCode": "PH4007",
+        "monthHectare": 75.29
+      },
+      "2026-06-16": {
+        "hectare": 10,
+        "bunches": 1125,
+        "tonnage": 14.105,
+        "activityCode": "PH4007",
+        "monthHectare": 75.29
+      },
+      "2026-06-17": {
+        "hectare": 10,
+        "bunches": 665,
+        "tonnage": 8.337,
+        "activityCode": "PH4007",
+        "monthHectare": 75.29
+      },
+      "2026-06-18": {
+        "hectare": 15.29,
+        "bunches": 732,
+        "tonnage": 9.177,
+        "activityCode": "PH4007",
+        "monthHectare": 75.29
+      },
+      "2026-06-27": {
+        "hectare": 5.29,
+        "bunches": 1150,
+        "tonnage": 14.418,
+        "activityCode": "PH4007",
+        "monthHectare": 75.29
+      },
+      "2026-06-28": {
+        "hectare": 50,
+        "bunches": 2438,
+        "tonnage": 30.566,
+        "activityCode": "PH4007",
+        "monthHectare": 75.29
+      },
+      "2026-06-29": {
+        "hectare": 20,
+        "bunches": 1398,
+        "tonnage": 17.527,
+        "activityCode": "PH4007",
         "monthHectare": 75.29
       }
     },
@@ -2178,10 +2594,39 @@
         "activityCode": "PH4007",
         "monthHectare": 99.51
       },
-      "2026-06-30": {
-        "hectare": 0,
-        "bunches": 0,
-        "tonnage": 192.895,
+      "2026-06-10": {
+        "hectare": 50,
+        "bunches": 3213,
+        "tonnage": 36.636,
+        "activityCode": "PH4007",
+        "monthHectare": 99.51
+      },
+      "2026-06-11": {
+        "hectare": 20,
+        "bunches": 4019,
+        "tonnage": 45.826,
+        "activityCode": "PH4007",
+        "monthHectare": 99.51
+      },
+      "2026-06-12": {
+        "hectare": 29.51,
+        "bunches": 1173,
+        "tonnage": 13.375,
+        "activityCode": "PH4007",
+        "monthHectare": 99.51
+      },
+      "2026-06-23": {
+        "hectare": 33.17,
+        "bunches": 5500,
+        "tonnage": 62.713,
+        "activityCode": "PH4007",
+        "monthHectare": 99.51
+      },
+      "2026-06-25": {
+        "hectare": 33.17,
+        "bunches": 3012,
+        "tonnage": 34.345,
+        "activityCode": "PH4007",
         "monthHectare": 99.51
       }
     },
@@ -2277,10 +2722,53 @@
         "activityCode": "PH4007",
         "monthHectare": 97.36
       },
-      "2026-06-30": {
-        "hectare": 0,
-        "bunches": 0,
-        "tonnage": 159.674,
+      "2026-06-10": {
+        "hectare": 25,
+        "bunches": 830,
+        "tonnage": 8.836,
+        "activityCode": "PH4007",
+        "monthHectare": 97.36
+      },
+      "2026-06-11": {
+        "hectare": 57,
+        "bunches": 2004,
+        "tonnage": 21.335,
+        "activityCode": "PH4007",
+        "monthHectare": 97.36
+      },
+      "2026-06-12": {
+        "hectare": 10,
+        "bunches": 4328,
+        "tonnage": 46.077,
+        "activityCode": "PH4007",
+        "monthHectare": 97.36
+      },
+      "2026-06-23": {
+        "hectare": 45,
+        "bunches": 869,
+        "tonnage": 9.252,
+        "activityCode": "PH4007",
+        "monthHectare": 97.36
+      },
+      "2026-06-24": {
+        "hectare": 47,
+        "bunches": 4305,
+        "tonnage": 45.833,
+        "activityCode": "PH4007",
+        "monthHectare": 97.36
+      },
+      "2026-06-26": {
+        "hectare": 2,
+        "bunches": 945,
+        "tonnage": 10.061,
+        "activityCode": "PH4007",
+        "monthHectare": 97.36
+      },
+      "2026-06-27": {
+        "hectare": 3.36,
+        "bunches": 1717,
+        "tonnage": 18.28,
+        "activityCode": "PH4007",
         "monthHectare": 97.36
       }
     },
@@ -2393,14 +2881,36 @@
       "2026-06-02": {
         "hectare": 33.16,
         "bunches": 911,
-        "tonnage": 0,
+        "tonnage": 8.993,
         "activityCode": "PH4007",
         "monthHectare": 107.16
       },
-      "2026-06-30": {
-        "hectare": 0,
-        "bunches": 0,
-        "tonnage": 156.409,
+      "2026-06-12": {
+        "hectare": 50,
+        "bunches": 2177,
+        "tonnage": 21.491,
+        "activityCode": "PH4007",
+        "monthHectare": 107.16
+      },
+      "2026-06-13": {
+        "hectare": 57.16,
+        "bunches": 4709,
+        "tonnage": 46.486,
+        "activityCode": "PH4007",
+        "monthHectare": 107.16
+      },
+      "2026-06-25": {
+        "hectare": 7.16,
+        "bunches": 2555,
+        "tonnage": 25.222,
+        "activityCode": "PH4007",
+        "monthHectare": 107.16
+      },
+      "2026-06-26": {
+        "hectare": 50,
+        "bunches": 5492,
+        "tonnage": 54.217,
+        "activityCode": "PH4007",
         "monthHectare": 107.16
       }
     },
@@ -2492,28 +3002,57 @@
       "2026-06-03": {
         "hectare": 40,
         "bunches": 2763,
-        "tonnage": 0,
+        "tonnage": 29.955,
         "activityCode": "PH4007",
         "monthHectare": 99.41
       },
       "2026-06-04": {
         "hectare": 20,
         "bunches": 3385,
-        "tonnage": 0,
+        "tonnage": 36.698,
         "activityCode": "PH4007",
         "monthHectare": 99.41
       },
       "2026-06-05": {
         "hectare": 39.41,
         "bunches": 2716,
-        "tonnage": 0,
+        "tonnage": 29.445,
+        "activityCode": "PH4007",
+        "monthHectare": 99.41
+      },
+      "2026-06-15": {
+        "hectare": 60,
+        "bunches": 2014,
+        "tonnage": 21.834,
+        "activityCode": "PH4007",
+        "monthHectare": 99.41
+      },
+      "2026-06-16": {
+        "hectare": 30,
+        "bunches": 2870,
+        "tonnage": 31.115,
+        "activityCode": "PH4007",
+        "monthHectare": 99.41
+      },
+      "2026-06-17": {
+        "hectare": 9.41,
+        "bunches": 5588,
+        "tonnage": 60.581,
+        "activityCode": "PH4007",
+        "monthHectare": 99.41
+      },
+      "2026-06-29": {
+        "hectare": 41.41,
+        "bunches": 2624,
+        "tonnage": 28.448,
         "activityCode": "PH4007",
         "monthHectare": 99.41
       },
       "2026-06-30": {
-        "hectare": 0,
-        "bunches": 0,
-        "tonnage": 318.843,
+        "hectare": 58,
+        "bunches": 7450,
+        "tonnage": 80.767,
+        "activityCode": "PH4007",
         "monthHectare": 99.41
       }
     },
@@ -2598,21 +3137,50 @@
       "2026-06-02": {
         "hectare": 25.96,
         "bunches": 901,
-        "tonnage": 0,
+        "tonnage": 10.58,
         "activityCode": "PH4007",
         "monthHectare": 51.93
       },
       "2026-06-03": {
         "hectare": 25.97,
         "bunches": 2016,
-        "tonnage": 0,
+        "tonnage": 23.673,
         "activityCode": "PH4007",
         "monthHectare": 51.93
       },
-      "2026-06-30": {
-        "hectare": 0,
-        "bunches": 0,
-        "tonnage": 158.91,
+      "2026-06-14": {
+        "hectare": 30,
+        "bunches": 2053,
+        "tonnage": 24.107,
+        "activityCode": "PH4007",
+        "monthHectare": 51.93
+      },
+      "2026-06-15": {
+        "hectare": 11.93,
+        "bunches": 3260,
+        "tonnage": 38.28,
+        "activityCode": "PH4007",
+        "monthHectare": 51.93
+      },
+      "2026-06-27": {
+        "hectare": 4.1,
+        "bunches": 3570,
+        "tonnage": 41.92,
+        "activityCode": "PH4007",
+        "monthHectare": 51.93
+      },
+      "2026-06-28": {
+        "hectare": 15,
+        "bunches": 495,
+        "tonnage": 5.812,
+        "activityCode": "PH4007",
+        "monthHectare": 51.93
+      },
+      "2026-06-29": {
+        "hectare": 32.83,
+        "bunches": 1238,
+        "tonnage": 14.538,
+        "activityCode": "PH4007",
         "monthHectare": 51.93
       }
     },
@@ -2694,10 +3262,39 @@
         "activityCode": "PH4007",
         "monthHectare": 46.45
       },
-      "2026-06-30": {
-        "hectare": 0,
-        "bunches": 0,
-        "tonnage": 50.347,
+      "2026-06-11": {
+        "hectare": 22.31,
+        "bunches": 809,
+        "tonnage": 7.865,
+        "activityCode": "PH4007",
+        "monthHectare": 46.45
+      },
+      "2026-06-12": {
+        "hectare": 12.32,
+        "bunches": 1386,
+        "tonnage": 13.474,
+        "activityCode": "PH4007",
+        "monthHectare": 46.45
+      },
+      "2026-06-13": {
+        "hectare": 11.82,
+        "bunches": 264,
+        "tonnage": 2.566,
+        "activityCode": "PH4007",
+        "monthHectare": 46.45
+      },
+      "2026-06-24": {
+        "hectare": 23,
+        "bunches": 1793,
+        "tonnage": 17.43,
+        "activityCode": "PH4007",
+        "monthHectare": 46.45
+      },
+      "2026-06-26": {
+        "hectare": 9.5,
+        "bunches": 927,
+        "tonnage": 9.012,
+        "activityCode": "PH4007",
         "monthHectare": 46.45
       }
     },
@@ -2782,14 +3379,50 @@
       "2026-06-02": {
         "hectare": 8.33,
         "bunches": 791,
-        "tonnage": 0,
+        "tonnage": 8.171,
         "activityCode": "PH4007",
         "monthHectare": 48.66
       },
-      "2026-06-30": {
-        "hectare": 0,
-        "bunches": 0,
-        "tonnage": 71.699,
+      "2026-06-11": {
+        "hectare": 8.11,
+        "bunches": 1127,
+        "tonnage": 11.642,
+        "activityCode": "PH4007",
+        "monthHectare": 48.66
+      },
+      "2026-06-12": {
+        "hectare": 20.27,
+        "bunches": 184,
+        "tonnage": 1.901,
+        "activityCode": "PH4007",
+        "monthHectare": 48.66
+      },
+      "2026-06-13": {
+        "hectare": 20.28,
+        "bunches": 1833,
+        "tonnage": 18.934,
+        "activityCode": "PH4007",
+        "monthHectare": 48.66
+      },
+      "2026-06-24": {
+        "hectare": 4.33,
+        "bunches": 879,
+        "tonnage": 9.08,
+        "activityCode": "PH4007",
+        "monthHectare": 48.66
+      },
+      "2026-06-25": {
+        "hectare": 30,
+        "bunches": 1226,
+        "tonnage": 12.664,
+        "activityCode": "PH4007",
+        "monthHectare": 48.66
+      },
+      "2026-06-26": {
+        "hectare": 14.33,
+        "bunches": 901,
+        "tonnage": 9.307,
+        "activityCode": "PH4007",
         "monthHectare": 48.66
       }
     },
@@ -2913,10 +3546,18 @@
         "activityCode": "PH9002",
         "monthHectare": 10.79
       },
-      "2026-06-30": {
-        "hectare": 0,
-        "bunches": 0,
+      "2026-06-16": {
+        "hectare": 5,
+        "bunches": 903,
+        "tonnage": 0,
+        "activityCode": "PH9002",
+        "monthHectare": 10.79
+      },
+      "2026-06-17": {
+        "hectare": 5.79,
+        "bunches": 547,
         "tonnage": 11.811,
+        "activityCode": "PH9002",
         "monthHectare": 10.79
       }
     },
@@ -2994,21 +3635,43 @@
       "2026-06-04": {
         "hectare": 28.46,
         "bunches": 1195,
-        "tonnage": 0,
+        "tonnage": 21.015,
         "activityCode": "PH4007",
         "monthHectare": 71.92
       },
       "2026-06-05": {
         "hectare": 16.4,
         "bunches": 498,
-        "tonnage": 0,
+        "tonnage": 8.758,
         "activityCode": "PH4007",
         "monthHectare": 71.92
       },
-      "2026-06-30": {
-        "hectare": 0,
-        "bunches": 0,
-        "tonnage": 91.726,
+      "2026-06-16": {
+        "hectare": 27.8,
+        "bunches": 1590,
+        "tonnage": 27.961,
+        "activityCode": "PH4007",
+        "monthHectare": 71.92
+      },
+      "2026-06-18": {
+        "hectare": 15,
+        "bunches": 689,
+        "tonnage": 12.116,
+        "activityCode": "PH4007",
+        "monthHectare": 71.92
+      },
+      "2026-06-28": {
+        "hectare": 17.8,
+        "bunches": 921,
+        "tonnage": 16.196,
+        "activityCode": "PH4007",
+        "monthHectare": 71.92
+      },
+      "2026-06-29": {
+        "hectare": 59.12,
+        "bunches": 323,
+        "tonnage": 5.68,
+        "activityCode": "PH4007",
         "monthHectare": 71.92
       }
     },
@@ -3135,28 +3798,50 @@
       "2026-06-05": {
         "hectare": 30,
         "bunches": 342,
-        "tonnage": 0,
+        "tonnage": 6.185,
         "activityCode": "PH4007",
         "monthHectare": 61.49
       },
       "2026-06-06": {
         "hectare": 10.49,
         "bunches": 977,
-        "tonnage": 0,
+        "tonnage": 17.67,
         "activityCode": "PH4007",
         "monthHectare": 61.49
       },
       "2026-06-08": {
         "hectare": 20,
         "bunches": 670,
-        "tonnage": 0,
+        "tonnage": 12.118,
+        "activityCode": "PH4007",
+        "monthHectare": 61.49
+      },
+      "2026-06-17": {
+        "hectare": 30,
+        "bunches": 210,
+        "tonnage": 3.798,
+        "activityCode": "PH4007",
+        "monthHectare": 61.49
+      },
+      "2026-06-18": {
+        "hectare": 20,
+        "bunches": 106,
+        "tonnage": 1.917,
+        "activityCode": "PH4007",
+        "monthHectare": 61.49
+      },
+      "2026-06-19": {
+        "hectare": 11.41,
+        "bunches": 2319,
+        "tonnage": 41.942,
         "activityCode": "PH4007",
         "monthHectare": 61.49
       },
       "2026-06-30": {
-        "hectare": 0,
-        "bunches": 0,
-        "tonnage": 91.986,
+        "hectare": 3,
+        "bunches": 462,
+        "tonnage": 8.356,
+        "activityCode": "PH4007",
         "monthHectare": 61.49
       }
     }
@@ -3435,42 +4120,137 @@
     "2026-06-02": {
       "hectare": 245.25,
       "bunches": 6915,
-      "tonnage": 0
+      "tonnage": 90.262
     },
     "2026-06-03": {
       "hectare": 175.35,
       "bunches": 7928,
-      "tonnage": 0
+      "tonnage": 103.772
     },
     "2026-06-04": {
       "hectare": 102.55,
       "bunches": 8405,
-      "tonnage": 0
+      "tonnage": 105.867
     },
     "2026-06-05": {
       "hectare": 173.08,
       "bunches": 8340,
-      "tonnage": 0
+      "tonnage": 100.016
     },
     "2026-06-06": {
       "hectare": 114.68,
       "bunches": 6263,
-      "tonnage": 0
+      "tonnage": 89.931
     },
     "2026-06-08": {
       "hectare": 181,
       "bunches": 6030,
-      "tonnage": 0
+      "tonnage": 103.604
     },
     "2026-06-09": {
       "hectare": 137.04,
       "bunches": 8027,
-      "tonnage": 0
+      "tonnage": 125.258
+    },
+    "2026-06-10": {
+      "hectare": 124.98,
+      "bunches": 9813,
+      "tonnage": 137.096
+    },
+    "2026-06-11": {
+      "hectare": 130.42,
+      "bunches": 10526,
+      "tonnage": 128.239
+    },
+    "2026-06-12": {
+      "hectare": 127.1,
+      "bunches": 9470,
+      "tonnage": 99.7
+    },
+    "2026-06-13": {
+      "hectare": 120.26,
+      "bunches": 8546,
+      "tonnage": 95.824
+    },
+    "2026-06-14": {
+      "hectare": 153.32,
+      "bunches": 8415,
+      "tonnage": 117.481
+    },
+    "2026-06-15": {
+      "hectare": 152.03,
+      "bunches": 8570,
+      "tonnage": 112.103
+    },
+    "2026-06-16": {
+      "hectare": 154.7,
+      "bunches": 10351,
+      "tonnage": 128.428
+    },
+    "2026-06-17": {
+      "hectare": 80.2,
+      "bunches": 9099,
+      "tonnage": 112.225
+    },
+    "2026-06-18": {
+      "hectare": 125.46,
+      "bunches": 6627,
+      "tonnage": 103.149
+    },
+    "2026-06-19": {
+      "hectare": 114.81,
+      "bunches": 6329,
+      "tonnage": 112.561
+    },
+    "2026-06-20": {
+      "hectare": 90,
+      "bunches": 7475,
+      "tonnage": 117.75
+    },
+    "2026-06-22": {
+      "hectare": 72.91,
+      "bunches": 9270,
+      "tonnage": 148.966
+    },
+    "2026-06-23": {
+      "hectare": 170.06,
+      "bunches": 12005,
+      "tonnage": 160.574
+    },
+    "2026-06-24": {
+      "hectare": 145.63,
+      "bunches": 10034,
+      "tonnage": 120.973
+    },
+    "2026-06-25": {
+      "hectare": 125.33,
+      "bunches": 9091,
+      "tonnage": 108.621
+    },
+    "2026-06-26": {
+      "hectare": 100.83,
+      "bunches": 10818,
+      "tonnage": 122.439
+    },
+    "2026-06-27": {
+      "hectare": 88.33,
+      "bunches": 9501,
+      "tonnage": 124.722
+    },
+    "2026-06-28": {
+      "hectare": 177.04,
+      "bunches": 7940,
+      "tonnage": 112.747
+    },
+    "2026-06-29": {
+      "hectare": 205.36,
+      "bunches": 8337,
+      "tonnage": 108.356
     },
     "2026-06-30": {
-      "hectare": 0,
-      "bunches": 0,
-      "tonnage": 3098.72
+      "hectare": 99.4,
+      "bunches": 9171,
+      "tonnage": 108.056
     }
   },
   "dispatchByField": {
