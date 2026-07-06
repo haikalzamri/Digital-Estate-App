@@ -61,6 +61,7 @@ export type HarvestingIntervalSource = {
   dispatchByField: Record<string, Record<string, HarvestingIntervalDispatchMetrics>>;
   dispatchDailyTotals: Record<string, HarvestingIntervalDispatchMetrics>;
   overlayByField: Record<string, Record<string, string[]>>;
+  overlayValuesByField?: Record<string, Record<string, Record<string, number>>>;
 };
 
 export type HarvestingIntervalCell = {
@@ -74,6 +75,7 @@ export type HarvestingIntervalCell = {
   dispatch: HarvestingIntervalDispatchMetrics | null;
   balance: HarvestingIntervalBalanceMetrics;
   overlays: string[];
+  overlayValues: Record<string, number>;
 };
 
 export type HarvestingIntervalFieldReport = HarvestingIntervalField & {

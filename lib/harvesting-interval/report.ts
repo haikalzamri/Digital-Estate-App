@@ -35,6 +35,7 @@ export function getHarvestingIntervalReport(source: HarvestingIntervalSource, se
       source.activityByField[field.field] || {},
       source.dispatchByField?.[field.field] || {},
       source.overlayByField?.[field.field] || {},
+      source.overlayValuesByField?.[field.field] || {},
       baseDate,
       calculationStart,
       monthStart,
@@ -112,6 +113,7 @@ function buildFieldReport(
   activityByDate: Record<string, HarvestingIntervalActivityMetrics>,
   dispatchByDate: Record<string, HarvestingIntervalDispatchMetrics>,
   overlayByDate: Record<string, string[]>,
+  overlayValuesByDate: Record<string, Record<string, number>>,
   baseDate: Date,
   calculationStart: Date,
   monthStart: Date,
@@ -128,6 +130,7 @@ function buildFieldReport(
     const activity = activityByDate[isoDate] || null;
     const dispatch = dispatchByDate[isoDate] || null;
     const overlays = overlayByDate[isoDate] || [];
+    const overlayValues = overlayValuesByDate[isoDate] || {};
     const harvest = Boolean(activity);
 
     if (harvest) {
@@ -151,6 +154,7 @@ function buildFieldReport(
         dispatch,
         balance: calculateBalance(activity || emptyMetrics(), dispatch || emptyDispatchMetrics()),
         overlays,
+        overlayValues,
       });
     }
   }
@@ -181,6 +185,7 @@ function buildMonthDays(monthStart: Date, monthEnd: Date): HarvestingIntervalCel
       dispatch: null,
       balance: { hectare: 0, bunches: 0, kg: 0 },
       overlays: [],
+      overlayValues: {},
     });
   }
   return days;

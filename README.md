@@ -25,7 +25,7 @@ The root route redirects to `/management/work-program` for backward compatibilit
 - Work Program Dashboard with table and GIS map views.
 - PMV Tracker for driver daily machine status submission.
 - PMV Dashboard for machine readiness, breakdown/idle visibility, repeat issue tracking, action queue, and export.
-- Harvesting Interval prototype for monthly field interval review, Ha/Bunches/Tonnage toggles, dispatch comparison, activity overlays, daily totals, and rainfall placeholder.
+- Harvesting Interval prototype for monthly field interval review, Ha/Bunches/Tonnage toggles, dispatch comparison, LF/activity overlays, daily totals, field interval summary table/map view, and rainfall placeholder.
 - Leaflet/OpenStreetMap map view with KMZ-derived field polygons.
 
 ## Project Structure
@@ -87,7 +87,7 @@ Harvesting Interval currently uses static source data instead of Supabase. It is
 | --- | --- |
 | `Latest_HRVINFO.xlsx` | Production harvesting activity by date and field, including Actual Covered Ha, Harvesting Bunches, Tonnage, and refreshed June data through `2026-06-30`. |
 | `ztbl_ckrhrvint.xlsx` | Dispatch comparison layer by date and field, including dispatch Ha, bunches, and KG. |
-| `ALL_Harvester_260702.xlsx` | Additional activity overlay layer for HM, QF, QG, R1, and PM1501. |
+| `SEMUA_20260706.xlsx` | Additional activity overlay layer for HM, QF, QG, R1, and LF. LF uses Working Gang `3A`, Activity Code starting with `PH`, field/date matching, and summed Column R quantity. |
 
 Current Harvesting Interval behaviour:
 
@@ -97,7 +97,9 @@ Current Harvesting Interval behaviour:
 - Daily total columns can expand to show dispatch and difference values by metric.
 - Date rows can expand to show dispatch values for that day only.
 - Overlay buttons highlight selected activities without changing interval or total calculations.
-- `PM1501` is shown as a green filled cell overlay; other activities are border-only overlays.
+- HM, QF, QG, and R1 are border-only overlays.
+- LF is a green filled overlay showing summed Column R quantity; duplicate adjacent field columns merge for LF, and LF-over-production cells keep an orange ring so harvesting activity remains visible.
+- Field Interval Status Summary has an independent as-at date picker, total status cards, table view, and GIS map view.
 - `Rainfall Data` is included as a placeholder column and displays `-` until a rainfall source is approved.
 
 ## Standard Development Pattern For New Modules

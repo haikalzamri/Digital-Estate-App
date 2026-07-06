@@ -319,6 +319,7 @@ button {
 }
 
 .select-control select,
+.select-control input,
 .compact-select select,
 .compact-select input,
 .form-grid input,
@@ -333,11 +334,13 @@ button {
   outline: 0;
 }
 
-.select-control select {
+.select-control select,
+.select-control input {
   min-width: 220px;
 }
 
 .select-control select:focus,
+.select-control input:focus,
 .compact-select select:focus,
 .compact-select input:focus,
 .form-grid input:focus,
@@ -976,7 +979,7 @@ button {
   .section-tabs button { min-width: 0; }
   .workspace-toolbar, .panel-heading { align-items: stretch; flex-direction: column; }
   .toolbar-actions { align-items: stretch; }
-  .select-control, .select-control select, .compact-select { width: 100%; min-width: 0; }
+  .select-control, .select-control select, .select-control input, .compact-select { width: 100%; min-width: 0; }
   .segmented-control { flex: 1; }
   .segmented-control button { flex: 1; }
   .command-button { flex: 1; }
@@ -2537,6 +2540,260 @@ button {
 .harvesting-table th.baseline-missing {
   color: #8b4b13;
   background: #fff5df;
+}
+
+.interval-summary-panel {
+  padding: 14px;
+}
+
+.interval-summary-heading {
+  align-items: end;
+}
+
+.interval-summary-date-control {
+  min-width: 180px;
+}
+
+.interval-summary-view-toggle button {
+  min-width: 78px;
+}
+
+.interval-total-card-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(140px, 1fr));
+  gap: 10px;
+  margin: 12px 0;
+}
+
+.interval-total-card {
+  display: grid;
+  gap: 4px;
+  min-height: 86px;
+  padding: 12px;
+  border: 1px solid #c7d3c8;
+  border-top: 4px solid #72907a;
+  border-radius: 8px;
+  background: #fbfdfb;
+  box-shadow: 0 8px 18px rgba(30, 50, 38, 0.08);
+}
+
+.interval-total-card.status-on-track {
+  border-top-color: #22c55e;
+}
+
+.interval-total-card.status-watch {
+  border-top-color: #facc15;
+}
+
+.interval-total-card.status-caution {
+  border-top-color: #fb923c;
+}
+
+.interval-total-card.status-overdue {
+  border-top-color: #ef4444;
+}
+
+.interval-total-card-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #536159;
+  font-size: 0.68rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.interval-total-card strong {
+  color: #182b20;
+  font-size: 1.25rem;
+  font-weight: 950;
+  line-height: 1;
+}
+
+.interval-total-card small {
+  color: #6b776e;
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.interval-status-legend {
+  display: flex;
+  max-width: 520px;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 12px;
+  color: #536159;
+  font-size: 0.68rem;
+  font-weight: 820;
+}
+
+.interval-status-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+}
+
+.interval-status-dot {
+  width: 9px;
+  height: 9px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+}
+
+.interval-status-dot.status-on-track {
+  background: #22c55e;
+}
+
+.interval-status-dot.status-watch {
+  background: #facc15;
+}
+
+.interval-status-dot.status-caution {
+  background: #fb923c;
+}
+
+.interval-status-dot.status-overdue {
+  background: #ef4444;
+}
+
+.interval-summary-map-workspace {
+  margin-top: 2px;
+}
+
+.interval-summary-map-panel {
+  padding: 12px;
+}
+
+.interval-summary-detail-panel .interval-status-pill {
+  width: fit-content;
+}
+
+.interval-summary-map-panel .leaflet-map,
+.interval-summary-map-panel .map-empty {
+  height: 500px;
+}
+
+.interval-summary-scroll {
+  border: 1px solid var(--line);
+  border-radius: 6px;
+}
+
+.field-interval-summary-table {
+  width: 100%;
+  min-width: 1320px;
+  border-collapse: separate;
+  border-spacing: 0;
+  color: #17251b;
+  background: #ffffff;
+  font-size: 0.7rem;
+  table-layout: fixed;
+}
+
+.field-interval-summary-table th,
+.field-interval-summary-table td {
+  height: 32px;
+  padding: 4px 6px;
+  border-right: 1px solid #9cad9f;
+  border-bottom: 1px solid #9cad9f;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.field-interval-summary-table thead th {
+  color: #153526;
+  background: #bfe4ad;
+  font-weight: 900;
+  line-height: 1.12;
+}
+
+.field-interval-summary-table tbody th {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  width: 92px;
+  color: #183327;
+  background: #f4f8f3;
+  font-weight: 900;
+  text-align: left;
+  box-shadow: 1px 0 0 #9cad9f;
+}
+
+.field-interval-summary-table thead th:first-child {
+  width: 92px;
+}
+
+.field-interval-summary-table thead th:nth-child(2),
+.field-interval-summary-table thead th:nth-child(3),
+.field-interval-summary-table thead th:nth-child(4),
+.field-interval-summary-table thead th:nth-child(5) {
+  width: 108px;
+}
+
+.field-interval-summary-table tbody td {
+  color: #25332a;
+  background: #fbfcfb;
+  font-weight: 820;
+}
+
+.field-interval-summary-table tbody tr:nth-child(even) td,
+.field-interval-summary-table tbody tr:nth-child(even) th {
+  background: #f6f9f6;
+}
+
+.field-interval-summary-table .interval-zero-cell {
+  color: #d11c1c;
+  font-weight: 900;
+}
+
+.interval-status-pill {
+  display: inline-flex;
+  min-width: 68px;
+  justify-content: center;
+  padding: 3px 7px;
+  border-radius: 999px;
+  font-size: 0.64rem;
+  font-weight: 900;
+}
+
+.interval-status-pill.status-on-track {
+  color: #14532d;
+  background: #dcfce7;
+}
+
+.interval-status-pill.status-watch {
+  color: #654b05;
+  background: #fef3c7;
+}
+
+.interval-status-pill.status-caution {
+  color: #7c2d12;
+  background: #ffedd5;
+}
+
+.interval-status-pill.status-overdue {
+  color: #7f1d1d;
+  background: #fee2e2;
+}
+
+.field-interval-summary-table .interval-summary-total-row th,
+.field-interval-summary-table .interval-summary-total-row td {
+  color: #113b2a;
+  background: #cfe7c3 !important;
+  border-top: 3px solid #6f8f7c;
+  font-weight: 950;
+}
+
+@media (max-width: 900px) {
+  .interval-total-card-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 560px) {
+  .interval-total-card-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .harvesting-activity-modal {
