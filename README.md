@@ -85,7 +85,7 @@ Harvesting Interval currently uses static source data instead of Supabase. It is
 
 | Source file | Current use |
 | --- | --- |
-| `ZCKR_HRVINFO.xlsx` | Production harvesting activity by date and field, including Actual Covered Ha, Harvesting Bunches, and Tonnage. |
+| `Latest_HRVINFO.xlsx` | Production harvesting activity by date and field, including Actual Covered Ha, Harvesting Bunches, Tonnage, and refreshed June data through `2026-06-30`. |
 | `ztbl_ckrhrvint.xlsx` | Dispatch comparison layer by date and field, including dispatch Ha, bunches, and KG. |
 | `ALL_Harvester_260702.xlsx` | Additional activity overlay layer for HM, QF, QG, R1, and PM1501. |
 
