@@ -83,6 +83,8 @@ Supabase setup and seed scripts are in `supabase/`.
 
 Harvesting Interval currently uses static source data instead of Supabase. It is suitable for prototype and stakeholder review, but should be integrated into a governed source-of-truth flow before production operations.
 
+For external hosting and demonstration, Harvesting Interval numeric values are dummy-adjusted by adding `+5` to Excel-derived Ha, Bunches, Tonnage/KG, dispatch, and LF overlay quantities. Dates, field references, interval calculations, and activity occurrence rules are unchanged.
+
 | Source file | Current use |
 | --- | --- |
 | `Latest_HRVINFO.xlsx` | Production harvesting activity by date and field, including Actual Covered Ha, Harvesting Bunches, Tonnage, and refreshed June data through `2026-06-30`. |
