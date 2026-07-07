@@ -1384,7 +1384,10 @@ function Kpi({ label, value, helper, icon }: { label: string; value: string; hel
 
 function formatMetricValue(value: number, metric: HarvestingIntervalMetricKey) {
   if (metric === "bunches") {
-    return Math.round(value).toLocaleString("en-MY");
+    return value.toLocaleString("en-MY", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
   }
 
   if (metric === "hectare") {
@@ -1395,8 +1398,8 @@ function formatMetricValue(value: number, metric: HarvestingIntervalMetricKey) {
   }
 
   return value.toLocaleString("en-MY", {
-    minimumFractionDigits: Number.isInteger(value) ? 0 : 3,
-    maximumFractionDigits: 3,
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
   });
 }
 
@@ -1414,7 +1417,10 @@ function getDispatchMetricLabel(metric: HarvestingIntervalMetricKey) {
 }
 
 function formatKgValue(value: number) {
-  return Math.round(value).toLocaleString("en-MY");
+  return value.toLocaleString("en-MY", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
 }
 
 function formatPercentValue(value: number) {
@@ -1423,8 +1429,8 @@ function formatPercentValue(value: number) {
 
 function formatOverlayValue(value: number) {
   return value.toLocaleString("en-MY", {
-    maximumFractionDigits: Number.isInteger(value) ? 0 : 2,
-    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
+    minimumFractionDigits: 2,
   });
 }
 
