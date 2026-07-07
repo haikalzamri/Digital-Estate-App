@@ -23,6 +23,7 @@ export type HarvestingIntervalDispatchMetrics = {
   hectare: number;
   bunches: number;
   kg: number;
+  tonnage?: number;
   unit?: string;
   plantedHectare?: number;
   harvestingDay?: number;
@@ -32,7 +33,7 @@ export type HarvestingIntervalDispatchMetrics = {
 export type HarvestingIntervalBalanceMetrics = {
   hectare: number;
   bunches: number;
-  kg: number;
+  tonnage: number;
 };
 
 export type HarvestingIntervalSource = {
@@ -54,6 +55,12 @@ export type HarvestingIntervalSource = {
     overlaySourceSheet?: string;
     overlayRows?: number;
     overlayActivities?: string[];
+    dataMasking?: {
+      adjustment?: number;
+      method?: string;
+      appliesTo?: string[];
+      doesNotChange?: string[];
+    };
   };
   fields: HarvestingIntervalField[];
   activityByField: Record<string, Record<string, HarvestingIntervalActivityMetrics>>;

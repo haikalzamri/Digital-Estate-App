@@ -94,15 +94,16 @@ For external hosting and demonstration, Harvesting Interval numeric values are d
 | Source file | Current use |
 | --- | --- |
 | `Latest_HRVINFO.xlsx` | Production harvesting activity by date and field, including Actual Covered Ha, Harvesting Bunches, Tonnage, and refreshed June data through `2026-06-30`. |
-| `ztbl_ckrhrvint.xlsx` | Dispatch comparison layer by date and field, including dispatch Ha, bunches, and KG. |
+| `ztbl_ckrhrvint.xlsx` | Dispatch comparison layer by date and field, including dispatch Ha, bunches, and KG source values. Dispatch KG is displayed in the module as derived Dispatch Tonnage for easier comparison with production tonnage. |
 | `SEMUA_20260706.xlsx` | Additional activity overlay layer for HM, QF, QG, R1, and LF. LF uses Working Gang `3A`, Activity Code starting with `PH`, field/date matching, and summed Column R quantity. |
 
 Current Harvesting Interval behaviour:
 
 - Default display is Actual Covered Ha with 2 decimal places.
 - Users can toggle the grid metric between Ha, Bunches, and Tonnage.
+- Bunches display as whole numbers; production and dispatch Tonnage display with 3 decimal places.
 - Clicking a production cell opens production, dispatch, and difference details.
-- Daily total columns can expand to show dispatch and difference values by metric.
+- Daily total columns can expand to show dispatch and difference values by metric, including derived Dispatch Tonnage and Tonnage Difference.
 - Date rows can expand to show dispatch values for that day only.
 - Overlay buttons highlight selected activities without changing interval or total calculations.
 - HM, QF, QG, and R1 are border-only overlays.
@@ -255,7 +256,7 @@ Apply the two required Supabase variables to **Production** in Vercel. Also appl
 - Confirm PMV Working, Breakdown, and Idle submissions reach the PMV Dashboard.
 - Confirm PMV metric popups list machine and reporter names.
 - Confirm Work Program and PMV CSV exports preserve one record per data row.
-- Confirm Harvesting Interval loads `/management/harvesting-interval`, month filtering works, Ha values show 2 decimal places, dispatch expansion works, activity overlays render correctly, Rainfall Data displays `-`, and CSV export includes the displayed grid data.
+- Confirm Harvesting Interval loads `/management/harvesting-interval`, month filtering works, Ha values show 2 decimal places, Bunches show no decimal places, Tonnage shows 3 decimal places, dispatch expansion shows derived Dispatch Tonnage, activity overlays render correctly, Rainfall Data displays `-`, and CSV export includes the displayed grid data.
 - Confirm an offline test submission queues locally, then syncs to Supabase when the browser reconnects.
 - Confirm browser console has no errors.
 

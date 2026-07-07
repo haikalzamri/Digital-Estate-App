@@ -72,7 +72,7 @@ type TotalColumn = {
   label: string;
   kind: TotalColumnKind;
   group: HarvestingIntervalMetricKey;
-  metric: HarvestingIntervalMetricKey | "kg";
+  metric: HarvestingIntervalMetricKey;
   getDailyValue: (date: string) => string;
   getMonthlyValue: () => string;
 };
@@ -859,22 +859,22 @@ function getTotalColumns(report: HarvestingIntervalMonthReport, expandedGroups: 
     return [
       column,
       {
-        id: "dispatch-kg",
-        label: "Total Amount (KG) Dispatch",
+        id: "dispatch-tonnage",
+        label: "Total Dispatch Tonnage",
         kind: "dispatch" as const,
         group: "tonnage" as const,
-        metric: "kg" as const,
-        getDailyValue: (date: string) => formatKgValue(report.dispatchDailyTotals[date].kg),
-        getMonthlyValue: () => formatKgValue(report.monthlyDispatchTotals.kg),
+        metric: "tonnage" as const,
+        getDailyValue: (date: string) => formatMetricValue(report.dispatchDailyTotals[date].tonnage || 0, "tonnage"),
+        getMonthlyValue: () => formatMetricValue(report.monthlyDispatchTotals.tonnage || 0, "tonnage"),
       },
       {
-        id: "difference-kg",
-        label: "KG Difference",
+        id: "difference-tonnage",
+        label: "Tonnage Difference",
         kind: "balance" as const,
         group: "tonnage" as const,
-        metric: "kg" as const,
-        getDailyValue: (date: string) => formatKgValue(report.dailyBalances[date].kg),
-        getMonthlyValue: () => formatKgValue(report.monthlyBalances.kg),
+        metric: "tonnage" as const,
+        getDailyValue: (date: string) => formatMetricValue(report.dailyBalances[date].tonnage, "tonnage"),
+        getMonthlyValue: () => formatMetricValue(report.monthlyBalances.tonnage, "tonnage"),
       },
     ];
   });
@@ -1328,10 +1328,10 @@ function ActivityModal({ activity, onClose }: { activity: SelectedActivity; onCl
             balance={formatMetricValue(activity.balance.bunches, "bunches")}
           />
           <ComparisonMetricRow
-            label="KG"
-            production={formatKgValue(activity.production.tonnage * 1000)}
-            dispatch={formatKgValue(activity.dispatch.kg)}
-            balance={formatKgValue(activity.balance.kg)}
+            label="Tonnage"
+            production={formatMetricValue(activity.production.tonnage, "tonnage")}
+            dispatch={formatMetricValue(activity.dispatch.tonnage || 0, "tonnage")}
+            balance={formatMetricValue(activity.balance.tonnage, "tonnage")}
           />
         </div>
         <div className="modal-actions">
@@ -1384,10 +1384,7 @@ function Kpi({ label, value, helper, icon }: { label: string; value: string; hel
 
 function formatMetricValue(value: number, metric: HarvestingIntervalMetricKey) {
   if (metric === "bunches") {
-    return value.toLocaleString("en-MY", {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    });
+    return Math.round(value).toLocaleString("en-MY");
   }
 
   if (metric === "hectare") {
@@ -1398,8 +1395,8 @@ function formatMetricValue(value: number, metric: HarvestingIntervalMetricKey) {
   }
 
   return value.toLocaleString("en-MY", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
+    minimumFractionDigits: 3,
+    maximumFractionDigits: 3,
   });
 }
 
@@ -1407,20 +1404,13 @@ function formatDispatchCellValue(dispatch: HarvestingIntervalDispatchMetrics | n
   if (!dispatch) return "-";
   if (metric === "hectare") return formatMetricValue(dispatch.hectare, "hectare");
   if (metric === "bunches") return formatMetricValue(dispatch.bunches, "bunches");
-  return formatKgValue(dispatch.kg);
+  return formatMetricValue(dispatch.tonnage || 0, "tonnage");
 }
 
 function getDispatchMetricLabel(metric: HarvestingIntervalMetricKey) {
   if (metric === "hectare") return "Ha";
   if (metric === "bunches") return "Bunches";
-  return "KG";
-}
-
-function formatKgValue(value: number) {
-  return value.toLocaleString("en-MY", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  });
+  return "Tonnage";
 }
 
 function formatPercentValue(value: number) {
@@ -1444,7 +1434,7 @@ function emptyProductionMetrics(): HarvestingIntervalActivityMetrics {
 }
 
 function emptyDispatchMetrics(): HarvestingIntervalDispatchMetrics {
-  return { hectare: 0, bunches: 0, kg: 0 };
+  return { hectare: 0, bunches: 0, kg: 0, tonnage: 0 };
 }
 
 function csvValue(value: unknown) {

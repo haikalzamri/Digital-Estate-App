@@ -27,6 +27,7 @@ export function getHarvestingIntervalReport(source: HarvestingIntervalSource, se
   const monthStart = new Date(Date.UTC(year, monthNumber - 1, 1));
   const monthEnd = new Date(Date.UTC(year, monthNumber, 0));
   const calculationStart = addDays(baseDate, 1);
+  const dataMaskingAdjustment = getDataMaskingAdjustment(source);
 
   const templateFields = source.fields.filter((field) => field.hasReferenceBaseline);
   const fields = templateFields.map((field) =>
@@ -40,6 +41,7 @@ export function getHarvestingIntervalReport(source: HarvestingIntervalSource, se
       calculationStart,
       monthStart,
       monthEnd,
+      dataMaskingAdjustment,
     ),
   );
   const days = fields[0]?.cells.map((cell) => ({ ...cell })) || buildMonthDays(monthStart, monthEnd);
@@ -51,7 +53,7 @@ export function getHarvestingIntervalReport(source: HarvestingIntervalSource, se
     days.map((day) => [day.date, source.dailyTotals?.[day.date] || emptyMetrics()]),
   );
   const dispatchDailyTotals = Object.fromEntries(
-    days.map((day) => [day.date, source.dispatchDailyTotals?.[day.date] || emptyDispatchMetrics()]),
+    days.map((day) => [day.date, normalizeDispatchMetrics(source.dispatchDailyTotals?.[day.date], dataMaskingAdjustment)]),
   );
   const dailyBalances = Object.fromEntries(
     days.map((day) => [day.date, calculateBalance(dailyTotals[day.date], dispatchDailyTotals[day.date])]),
@@ -118,6 +120,7 @@ function buildFieldReport(
   calculationStart: Date,
   monthStart: Date,
   monthEnd: Date,
+  dataMaskingAdjustment: number,
 ) {
   let currentInterval = field.baseInterval;
   let lastHarvestIndex: number | null = currentInterval >= 1 && currentInterval <= 5 ? 0 : null;
@@ -128,7 +131,7 @@ function buildFieldReport(
     const isoDate = toIsoDate(day);
     const dayIndex = diffDays(day, baseDate);
     const activity = activityByDate[isoDate] || null;
-    const dispatch = dispatchByDate[isoDate] || null;
+    const dispatch = dispatchByDate[isoDate] ? normalizeDispatchMetrics(dispatchByDate[isoDate], dataMaskingAdjustment) : null;
     const overlays = overlayByDate[isoDate] || [];
     const overlayValues = overlayValuesByDate[isoDate] || {};
     const harvest = Boolean(activity);
@@ -183,7 +186,7 @@ function buildMonthDays(monthStart: Date, monthEnd: Date): HarvestingIntervalCel
       isSunday: day.getUTCDay() === 0,
       activity: null,
       dispatch: null,
-      balance: { hectare: 0, bunches: 0, kg: 0 },
+      balance: { hectare: 0, bunches: 0, tonnage: 0 },
       overlays: [],
       overlayValues: {},
     });
@@ -196,7 +199,7 @@ function emptyMetrics(): HarvestingIntervalActivityMetrics {
 }
 
 function emptyDispatchMetrics(): HarvestingIntervalDispatchMetrics {
-  return { hectare: 0, bunches: 0, kg: 0 };
+  return { hectare: 0, bunches: 0, kg: 0, tonnage: 0 };
 }
 
 function calculateBalance(
@@ -206,7 +209,7 @@ function calculateBalance(
   return {
     hectare: roundMetric(production.hectare - dispatch.hectare, 2),
     bunches: roundMetric(production.bunches - dispatch.bunches, 0),
-    kg: roundMetric(production.tonnage * 1000 - dispatch.kg, 0),
+    tonnage: roundMetric(production.tonnage - (dispatch.tonnage || 0), 3),
   };
 }
 
@@ -214,7 +217,7 @@ function sumMetrics(metrics: HarvestingIntervalActivityMetrics[]): HarvestingInt
   return {
     hectare: roundMetric(metrics.reduce((total, value) => total + value.hectare, 0), 2),
     bunches: roundMetric(metrics.reduce((total, value) => total + value.bunches, 0), 0),
-    tonnage: roundMetric(metrics.reduce((total, value) => total + value.tonnage, 0), 3),
+    tonnage: roundMetric(metrics.reduce((total, value) => total + (value.tonnage || 0), 0), 3),
   };
 }
 
@@ -223,7 +226,32 @@ function sumDispatchMetrics(metrics: HarvestingIntervalDispatchMetrics[]): Harve
     hectare: roundMetric(metrics.reduce((total, value) => total + value.hectare, 0), 2),
     bunches: roundMetric(metrics.reduce((total, value) => total + value.bunches, 0), 0),
     kg: roundMetric(metrics.reduce((total, value) => total + value.kg, 0), 0),
+    tonnage: roundMetric(metrics.reduce((total, value) => total + (value.tonnage || 0), 0), 3),
   };
+}
+
+function normalizeDispatchMetrics(
+  metrics: HarvestingIntervalDispatchMetrics | undefined,
+  dataMaskingAdjustment: number,
+): HarvestingIntervalDispatchMetrics {
+  if (!metrics) return emptyDispatchMetrics();
+
+  return {
+    ...metrics,
+    tonnage: calculateDispatchTonnage(metrics.kg, dataMaskingAdjustment),
+  };
+}
+
+function calculateDispatchTonnage(maskedKg: number, dataMaskingAdjustment: number) {
+  if (!maskedKg) return 0;
+
+  const sourceKg = dataMaskingAdjustment ? maskedKg - dataMaskingAdjustment : maskedKg;
+  return roundMetric(sourceKg / 1000 + dataMaskingAdjustment, 3);
+}
+
+function getDataMaskingAdjustment(source: HarvestingIntervalSource) {
+  const adjustment = source.metadata.dataMasking?.adjustment;
+  return typeof adjustment === "number" && Number.isFinite(adjustment) ? adjustment : 0;
 }
 
 function roundMetric(value: number, decimals: number) {
