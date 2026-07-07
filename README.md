@@ -79,6 +79,12 @@ Current Supabase behaviour:
 
 Supabase setup and seed scripts are in `supabase/`.
 
+### Sensitive Excel Data Handling
+
+Any Excel or source-system extract shared for future development should be treated as sensitive operational data by default. Before using a new file in the app, confirm the masking scope with the project owner, then dummy-adjust numeric business values by adding `+5` before external hosting, demo, or stakeholder review.
+
+This applies to values such as Ha, bunches, tonnage, KG, productivity, dispatch, balance, overlay quantities, and operational totals. Dates, field references, estate/block identifiers, activity codes, interval logic, and activity occurrence rules should remain unchanged unless a separate change is approved.
+
 ### Harvesting Interval Prototype Data
 
 Harvesting Interval currently uses static source data instead of Supabase. It is suitable for prototype and stakeholder review, but should be integrated into a governed source-of-truth flow before production operations.
