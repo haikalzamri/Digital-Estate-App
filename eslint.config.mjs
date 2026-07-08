@@ -11,12 +11,7 @@ export default defineConfig([
     "build/**",
     "next-env.d.ts",
     "api/**",
-    "app.js",
-    "work-program.js",
-    "pmv.js",
-    "supabase-api.js",
     "work-program-data.js",
     "pmv-data.js",
-    "field-map-data.js",
   ]),
 ]);

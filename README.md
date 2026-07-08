@@ -6,7 +6,7 @@ Production: [https://digital-estate-app.vercel.app](https://digital-estate-app.v
 
 ## Production Status
 
-The functional Next.js application is deployed from `main` through Vercel. Work Program, PMV, and both Supabase-backed API routes were production-verified on 22 June 2026. Harvesting Interval is available as a management prototype module using static Excel-extracted data. The legacy static app remains in the repository only as a parity and source-data reference.
+The functional Next.js application is deployed from `main` through Vercel. Work Program, PMV, and both Supabase-backed API routes were production-verified on 22 June 2026. Harvesting Interval is available as a management prototype module using static Excel-extracted data. The repository is maintained as a Next.js App Router project, with legacy static runtime files removed after migration.
 
 | Audience | Module | Production link |
 | --- | --- | --- |
@@ -46,10 +46,8 @@ The root route redirects to `/management/work-program` for backward compatibilit
 | `public/data/` | Browser-served KMZ-derived field GeoJSON. |
 | `scripts/` | Source extraction and route smoke-test scripts. |
 | `package.json` | Next.js scripts, dependencies, and Node.js runtime requirement. |
-| `index.html`, `app.js`, `work-program.js`, `pmv.js` | Legacy static parity reference; not the active Next.js runtime. |
-| `work-program-data.js`, `pmv-data.js` | Original source/reference data used by extraction scripts. |
+| `work-program-data.js`, `pmv-data.js` | Original source/reference data retained for extraction traceability. |
 | `supabase/` | Supabase SQL setup scripts and setup guide. |
-| `field-map-data.js` | Original KMZ/GIS-derived field boundary reference. |
 
 ## Data Storage
 
