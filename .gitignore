@@ -10,6 +10,7 @@ npm-debug.log*
 *.tsbuildinfo
 
 # Codex / local workspace artifacts
+AGENTS.md
 codex/
 .codex/
 codex-clipboard-*.png
