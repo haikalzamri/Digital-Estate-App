@@ -11,7 +11,5 @@ export default defineConfig([
     "build/**",
     "next-env.d.ts",
     "api/**",
-    "work-program-data.js",
-    "pmv-data.js",
   ]),
 ]);

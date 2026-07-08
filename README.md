@@ -42,11 +42,10 @@ The root route redirects to `/management/work-program` for backward compatibilit
 | `lib/work-program/` | Work Program configuration and approved-record analytics. |
 | `lib/pmv/` | PMV configuration, record normalisation, management analytics, and export helpers. |
 | `lib/harvesting-interval/` | Harvesting Interval month, interval, total, dispatch, and balance calculations. |
-| `lib/data/` | JSON extracted from approved source files for Work Program, PMV, and Harvesting Interval prototype data. |
+| `lib/data/` | Static fallback datasets for Work Program, PMV, and Harvesting Interval prototype data. |
 | `public/data/` | Browser-served KMZ-derived field GeoJSON. |
-| `scripts/` | Source extraction and route smoke-test scripts. |
+| `scripts/` | Route smoke-test scripts. |
 | `package.json` | Next.js scripts, dependencies, and Node.js runtime requirement. |
-| `work-program-data.js`, `pmv-data.js` | Original source/reference data retained for extraction traceability. |
 | `supabase/` | Supabase SQL setup scripts and setup guide. |
 
 ## Data Storage

@@ -1,5 +1,5 @@
 -- Historical PMV seed for Digital Estate App.
--- Generated from pmv-data.js on 2026-06-17.
+-- Generated during PMV migration on 2026-06-17.
 -- Run after supabase/001_pmv_records.sql.
 -- This script is idempotent and upserts by pmv_records.id.
 

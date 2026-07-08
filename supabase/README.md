@@ -129,7 +129,7 @@ select count(*) as work_program_seed_records from public.work_program_records wh
 - Browser localStorage is a temporary offline queue if the browser is offline or the API is unavailable.
 - Pending PMV and Work Program uploads/deletes automatically retry when the browser reconnects or the Sync button is used.
 - Offline queue data is device/browser-specific and depends on the user not clearing site data.
-- `pmv-data.js` and `work-program-data.js` remain as source/reference backups for now.
+- Seed reference data is maintained in the checked-in Supabase SQL scripts and `lib/data/` fallback datasets.
 
 Production verification on 22 June 2026 returned 78 Work Program records and 514 PMV records.
 

@@ -1,5 +1,5 @@
 -- Historical Work Program seed for Digital Estate App.
--- Generated from work-program-data.js on 2026-06-18.
+-- Generated during Work Program migration on 2026-06-18.
 -- Run after supabase/003_work_program_records.sql.
 -- This script is idempotent and upserts by work_program_records.id.
 

@@ -135,7 +135,7 @@ brew install
 - Use `components/` for reusable UI and domain components.
 - Use `lib/` for server-only Supabase access, shared types, data transformations, and offline services.
 - Keep secrets server-side and access Supabase through Next.js Route Handlers under `app/api/`.
-- Legacy static runtime files have been removed after Next.js migration acceptance; retain `work-program-data.js` and `pmv-data.js` only as source/reference inputs for extraction traceability.
+- Legacy static runtime and root source-backup files have been removed after Next.js migration acceptance; current fallback datasets are maintained under `lib/data/`.
 - Avoid duplicating domain logic between routes; Work Program management should share one data layer across Dashboard and Records.
 - Keep PMV input lightweight: historical PMV data should load only in the management dashboard route.
 
