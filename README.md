@@ -100,6 +100,10 @@ supabase/
 | `lib/data/pmv-source.json` | PMV historical fallback data. |
 | `lib/data/harvesting-interval-source.json` | Harvesting Interval prototype dataset. |
 
+### Demo Data Handling
+
+Static demo datasets and browser-served field map data may be masked or transformed before external hosting. Hosted demo values and map boundaries should not be treated as official operational records or actual company boundary data.
+
 ### Offline Behaviour
 
 The browser uses localStorage as a device-specific offline queue:
