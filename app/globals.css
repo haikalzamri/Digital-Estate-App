@@ -2554,13 +2554,9 @@ button {
   min-width: 180px;
 }
 
-.interval-summary-view-toggle button {
-  min-width: 78px;
-}
-
 .interval-total-card-grid {
   display: grid;
-  grid-template-columns: repeat(5, minmax(140px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(126px, 1fr));
   gap: 10px;
   margin: 12px 0;
 }
@@ -2603,11 +2599,53 @@ button {
   text-transform: uppercase;
 }
 
+.interval-total-card-value {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 7px;
+}
+
 .interval-total-card strong {
   color: #182b20;
   font-size: 1.25rem;
   font-weight: 950;
   line-height: 1;
+}
+
+.interval-total-card-percentage {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 42px;
+  padding: 3px 7px;
+  border-radius: 999px;
+  color: #173421;
+  background: #e6efe8;
+  font-size: 0.78rem;
+  font-weight: 950;
+  line-height: 1;
+  box-shadow: inset 0 0 0 1px rgba(33, 75, 48, 0.16);
+}
+
+.interval-total-card.status-on-track .interval-total-card-percentage {
+  color: #14532d;
+  background: #dcfce7;
+}
+
+.interval-total-card.status-watch .interval-total-card-percentage {
+  color: #654b05;
+  background: #fef3c7;
+}
+
+.interval-total-card.status-caution .interval-total-card-percentage {
+  color: #7c2d12;
+  background: #ffedd5;
+}
+
+.interval-total-card.status-overdue .interval-total-card-percentage {
+  color: #7f1d1d;
+  background: #fee2e2;
 }
 
 .interval-total-card small {
@@ -2657,47 +2695,82 @@ button {
   background: #ef4444;
 }
 
-.interval-summary-map-workspace {
-  margin-top: 2px;
+.interval-summary-content {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+  margin-top: 12px;
+}
+
+.interval-summary-map-column {
+  display: grid;
+  gap: 10px;
 }
 
 .interval-summary-map-panel {
-  padding: 12px;
+  min-width: 0;
 }
 
 .interval-summary-detail-panel .interval-status-pill {
   width: fit-content;
 }
 
+.interval-summary-detail-panel {
+  min-height: 132px;
+  padding: 12px;
+  border: 1px solid #c7d3c8;
+  border-radius: 8px;
+  background: #fbfdfb;
+}
+
+.interval-summary-detail-panel h3 {
+  margin: 8px 0 10px;
+  font-size: 1.05rem;
+}
+
+.interval-summary-detail-panel .empty-state {
+  margin: 0;
+  color: #607167;
+  font-size: 0.76rem;
+  font-weight: 800;
+}
+
 .interval-summary-map-panel .leaflet-map,
 .interval-summary-map-panel .map-empty {
-  height: 500px;
+  height: 620px;
 }
 
 .interval-summary-scroll {
+  overflow-x: hidden;
   border: 1px solid var(--line);
   border-radius: 6px;
 }
 
+.interval-summary-scroll .field-interval-summary-table {
+  min-width: 0;
+}
+
 .field-interval-summary-table {
   width: 100%;
-  min-width: 1320px;
+  min-width: 0;
   border-collapse: separate;
   border-spacing: 0;
   color: #17251b;
   background: #ffffff;
-  font-size: 0.7rem;
+  font-size: 0.64rem;
   table-layout: fixed;
 }
 
 .field-interval-summary-table th,
 .field-interval-summary-table td {
-  height: 32px;
-  padding: 4px 6px;
+  height: 30px;
+  padding: 3px 4px;
   border-right: 1px solid #9cad9f;
   border-bottom: 1px solid #9cad9f;
   text-align: center;
   vertical-align: middle;
+  overflow-wrap: anywhere;
 }
 
 .field-interval-summary-table thead th {
@@ -2711,7 +2784,7 @@ button {
   position: sticky;
   left: 0;
   z-index: 1;
-  width: 92px;
+  width: 54px;
   color: #183327;
   background: #f4f8f3;
   font-weight: 900;
@@ -2720,14 +2793,27 @@ button {
 }
 
 .field-interval-summary-table thead th:first-child {
-  width: 92px;
+  width: 54px;
 }
 
-.field-interval-summary-table thead th:nth-child(2),
-.field-interval-summary-table thead th:nth-child(3),
-.field-interval-summary-table thead th:nth-child(4),
+.field-interval-summary-table thead th:nth-child(2) {
+  width: 70px;
+}
+
+.field-interval-summary-table thead th:nth-child(3) {
+  width: 82px;
+}
+
+.field-interval-summary-table thead th:nth-child(4) {
+  width: 62px;
+}
+
 .field-interval-summary-table thead th:nth-child(5) {
-  width: 108px;
+  width: 68px;
+}
+
+.field-interval-summary-table thead th:nth-child(6) {
+  width: 84px;
 }
 
 .field-interval-summary-table tbody td {
@@ -2741,6 +2827,21 @@ button {
   background: #f6f9f6;
 }
 
+.field-interval-summary-table .interval-summary-selectable-row {
+  cursor: pointer;
+}
+
+.field-interval-summary-table .interval-summary-selectable-row:hover td,
+.field-interval-summary-table .interval-summary-selectable-row:hover th {
+  background: #eef7ef;
+}
+
+.field-interval-summary-table .selected-summary-row td,
+.field-interval-summary-table .selected-summary-row th {
+  background: #dff2e3 !important;
+  box-shadow: inset 0 0 0 2px #2f7a4e;
+}
+
 .field-interval-summary-table .interval-zero-cell {
   color: #d11c1c;
   font-weight: 900;
@@ -2748,11 +2849,11 @@ button {
 
 .interval-status-pill {
   display: inline-flex;
-  min-width: 68px;
+  min-width: 0;
   justify-content: center;
-  padding: 3px 7px;
+  padding: 3px 5px;
   border-radius: 999px;
-  font-size: 0.64rem;
+  font-size: 0.6rem;
   font-weight: 900;
 }
 
@@ -2782,6 +2883,12 @@ button {
   background: #cfe7c3 !important;
   border-top: 3px solid #6f8f7c;
   font-weight: 950;
+}
+
+@media (max-width: 1180px) {
+  .interval-summary-content {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 900px) {

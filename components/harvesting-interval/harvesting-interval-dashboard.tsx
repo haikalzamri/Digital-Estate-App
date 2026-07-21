@@ -1,6 +1,6 @@
 "use client";
 
-import { BarChart3, CalendarDays, ChevronDown, ChevronRight, Download, Grid2X2, MapPinned, Sprout, Table2 } from "lucide-react";
+import { BarChart3, CalendarDays, ChevronDown, ChevronRight, Download, Grid2X2, Sprout } from "lucide-react";
 import { Fragment, useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import type { GeoJsonObject } from "geojson";
 import { ModuleShell } from "@/components/module-shell";
@@ -55,7 +55,6 @@ const INTERVAL_BANDS = [
 ] as const;
 
 type IntervalBandId = typeof INTERVAL_BANDS[number]["id"];
-type SummaryView = "table" | "map";
 
 const INTERVAL_STATUS_COLOURS = {
   onTrack: "#22c55e",
@@ -101,7 +100,6 @@ export function HarvestingIntervalDashboard() {
   const fieldMap = useFieldMap();
   const [selectedMonth, setSelectedMonth] = useState(getDefaultHarvestingMonth(source));
   const [summaryAsOfDate, setSummaryAsOfDate] = useState(source.metadata.lastActivityDate);
-  const [summaryView, setSummaryView] = useState<SummaryView>("table");
   const [selectedSummaryField, setSelectedSummaryField] = useState("");
   const [selectedMetric, setSelectedMetric] = useState<HarvestingIntervalMetricKey>("hectare");
   const [expandedDates, setExpandedDates] = useState<Set<string>>(new Set());
@@ -113,7 +111,7 @@ export function HarvestingIntervalDashboard() {
   const dayGroups = useMemo(() => getHarvestingDayGroups(report.fields), [report.fields]);
   const totalColumns = useMemo(() => getTotalColumns(report, expandedTotalGroups), [report, expandedTotalGroups]);
   const fieldIntervalSummary = useMemo(() => getFieldIntervalSummary(summaryReport, source, summaryAsOfDate), [summaryReport, summaryAsOfDate]);
-  const selectedSummaryRow = fieldIntervalSummary.find((row) => row.field === selectedSummaryField) || fieldIntervalSummary[0] || null;
+  const selectedSummaryRow = fieldIntervalSummary.find((row) => row.field === selectedSummaryField) || null;
   const overlayCodes = useMemo(() => getOverlayCodes(source), []);
   const metricLabel = METRIC_OPTIONS.find((option) => option.key === selectedMetric)?.longLabel || "Actual Covered Ha";
 
@@ -442,12 +440,10 @@ export function HarvestingIntervalDashboard() {
           minDate={source.metadata.startDate}
           onAsOfDateChange={setSummaryAsOfDate}
           onSelectField={setSelectedSummaryField}
-          onViewChange={setSummaryView}
-          selectedField={selectedSummaryRow?.field || ""}
+          selectedField={selectedSummaryField}
           selectedRow={selectedSummaryRow}
           fieldMap={fieldMap}
           rows={fieldIntervalSummary}
-          view={summaryView}
         />
       </section>
 
@@ -910,10 +906,8 @@ function FieldIntervalSummaryPanel({
   minDate,
   selectedField,
   selectedRow,
-  view,
   onAsOfDateChange,
   onSelectField,
-  onViewChange,
 }: {
   rows: FieldIntervalSummary[];
   asOfDate: string;
@@ -922,12 +916,13 @@ function FieldIntervalSummaryPanel({
   minDate: string;
   selectedField: string;
   selectedRow: FieldIntervalSummary | null;
-  view: SummaryView;
   onAsOfDateChange: (date: string) => void;
   onSelectField: (field: string) => void;
-  onViewChange: (view: SummaryView) => void;
 }) {
   const totalRow = getFieldIntervalTotalRow(rows);
+  const toggleFieldSelection = (field: string) => {
+    onSelectField(field === selectedField ? "" : field);
+  };
 
   return (
     <section className="data-panel interval-summary-panel">
@@ -948,14 +943,6 @@ function FieldIntervalSummaryPanel({
             }}
           />
         </label>
-        <div className="segmented-control interval-summary-view-toggle" aria-label="Field interval summary view">
-          <button className={view === "table" ? "active" : ""} type="button" onClick={() => onViewChange("table")}>
-            <Table2 aria-hidden="true" size={16} /> Table
-          </button>
-          <button className={view === "map" ? "active" : ""} type="button" onClick={() => onViewChange("map")}>
-            <MapPinned aria-hidden="true" size={16} /> Map
-          </button>
-        </div>
         <div className="interval-status-legend" aria-label="Interval status legend">
           <span><span className="interval-status-dot status-on-track" />On Track: 0-12 days</span>
           <span><span className="interval-status-dot status-watch" />Watch: 13-15 days</span>
@@ -964,46 +951,42 @@ function FieldIntervalSummaryPanel({
         </div>
       </div>
       <FieldIntervalTotalCards totalRow={totalRow} />
-      {view === "table" ? (
+      <div className="interval-summary-content">
         <div className="wide-table-scroll interval-summary-scroll">
           <table className="field-interval-summary-table">
             <thead>
               <tr>
-                <th rowSpan={2}>Field</th>
-                <th rowSpan={2}>Total Mature Ha</th>
-                <th rowSpan={2}>Last Harvest Date</th>
-                <th rowSpan={2}>Current Interval</th>
-                <th rowSpan={2}>Status</th>
-                <th colSpan={INTERVAL_BANDS.length * 2}>No. of Days Interval and Percentage (%) of Area</th>
-              </tr>
-              <tr>
-                {INTERVAL_BANDS.map((band) => (
-                  <Fragment key={`${band.id}-heading`}>
-                    <th>{band.label} Ha</th>
-                    <th>{band.label} %</th>
-                  </Fragment>
-                ))}
+                <th>Field</th>
+                <th>Total Mature Ha</th>
+                <th>Last Harvest Date</th>
+                <th>Current Interval</th>
+                <th>Status</th>
+                <th>No. of Days Interval</th>
               </tr>
             </thead>
             <tbody>
               {rows.map((row) => (
-                <FieldIntervalSummaryRow key={row.field} row={row} />
+                <FieldIntervalSummaryRow
+                  key={row.field}
+                  row={row}
+                  selected={row.field === selectedField}
+                  onSelectField={toggleFieldSelection}
+                />
               ))}
               <FieldIntervalSummaryRow isTotal row={totalRow} />
             </tbody>
           </table>
         </div>
-      ) : (
-        <div className="map-workspace interval-summary-map-workspace">
-          <div className="data-panel map-panel interval-summary-map-panel">
+        <div className="interval-summary-map-column">
+          <div className="map-panel interval-summary-map-panel">
             <HarvestingIntervalSummaryMap
               fieldMap={fieldMap}
               rows={rows}
               selectedField={selectedField}
-              onSelectField={onSelectField}
+              onSelectField={toggleFieldSelection}
             />
           </div>
-          <aside className="data-panel field-detail-panel interval-summary-detail-panel">
+          <aside className="field-detail-panel interval-summary-detail-panel">
             {selectedRow ? (
               <>
                 <span className={`interval-status-pill ${getIntervalStatusClass(selectedRow.maxInterval)}`}>{selectedRow.status}</span>
@@ -1012,16 +995,16 @@ function FieldIntervalSummaryPanel({
                   <Detail label="Total mature Ha" value={formatMetricValue(selectedRow.totalHectares, "hectare")} />
                   <Detail label="Last harvest date" value={selectedRow.lastHarvestDate || "-"} />
                   <Detail label="Current interval" value={`${selectedRow.maxInterval} days`} />
-                  <Detail label="Interval band" value={getIntervalBand(selectedRow.maxInterval).label} />
+                  <Detail label="Interval band" value={getIntervalBandHeading(getIntervalBand(selectedRow.maxInterval).label)} />
                 </dl>
-                <p className="detail-note">Map colours follow the selected as-at date.</p>
+                <p className="detail-note">Click the selected table row again to reset the map view.</p>
               </>
             ) : (
-              <p className="empty-state">Map data is loading.</p>
+              <p className="empty-state">Select a field row to highlight it on the map.</p>
             )}
           </aside>
         </div>
-      )}
+      </div>
     </section>
   );
 }
@@ -1037,7 +1020,10 @@ function FieldIntervalTotalCards({ totalRow }: { totalRow: FieldIntervalSummary 
             {card.statusClass ? <span className={`interval-status-dot ${card.statusClass}`} /> : null}
             {card.label}
           </span>
-          <strong>{card.value}</strong>
+          <div className="interval-total-card-value">
+            <strong>{card.value}</strong>
+            {card.percentage ? <span className="interval-total-card-percentage">{card.percentage}</span> : null}
+          </div>
           <small>{card.helper}</small>
         </div>
       ))}
@@ -1045,9 +1031,40 @@ function FieldIntervalTotalCards({ totalRow }: { totalRow: FieldIntervalSummary 
   );
 }
 
-function FieldIntervalSummaryRow({ row, isTotal = false }: { row: FieldIntervalSummary; isTotal?: boolean }) {
+function FieldIntervalSummaryRow({
+  row,
+  isTotal = false,
+  selected = false,
+  onSelectField,
+}: {
+  row: FieldIntervalSummary;
+  isTotal?: boolean;
+  selected?: boolean;
+  onSelectField?: (field: string) => void;
+}) {
+  const selectable = !isTotal && Boolean(onSelectField);
+  const handleSelect = () => {
+    if (!isTotal && onSelectField) onSelectField(row.field);
+  };
+
   return (
-    <tr className={isTotal ? "interval-summary-total-row" : ""}>
+    <tr
+      aria-selected={selectable ? selected : undefined}
+      className={[
+        isTotal ? "interval-summary-total-row" : "",
+        selectable ? "interval-summary-selectable-row" : "",
+        selected ? "selected-summary-row" : "",
+      ].filter(Boolean).join(" ")}
+      tabIndex={selectable ? 0 : undefined}
+      onClick={handleSelect}
+      onKeyDown={(event) => {
+        if (!selectable) return;
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          handleSelect();
+        }
+      }}
+    >
       <th>{row.field}</th>
       <td>{formatMetricValue(row.totalHectares, "hectare")}</td>
       <td>{row.lastHarvestDate || "-"}</td>
@@ -1055,15 +1072,7 @@ function FieldIntervalSummaryRow({ row, isTotal = false }: { row: FieldIntervalS
       <td>
         {isTotal ? "-" : <span className={`interval-status-pill ${getIntervalStatusClass(row.maxInterval)}`}>{row.status}</span>}
       </td>
-      {INTERVAL_BANDS.map((band) => {
-        const hectares = row.bandHectares[band.id];
-        return (
-          <Fragment key={`${row.field}-${band.id}`}>
-            <td className={hectares ? "" : "interval-zero-cell"}>{formatMetricValue(hectares, "hectare")}</td>
-            <td className={hectares ? "" : "interval-zero-cell"}>{formatPercentValue(getIntervalBandPercent(row, band.id))}</td>
-          </Fragment>
-        );
-      })}
+      <td>{isTotal ? "-" : getIntervalBandHeading(getIntervalBand(row.maxInterval).label)}</td>
     </tr>
   );
 }
@@ -1097,13 +1106,17 @@ function HarvestingIntervalSummaryMap({
         maxZoom: 22,
       }).addTo(mapInstance);
 
+      const selectedFeatureLayers: Array<import("leaflet").Layer & {
+        getBounds?: () => import("leaflet").LatLngBounds;
+      }> = [];
+
       const layer = L.geoJSON(fieldMap as unknown as GeoJsonObject, {
         style: (feature) => {
           const fieldName = String(feature?.properties?.field_no || feature?.properties?.field_gis || "");
           const row = lookup.get(fieldName);
           const selected = fieldName === selectedField;
           return {
-            color: selected ? "#ffffff" : "#263a2f",
+            color: selected ? "#dc2626" : "#263a2f",
             fillColor: row ? getIntervalStatusColour(row.maxInterval) : INTERVAL_STATUS_COLOURS.grey,
             fillOpacity: selected ? 0.88 : row ? 0.72 : 0.28,
             weight: selected ? 4 : 1.35,
@@ -1112,22 +1125,29 @@ function HarvestingIntervalSummaryMap({
         onEachFeature: (feature, featureLayer) => {
           const fieldName = String(feature.properties?.field_no || feature.properties?.field_gis || "Field");
           const row = lookup.get(fieldName);
+          const selected = fieldName === selectedField;
           featureLayer.bindTooltip(fieldName, {
             className: "field-map-tooltip",
             direction: "center",
             permanent: true,
           });
-          featureLayer.bindPopup(
-            `<div class="map-popup"><strong>${escapeHtml(fieldName)}</strong><span>${escapeHtml(row?.status || "No interval status")}</span><dl><div><dt>Mature Ha</dt><dd>${escapeHtml(formatMetricValue(row?.totalHectares || 0, "hectare"))}</dd></div><div><dt>Last Harvest</dt><dd>${escapeHtml(row?.lastHarvestDate || "-")}</dd></div><div><dt>Interval</dt><dd>${escapeHtml(row ? `${row.maxInterval} days` : "-")}</dd></div><div><dt>Band</dt><dd>${escapeHtml(row ? getIntervalBand(row.maxInterval).label : "-")}</dd></div></dl></div>`,
-          );
           featureLayer.on("click", () => {
             if (row) onSelectField(row.field);
           });
+          if (selected) {
+            selectedFeatureLayers.push(featureLayer as typeof selectedFeatureLayers[number]);
+          }
         },
       }).addTo(mapInstance);
 
       const bounds = layer.getBounds();
-      if (bounds.isValid()) mapInstance.fitBounds(bounds, { maxZoom: 16, padding: [22, 22] });
+      const selectedFeatureLayer = selectedFeatureLayers[0];
+      const selectedBounds = selectedFeatureLayer?.getBounds?.();
+      if (selectedField && selectedBounds?.isValid()) {
+        mapInstance.fitBounds(selectedBounds, { maxZoom: 14, padding: [76, 76] });
+      } else if (bounds.isValid()) {
+        mapInstance.fitBounds(bounds, { maxZoom: 16, padding: [22, 22] });
+      }
     };
 
     void renderMap();
@@ -1193,43 +1213,33 @@ function getFieldIntervalTotalRow(rows: FieldIntervalSummary[]): FieldIntervalSu
 }
 
 function getIntervalTotalCards(totalRow: FieldIntervalSummary) {
-  const onTrackHa = roundDisplayNumber(totalRow.bandHectares.lt10 + totalRow.bandHectares["11-12"], 2);
-  const watchHa = totalRow.bandHectares["13-15"];
-  const cautionHa = totalRow.bandHectares["16-20"];
-  const overdueHa = roundDisplayNumber(totalRow.bandHectares["21-30"] + totalRow.bandHectares["31-40"] + totalRow.bandHectares.gt41, 2);
-
   return [
     {
       label: "Total Mature Ha",
       value: formatMetricValue(totalRow.totalHectares, "hectare"),
       helper: `Max interval ${totalRow.maxInterval} days`,
+      percentage: "",
       statusClass: "",
     },
-    {
-      label: "0-12 Days",
-      value: formatMetricValue(onTrackHa, "hectare"),
-      helper: `${formatPercentValue(getTotalIntervalPercent(onTrackHa, totalRow.totalHectares))}% of area`,
-      statusClass: "status-on-track",
-    },
-    {
-      label: "13-15 Days",
-      value: formatMetricValue(watchHa, "hectare"),
-      helper: `${formatPercentValue(getTotalIntervalPercent(watchHa, totalRow.totalHectares))}% of area`,
-      statusClass: "status-watch",
-    },
-    {
-      label: "16-20 Days",
-      value: formatMetricValue(cautionHa, "hectare"),
-      helper: `${formatPercentValue(getTotalIntervalPercent(cautionHa, totalRow.totalHectares))}% of area`,
-      statusClass: "status-caution",
-    },
-    {
-      label: "21+ Days",
-      value: formatMetricValue(overdueHa, "hectare"),
-      helper: `${formatPercentValue(getTotalIntervalPercent(overdueHa, totalRow.totalHectares))}% of area`,
-      statusClass: "status-overdue",
-    },
+    ...INTERVAL_BANDS.map((band) => {
+      const hectares = totalRow.bandHectares[band.id];
+      const percentage = formatPercentValue(getTotalIntervalPercent(hectares, totalRow.totalHectares));
+      return {
+        label: getIntervalBandHeading(band.label),
+        value: formatMetricValue(hectares, "hectare"),
+        helper: "of total mature area",
+        percentage: `${percentage}%`,
+        statusClass: getIntervalBandStatusClass(band.id),
+      };
+    }),
   ];
+}
+
+function getIntervalBandStatusClass(bandId: IntervalBandId) {
+  if (bandId === "lt10" || bandId === "11-12") return "status-on-track";
+  if (bandId === "13-15") return "status-watch";
+  if (bandId === "16-20") return "status-caution";
+  return "status-overdue";
 }
 
 function getTotalIntervalPercent(value: number, total: number) {
@@ -1248,16 +1258,15 @@ function getIntervalBand(interval: number) {
   return INTERVAL_BANDS.find((band) => interval >= band.min && interval <= band.max) || INTERVAL_BANDS.at(-1)!;
 }
 
+function getIntervalBandHeading(label: string) {
+  return `${label} Days`;
+}
+
 function getLastHarvestDate(sourceData: HarvestingIntervalSource, field: string, asOfDate: string) {
   return Object.keys(sourceData.activityByField[field] || {})
     .filter((date) => date <= asOfDate)
     .sort()
     .at(-1) || null;
-}
-
-function getIntervalBandPercent(row: FieldIntervalSummary, bandId: IntervalBandId) {
-  if (!row.totalHectares) return 0;
-  return row.bandHectares[bandId] / row.totalHectares * 100;
 }
 
 function getIntervalStatus(interval: number) {
@@ -1440,13 +1449,4 @@ function emptyDispatchMetrics(): HarvestingIntervalDispatchMetrics {
 function csvValue(value: unknown) {
   const text = String(value ?? "");
   return /[",\n]/.test(text) ? `"${text.replaceAll('"', '""')}"` : text;
-}
-
-function escapeHtml(value: unknown) {
-  return String(value ?? "")
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
 }
