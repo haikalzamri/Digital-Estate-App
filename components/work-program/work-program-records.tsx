@@ -1,10 +1,9 @@
 "use client";
 
-import { Check, Edit3, MapPinned, Search, Trash2 } from "lucide-react";
+import { Check, Edit3, Search, Trash2 } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
-import { RecordsFieldMap } from "@/components/maps/work-program-map";
 import { RecordEditor } from "@/components/work-program/record-editor";
-import { fieldKey, formatDate, formatNumber, type FieldFeatureCollection } from "@/lib/work-program/analytics";
+import { dashboardSourceRows, fieldKey, formatDate, formatNumber, type FieldFeatureCollection } from "@/lib/work-program/analytics";
 import { PROGRAM_TYPES } from "@/lib/work-program/config";
 import type { WorkProgramRecord } from "@/lib/types/work-program";
 
@@ -39,6 +38,27 @@ export function WorkProgramRecords({ fieldMap, records, loading, source, onSave,
       .sort((a, b) => a.localeCompare(b, undefined, { numeric: true })),
     [fieldMap.features],
   );
+  const fieldHaByKey = useMemo(
+    () => {
+      const referenceHa = new Map<string, number>();
+      dashboardSourceRows
+        .filter((row) => row.programType === "Mature Circle")
+        .forEach((row) => {
+          const key = fieldKey(row.field);
+          if (key && !referenceHa.has(key) && Number(row.hect) > 0) {
+            referenceHa.set(key, Number(row.hect));
+          }
+        });
+      fieldMap.features.forEach((feature) => {
+        const key = fieldKey(feature.properties.field_no || feature.properties.field_gis);
+        if (key && !referenceHa.has(key)) {
+          referenceHa.set(key, Number(feature.properties.ha_gis) || 0);
+        }
+      });
+      return referenceHa;
+    },
+    [fieldMap.features],
+  );
 
   const broadlyFiltered = useMemo(() => {
     const term = search.trim().toLowerCase();
@@ -54,13 +74,8 @@ export function WorkProgramRecords({ fieldMap, records, loading, source, onSave,
   const listRecords = broadlyFiltered.filter((record) => record.approvalStatus === approvalTab);
   const pendingCount = broadlyFiltered.filter((record) => record.approvalStatus !== "Approved").length;
   const approvedCount = broadlyFiltered.filter((record) => record.approvalStatus === "Approved").length;
-  const mapRecords = broadlyFiltered;
   const selectedRecord = records.find((record) => record.id === selectedRecordId) || null;
   const selectRecord = useCallback((record: WorkProgramRecord) => setSelectedRecordId(record.id), []);
-  const editFromMap = useCallback((record: WorkProgramRecord) => {
-    setSelectedRecordId(record.id);
-    setEditingRecord(record);
-  }, []);
 
   const monthRecords = useMemo(
     () => records.filter((record) => record.programType === trackingProgram && record.actualCompletionDate.slice(0, 7) === trackingMonth),
@@ -70,6 +85,8 @@ export function WorkProgramRecords({ fieldMap, records, loading, source, onSave,
   const trackingFields = fieldNames.length
     ? fieldNames
     : [...new Set(monthRecords.map((record) => record.blockField))].sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+  const totalTrackingHa = trackingFields.reduce((sum, field) => sum + (fieldHaByKey.get(fieldKey(field)) || 0), 0);
+  const monthTotalHa = monthRecords.reduce((sum, record) => sum + Number(record.hectares || 0), 0);
   const selectedDay = selectedRecord?.actualCompletionDate.slice(0, 7) === trackingMonth
     ? Number(selectedRecord.actualCompletionDate.slice(8, 10))
     : 0;
@@ -78,8 +95,8 @@ export function WorkProgramRecords({ fieldMap, records, loading, source, onSave,
     <section className="workspace-section" aria-labelledby="work-program-records-title">
       <div className="workspace-toolbar">
         <div className="section-heading">
-          <p>Approval and field records</p>
-          <h2 id="work-program-records-title">Work Program Records</h2>
+          <p>Daily approval and field records</p>
+          <h2 id="work-program-records-title">Work Program Daily View</h2>
         </div>
         <div className="source-status"><span className={loading ? "loading-dot" : "online-dot"} />{loading ? "Loading" : source}</div>
       </div>
@@ -127,14 +144,17 @@ export function WorkProgramRecords({ fieldMap, records, loading, source, onSave,
         </div>
         <div className="wide-table-scroll tracking-scroll">
           <table className="tracking-table">
-            <thead><tr><th>Field No</th>{Array.from({ length: days }, (_, index) => <th className={selectedDay === index + 1 ? "column-selected" : ""} key={index + 1}>{index + 1}</th>)}<th>Total</th></tr></thead>
+            <thead><tr><th>Field No</th><th>Ha</th>{Array.from({ length: days }, (_, index) => <th className={selectedDay === index + 1 ? "column-selected" : ""} key={index + 1}>{index + 1}</th>)}<th>Total</th></tr></thead>
             <tbody>
               {trackingFields.map((field) => {
                 const fieldRecords = monthRecords.filter((record) => fieldKey(record.blockField) === fieldKey(field));
+                const fieldHa = fieldHaByKey.get(fieldKey(field)) || 0;
+                const monthTotal = fieldRecords.reduce((sum, record) => sum + Number(record.hectares || 0), 0);
                 const selectedRow = selectedRecord && fieldKey(selectedRecord.blockField) === fieldKey(field);
                 return (
                   <tr className={selectedRow ? "row-selected" : ""} key={field}>
                     <th>{field}</th>
+                    <td className="tracking-ha-cell">{fieldHa ? formatNumber(fieldHa, 8) : "-"}</td>
                     {Array.from({ length: days }, (_, index) => {
                       const day = index + 1;
                       const entries = fieldRecords.filter((record) => Number(record.actualCompletionDate.slice(8, 10)) === day);
@@ -147,26 +167,14 @@ export function WorkProgramRecords({ fieldMap, records, loading, source, onSave,
                         </td>
                       );
                     })}
-                    <td className="row-total">{formatNumber(fieldRecords.reduce((sum, record) => sum + Number(record.hectares || 0), 0), 8)}</td>
+                    <td className="row-total">{formatNumber(monthTotal, 8)}</td>
                   </tr>
                 );
               })}
             </tbody>
-            <tfoot><tr><th>Total</th>{Array.from({ length: days }, (_, index) => { const day = index + 1; const total = monthRecords.filter((record) => Number(record.actualCompletionDate.slice(8, 10)) === day).reduce((sum, record) => sum + Number(record.hectares || 0), 0); return <td key={day}>{total ? formatNumber(total, 8) : ""}</td>; })}<td>{formatNumber(monthRecords.reduce((sum, record) => sum + Number(record.hectares || 0), 0), 8)}</td></tr></tfoot>
+            <tfoot><tr><th>Total</th><td>{formatNumber(totalTrackingHa, 8)}</td>{Array.from({ length: days }, (_, index) => { const day = index + 1; const total = monthRecords.filter((record) => Number(record.actualCompletionDate.slice(8, 10)) === day).reduce((sum, record) => sum + Number(record.hectares || 0), 0); return <td key={day}>{total ? formatNumber(total, 8) : ""}</td>; })}<td>{formatNumber(monthTotalHa, 8)}</td></tr></tfoot>
           </table>
         </div>
-      </div>
-
-      <div className="data-panel records-map-panel">
-        <div className="panel-heading">
-          <div><h3>Map Output</h3><p>All filtered records appear regardless of approval status.</p></div>
-          <div className="map-selection-actions">
-            <MapPinned aria-hidden="true" size={17} />
-            <span>{selectedRecord ? `${selectedRecord.blockField} - ${selectedRecord.programType}` : "Select a pin to edit"}</span>
-            {selectedRecord ? <button className="secondary-button" type="button" onClick={() => setEditingRecord(selectedRecord)}><Edit3 size={15} /> Edit selected</button> : null}
-          </div>
-        </div>
-        <RecordsFieldMap fieldMap={fieldMap} records={mapRecords} selectedRecordId={selectedRecordId} onSelectRecord={editFromMap} />
       </div>
 
       {editingRecord ? <RecordEditor key={editingRecord.id} record={editingRecord} fieldMap={fieldMap} onClose={() => setEditingRecord(null)} onSave={onSave} /> : null}

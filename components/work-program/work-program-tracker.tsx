@@ -1,6 +1,6 @@
 "use client";
 
-import { Camera, CheckCircle2, LocateFixed, RefreshCcw, Save, Trash2 } from "lucide-react";
+import { Camera, CheckCircle2, RefreshCcw, Save, Trash2 } from "lucide-react";
 import Image from "next/image";
 import { useCallback, useMemo, useState } from "react";
 import { ModuleShell } from "@/components/module-shell";
@@ -17,9 +17,6 @@ type TrackerDraft = {
   hectares: string;
   actualCompletionDate: string;
   remarks: string;
-  latitude: string;
-  longitude: string;
-  gpsAccuracy: string;
   photoData: string;
 };
 
@@ -30,9 +27,6 @@ const emptyDraft = (): TrackerDraft => ({
   hectares: "",
   actualCompletionDate: localDateString(new Date()),
   remarks: "",
-  latitude: "",
-  longitude: "",
-  gpsAccuracy: "",
   photoData: "",
 });
 
@@ -42,7 +36,6 @@ export function WorkProgramTracker() {
   const [draft, setDraft] = useState<TrackerDraft>(emptyDraft);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
-  const [locating, setLocating] = useState(false);
   const [processingPhoto, setProcessingPhoto] = useState(false);
   const [lastSubmission, setLastSubmission] = useState<WorkProgramRecord | null>(null);
 
@@ -63,31 +56,6 @@ export function WorkProgramTracker() {
     setDraft(emptyDraft());
     setErrors({});
     setLastSubmission(null);
-  };
-
-  const captureGps = () => {
-    if (!window.navigator.geolocation) {
-      setErrors((current) => ({ ...current, gps: "GPS is unavailable. Enter coordinates manually." }));
-      return;
-    }
-    setLocating(true);
-    setErrors((current) => ({ ...current, gps: "" }));
-    window.navigator.geolocation.getCurrentPosition(
-      (position) => {
-        setDraft((current) => ({
-          ...current,
-          latitude: position.coords.latitude.toFixed(6),
-          longitude: position.coords.longitude.toFixed(6),
-          gpsAccuracy: position.coords.accuracy ? position.coords.accuracy.toFixed(1) : "",
-        }));
-        setLocating(false);
-      },
-      () => {
-        setErrors((current) => ({ ...current, gps: "GPS permission was not granted. Enter coordinates manually." }));
-        setLocating(false);
-      },
-      { enableHighAccuracy: true, timeout: 10000 },
-    );
   };
 
   const attachPhoto = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -116,8 +84,6 @@ export function WorkProgramTracker() {
     else if (!listedField) nextErrors.blockField = "Select a field from the approved list.";
     if (!Number(draft.hectares) || Number(draft.hectares) <= 0) nextErrors.hectares = "Enter hectares above zero.";
     if (!draft.actualCompletionDate) nextErrors.actualCompletionDate = "Select the completion date.";
-    if (draft.latitude && !Number.isFinite(Number(draft.latitude))) nextErrors.gps = "Enter a valid latitude.";
-    if (draft.longitude && !Number.isFinite(Number(draft.longitude))) nextErrors.gps = "Enter a valid longitude.";
     if (Object.keys(nextErrors).length) {
       setErrors(nextErrors);
       return;
@@ -140,9 +106,6 @@ export function WorkProgramTracker() {
       priority: "Must",
       approvalStatus: "Pending Approval",
       remarks: draft.remarks.trim(),
-      latitude: draft.latitude,
-      longitude: draft.longitude,
-      gpsAccuracy: draft.gpsAccuracy,
       photoData: draft.photoData,
       syncStatus: "Synced",
       category: String(fieldFeature?.properties.field_type || "").includes("IMMATURE") ? "Immature" : "Mature",
@@ -223,19 +186,8 @@ export function WorkProgramTracker() {
           </section>
 
           <section className="tracker-form-section" aria-labelledby="evidence-heading">
-            <div className="form-section-heading"><span>2</span><div><h3 id="evidence-heading">Location and evidence</h3><p>GPS and photos are optional but help management validate the work.</p></div></div>
+            <div className="form-section-heading"><span>2</span><div><h3 id="evidence-heading">Evidence</h3><p>Photos are optional but help management validate the work.</p></div></div>
             <div className="evidence-layout">
-              <div className="gps-capture">
-                <button className="secondary-button gps-button" type="button" onClick={captureGps} disabled={locating}>
-                  <LocateFixed aria-hidden="true" size={17} /> {locating ? "Locating" : "Capture GPS"}
-                </button>
-                <div className="gps-inputs">
-                  <label><span>Latitude</span><input inputMode="decimal" value={draft.latitude} onChange={(event) => update("latitude", event.target.value)} placeholder="2.86667" /></label>
-                  <label><span>Longitude</span><input inputMode="decimal" value={draft.longitude} onChange={(event) => update("longitude", event.target.value)} placeholder="101.36667" /></label>
-                  <label><span>Accuracy (m)</span><input inputMode="decimal" value={draft.gpsAccuracy} onChange={(event) => update("gpsAccuracy", event.target.value)} placeholder="Optional" /></label>
-                </div>
-                {errors.gps ? <small className="field-error" role="alert">{errors.gps}</small> : null}
-              </div>
               <div className="photo-capture">
                 {draft.photoData ? (
                   <div className="photo-preview"><Image src={draft.photoData} alt="Attached field evidence" fill sizes="(max-width: 720px) 100vw, 320px" unoptimized /><button type="button" onClick={() => update("photoData", "")} aria-label="Remove attached photo"><Trash2 size={16} /></button></div>

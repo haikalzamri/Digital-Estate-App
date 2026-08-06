@@ -38,18 +38,18 @@ export function WorkProgramManagement({ initialView }: { initialView: Management
     <ModuleShell
       audience="management"
       title="Work Program"
-      subtitle="Dashboard monitoring, approval review, monthly tracking and estate map output"
+      subtitle="Monthly monitoring, daily approval review and field tracking"
       onSync={sync}
       syncBusy={syncBusy}
     >
       <nav className="section-tabs management-tabs" aria-label="Work Program management views">
         <button className={activeView === "dashboard" ? "active" : ""} type="button" onClick={() => changeView("dashboard")}>
           <LayoutDashboard aria-hidden="true" size={16} />
-          Dashboard
+          Monthly View
         </button>
         <button className={activeView === "records" ? "active" : ""} type="button" onClick={() => changeView("records")}>
           <ListChecks aria-hidden="true" size={16} />
-          Records
+          Daily View
         </button>
       </nav>
 
