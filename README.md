@@ -12,7 +12,7 @@ The current production modules are:
 
 | Module | Audience | Route |
 | --- | --- | --- |
-| Work Program Dashboard and Records | Management | [`/management/work-program`](https://digital-estate-app.vercel.app/management/work-program) |
+| Work Program Monthly View and Daily View | Management | [`/management/work-program`](https://digital-estate-app.vercel.app/management/work-program) |
 | PMV Dashboard | Management | [`/management/pmv`](https://digital-estate-app.vercel.app/management/pmv) |
 | Harvesting Interval | Management | [`/management/harvesting-interval`](https://digital-estate-app.vercel.app/management/harvesting-interval) |
 | Work Program Input | Field users | [`/input/work-program`](https://digital-estate-app.vercel.app/input/work-program) |
@@ -22,8 +22,8 @@ The root route redirects to `/management/work-program`.
 
 ## Features
 
-- Work Program completion capture by field, programme type, hectares, date, remarks, GPS, and photo.
-- Work Program management dashboard with approval workflow, records view, monthly tracking, GIS map output, and CSV export.
+- Work Program completion capture by field, programme type, hectares, date, remarks, and optional photo evidence.
+- Work Program management views with approval workflow, daily tracking, monthly dashboard table/map monitoring, and CSV export.
 - PMV daily machine status reporting for working, breakdown, and idle machines.
 - PMV management dashboard for readiness, breakdown/idle visibility, repeat issue tracking, action queue, and export.
 - Harvesting Interval prototype with monthly grid, metric toggles, dispatch comparison, activity overlays, field interval summary, map view, and CSV export.
