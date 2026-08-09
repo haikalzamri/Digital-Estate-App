@@ -2179,6 +2179,99 @@ button {
   padding: 8px;
 }
 
+.batch-submit-modal {
+  width: min(760px, 100%);
+}
+
+.batch-submit-heading p:last-child {
+  margin: 6px 0 0;
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.batch-submit-summary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.batch-submit-summary span {
+  display: grid;
+  gap: 2px;
+  padding: 12px;
+  color: var(--muted);
+  background: #f8fbf8;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  font-size: 0.74rem;
+  font-weight: 800;
+}
+
+.batch-submit-summary strong {
+  color: var(--ink);
+  font-size: 1.05rem;
+}
+
+.batch-submit-list {
+  display: grid;
+  gap: 8px;
+  max-height: min(42vh, 390px);
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.batch-submit-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 11px;
+  padding: 11px 12px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 7px;
+}
+
+.batch-submit-row > span {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  color: #fff;
+  background: var(--primary);
+  border-radius: 50%;
+  font-size: 0.74rem;
+  font-weight: 950;
+}
+
+.batch-submit-row strong,
+.batch-submit-row small,
+.batch-submit-row em {
+  display: block;
+}
+
+.batch-submit-row strong {
+  color: var(--ink);
+  font-size: 0.84rem;
+}
+
+.batch-submit-row small {
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: 0.76rem;
+  font-weight: 800;
+}
+
+.batch-submit-row em {
+  margin-top: 6px;
+  color: #5f6b63;
+  font-size: 0.74rem;
+  line-height: 1.35;
+}
+
+.batch-submit-actions .primary-button {
+  min-width: 180px;
+}
+
 @media (max-width: 720px) {
   .tracker-heading-row {
     align-items: stretch;
@@ -2251,6 +2344,21 @@ button {
   .batch-coverage-heading {
     align-items: flex-start;
     flex-direction: column;
+  }
+
+  .batch-submit-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .batch-submit-actions {
+    align-items: stretch;
+    flex-direction: column-reverse;
+  }
+
+  .batch-submit-actions .primary-button,
+  .batch-submit-actions .secondary-button {
+    width: 100%;
+    justify-content: center;
   }
 }
 

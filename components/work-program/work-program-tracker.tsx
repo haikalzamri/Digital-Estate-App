@@ -79,6 +79,7 @@ export function WorkProgramTracker() {
   const [batchEntries, setBatchEntries] = useState<BatchEntry[]>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
+  const [confirmingSubmission, setConfirmingSubmission] = useState(false);
   const [lastSubmission, setLastSubmission] = useState<{ count: number; totalHa: number; syncStatus: string } | null>(null);
 
   const fields = useMemo(
@@ -109,12 +110,14 @@ export function WorkProgramTracker() {
   const updateBatchEntry = (id: string, key: keyof TrackerDraft, value: string) => {
     setBatchEntries((current) => current.map((entry) => (entry.id === id ? { ...entry, [key]: value } : entry)));
     setErrors((current) => ({ ...current, batch: "" }));
+    setConfirmingSubmission(false);
   };
 
   const reset = () => {
     setDraft(emptyDraft());
     setBatchEntries([]);
     setErrors({});
+    setConfirmingSubmission(false);
     setLastSubmission(null);
   };
 
@@ -140,6 +143,23 @@ export function WorkProgramTracker() {
   const removeBatchEntry = (id: string) => {
     setBatchEntries((current) => current.filter((entry) => entry.id !== id));
     setErrors((current) => ({ ...current, batch: "" }));
+    setConfirmingSubmission(false);
+  };
+
+  const openSubmissionSummary = () => {
+    if (!batchEntries.length) {
+      setErrors((current) => ({ ...current, batch: "Add at least one batch entry before submitting." }));
+      return;
+    }
+
+    const invalidIndex = batchEntries.findIndex((entry) => Object.keys(validateEntry(entry, fields)).length > 0);
+    if (invalidIndex >= 0) {
+      setErrors((current) => ({ ...current, batch: `Entry ${invalidIndex + 1} has missing or invalid information.` }));
+      return;
+    }
+
+    setErrors({});
+    setConfirmingSubmission(true);
   };
 
   const submitBatch = async () => {
@@ -165,6 +185,7 @@ export function WorkProgramTracker() {
         syncStatus: saved.some((record) => record.syncStatus === "Pending Sync") ? "Pending Sync" : "Synced",
       });
       setBatchEntries([]);
+      setConfirmingSubmission(false);
       setDraft((current) =>
         emptyDraft({
           programType: current.programType,
@@ -265,9 +286,18 @@ export function WorkProgramTracker() {
           records={data.records}
           saving={saving}
           onRemove={removeBatchEntry}
-          onSubmit={submitBatch}
+          onSubmit={openSubmissionSummary}
           onUpdate={updateBatchEntry}
         />
+        {confirmingSubmission ? (
+          <BatchSubmitSummaryModal
+            entries={batchEntries}
+            saving={saving}
+            totalHa={batchTotalHa}
+            onCancel={() => setConfirmingSubmission(false)}
+            onConfirm={submitBatch}
+          />
+        ) : null}
       </section>
     </ModuleShell>
   );
@@ -468,6 +498,54 @@ function BatchReview({
         })}
       </div>
     </section>
+  );
+}
+
+function BatchSubmitSummaryModal({
+  entries,
+  saving,
+  totalHa,
+  onCancel,
+  onConfirm,
+}: {
+  entries: BatchEntry[];
+  saving: boolean;
+  totalHa: number;
+  onCancel: () => void;
+  onConfirm: () => void;
+}) {
+  return (
+    <div className="modal-backdrop" role="presentation">
+      <section className="modal-card batch-submit-modal" role="dialog" aria-modal="true" aria-labelledby="batch-submit-title">
+        <div className="modal-heading batch-submit-heading">
+          <p className="eyebrow">Final Review</p>
+          <h2 id="batch-submit-title">Confirm batch submission</h2>
+          <p>Review the batch summary below before sending these records for approval.</p>
+        </div>
+        <div className="batch-submit-summary">
+          <span><strong>{entries.length}</strong> {entries.length === 1 ? "entry" : "entries"}</span>
+          <span><strong>{formatNumber(totalHa)}</strong> ha total</span>
+        </div>
+        <div className="batch-submit-list">
+          {entries.map((entry, index) => (
+            <article className="batch-submit-row" key={entry.id}>
+              <span>{index + 1}</span>
+              <div>
+                <strong>{entry.programType}</strong>
+                <small>{entry.blockField} · {formatNumber(Number(entry.hectares || 0))} ha · {formatDate(entry.actualCompletionDate)}</small>
+                {entry.remarks ? <em>{entry.remarks}</em> : null}
+              </div>
+            </article>
+          ))}
+        </div>
+        <div className="modal-actions batch-submit-actions">
+          <button className="secondary-button" type="button" onClick={onCancel} disabled={saving}>Back to edit</button>
+          <button className="primary-button" type="button" onClick={onConfirm} disabled={saving}>
+            <Save aria-hidden="true" size={17} /> {saving ? "Submitting" : "Submit for approval"}
+          </button>
+        </div>
+      </section>
+    </div>
   );
 }
 
