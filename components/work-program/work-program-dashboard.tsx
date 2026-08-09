@@ -81,7 +81,7 @@ export function WorkProgramDashboard({ fieldMap, records, loading, source }: Das
   const [programType, setProgramType] = useState<string>(PROGRAM_TYPES[0]);
   const [selectedYear, setSelectedYear] = useState(DASHBOARD_YEAR);
   const [view, setView] = useState<"table" | "map">("map");
-  const [showProgramme, setShowProgramme] = useState(false);
+  const [expandedProgrammeFields, setExpandedProgrammeFields] = useState<Set<string>>(() => new Set());
   const [editMode, setEditMode] = useState(false);
   const [newProgramName, setNewProgramName] = useState("");
   const [selectedCell, setSelectedCell] = useState<SelectedCell>(null);
@@ -107,6 +107,11 @@ export function WorkProgramDashboard({ fieldMap, records, loading, source }: Das
     () => buildTablePairs(baseDashboard.completedRows, dashboard.programmeRows),
     [baseDashboard.completedRows, dashboard.programmeRows],
   );
+  const programmeFieldKeys = useMemo(
+    () => tablePairs.filter(({ programme }) => programme).map(({ completed, programme }) => fieldKey(programme?.field || completed.field)),
+    [tablePairs],
+  );
+  const allProgrammeRowsExpanded = programmeFieldKeys.length > 0 && programmeFieldKeys.every((key) => expandedProgrammeFields.has(key));
   const mapStatuses = useMemo(
     () => getMapStatuses(programType, records, fieldMap.features, selectedYear),
     [fieldMap.features, programType, records, selectedYear],
@@ -131,7 +136,25 @@ export function WorkProgramDashboard({ fieldMap, records, loading, source }: Das
     mapStatuses.find((item) => item.field.properties.field_gis === selectedField) || mapStatuses[0] || null;
   const selectedMapContext = selectedStatus ? mapRoundContexts.get(mapStatusFieldKey(selectedStatus)) || null : null;
   const selectMapField = useCallback((fieldGis: string) => setSelectedField(fieldGis), []);
-  const shouldShowProgramme = editMode || showProgramme;
+  const toggleAllProgrammeRows = useCallback(() => {
+    setExpandedProgrammeFields((current) => {
+      if (programmeFieldKeys.length && programmeFieldKeys.every((key) => current.has(key))) return new Set();
+      return new Set([...current, ...programmeFieldKeys]);
+    });
+  }, [programmeFieldKeys]);
+  const toggleProgrammeRow = useCallback((field: string) => {
+    const key = fieldKey(field);
+    const closing = expandedProgrammeFields.has(key);
+    setExpandedProgrammeFields((current) => {
+      const next = new Set(current);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+    if (closing) {
+      setSelectedCell((current) => current && fieldKey(current.field) === key ? null : current);
+    }
+  }, [expandedProgrammeFields]);
   const logChange = useCallback((programme: string, action: string, detail: string) => {
     const loggedAt = new Date();
     setChangeLogs((current) => [
@@ -166,7 +189,7 @@ export function WorkProgramDashboard({ fieldMap, records, loading, source }: Das
       year: selectedYear,
     });
     setView("table");
-    setShowProgramme(true);
+    setExpandedProgrammeFields(new Set(programmeFieldKeys));
     setDraftProgramOptions(programOptions);
     setDraftRowsByProgram(cloneRowsByProgram(baselineRows));
     setEditBaselineProgramOptions([...programOptions]);
@@ -324,7 +347,13 @@ export function WorkProgramDashboard({ fieldMap, records, loading, source }: Das
         <div className="toolbar-actions">
           <label className="select-control">
             <span>Work Program</span>
-            <select value={programType} onChange={(event) => setProgramType(event.target.value)}>
+            <select
+              value={programType}
+              onChange={(event) => {
+                setProgramType(event.target.value);
+                setExpandedProgrammeFields(new Set());
+              }}
+            >
               {activeProgramOptions.map((program) => (
                 <option key={program} value={program}>
                   {program}
@@ -340,6 +369,7 @@ export function WorkProgramDashboard({ fieldMap, records, loading, source }: Das
                 setSelectedYear(Number(event.target.value));
                 setSelectedCell(null);
                 setSelectedField("");
+                setExpandedProgrammeFields(new Set());
               }}
             >
               {WORK_PROGRAM_YEARS.map((year) => (
@@ -394,11 +424,11 @@ export function WorkProgramDashboard({ fieldMap, records, loading, source }: Das
           <div className="panel-heading">
             <div>
               <h3>{dashboardYearLabel(selectedYear)} field plan and completion</h3>
-              <p>{editMode ? "Edit programme planning values in the Programme rows, then save the prototype setup." : "Click a completed month value to review its daily entries."}</p>
+              <p>{editMode ? "Edit programme planning values in the Programme rows, then save the prototype setup." : "Click a row to show or hide its Programme row. Click a completed month value to review daily entries."}</p>
             </div>
-            <button className="secondary-button" type="button" onClick={() => setShowProgramme((current) => !current)} disabled={editMode}>
-              {showProgramme ? <EyeOff aria-hidden="true" size={16} /> : <Eye aria-hidden="true" size={16} />}
-              {showProgramme ? "Hide programme rows" : "Show programme rows"}
+            <button className="secondary-button" type="button" onClick={toggleAllProgrammeRows} disabled={editMode || !programmeFieldKeys.length}>
+              {allProgrammeRowsExpanded ? <EyeOff aria-hidden="true" size={16} /> : <Eye aria-hidden="true" size={16} />}
+              {allProgrammeRowsExpanded ? "Hide programme rows" : "Show programme rows"}
             </button>
           </div>
           {editMode ? (
@@ -425,11 +455,11 @@ export function WorkProgramDashboard({ fieldMap, records, loading, source }: Das
                   <th>Field</th>
                   <th>Category</th>
                   <th>Ha</th>
-                  <th>Actual / Budget</th>
                   <th>Programme Frequency / Year</th>
                   <th>Completed Rounds</th>
                   <th>Next Programme (Month)</th>
                   <th>Delay in Months (from Next Programme)</th>
+                  <th>Actual / Budget</th>
                   {dashboardMonths.map((month) => (
                     <th
                       aria-label={month.key === currentMonthKey ? `${month.label}, current month` : month.label}
@@ -447,9 +477,12 @@ export function WorkProgramDashboard({ fieldMap, records, loading, source }: Das
                 const plannedRounds = getProgrammeRoundDefinitions(programme, dashboardMonths);
                 const completedDisplay = programme ? { ...completed, field: programme.field, category: programme.category, hect: programme.hect, frequencyMonths: plannedRounds.length || completed.frequencyMonths } : completed;
                 const selected = selectedCell?.field === completedDisplay.field;
+                const rowKey = fieldKey(completedDisplay.field);
+                const rowExpanded = editMode || expandedProgrammeFields.has(rowKey);
+                const canToggleProgrammeRow = Boolean(programme) && !editMode;
                 return (
                   <tbody className={selected ? "row-selected" : ""} key={`${completed.id}-${programme?.id || "actual"}`}>
-                    {shouldShowProgramme && programme ? (
+                    {rowExpanded && programme ? (
                       <>
                         <DashboardTableRow
                           row={programme}
@@ -464,6 +497,9 @@ export function WorkProgramDashboard({ fieldMap, records, loading, source }: Das
                           months={dashboardMonths}
                           currentMonthKey={currentMonthKey}
                           showProgrammeIndicator={false}
+                          canToggleProgrammeRow={canToggleProgrammeRow}
+                          isProgrammeExpanded={rowExpanded}
+                          onToggleProgrammeRow={() => toggleProgrammeRow(completedDisplay.field)}
                           onUpdateProgrammeRow={updateProgrammeRow}
                         />
                         <DashboardTableRow
@@ -478,6 +514,9 @@ export function WorkProgramDashboard({ fieldMap, records, loading, source }: Das
                           months={dashboardMonths}
                           currentMonthKey={currentMonthKey}
                           showProgrammeIndicator={false}
+                          canToggleProgrammeRow={canToggleProgrammeRow}
+                          isProgrammeExpanded={rowExpanded}
+                          onToggleProgrammeRow={() => toggleProgrammeRow(completedDisplay.field)}
                           onUpdateProgrammeRow={updateProgrammeRow}
                         />
                       </>
@@ -493,7 +532,10 @@ export function WorkProgramDashboard({ fieldMap, records, loading, source }: Das
                         completionTarget={programme}
                         months={dashboardMonths}
                         currentMonthKey={currentMonthKey}
-                        showProgrammeIndicator={Boolean(programme && !shouldShowProgramme)}
+                        showProgrammeIndicator={Boolean(programme && !rowExpanded)}
+                        canToggleProgrammeRow={canToggleProgrammeRow}
+                        isProgrammeExpanded={rowExpanded}
+                        onToggleProgrammeRow={() => toggleProgrammeRow(completedDisplay.field)}
                         onUpdateProgrammeRow={updateProgrammeRow}
                       />
                     )}
@@ -586,6 +628,9 @@ function DashboardTableRow({
   months,
   currentMonthKey,
   showProgrammeIndicator,
+  canToggleProgrammeRow,
+  isProgrammeExpanded,
+  onToggleProgrammeRow,
   onUpdateProgrammeRow,
 }: {
   row: DashboardRow;
@@ -600,27 +645,42 @@ function DashboardTableRow({
   months: DashboardMonth[];
   currentMonthKey: string;
   showProgrammeIndicator: boolean;
+  canToggleProgrammeRow: boolean;
+  isProgrammeExpanded: boolean;
+  onToggleProgrammeRow: () => void;
   onUpdateProgrammeRow: (rowId: string, updater: (row: DashboardRow) => DashboardRow) => void;
 }) {
   const programmeReference = row.actualBudget === "Programme" ? row : completionTarget;
+  const metricsReference = roundCompletionRow || row;
   const plannedRounds = getProgrammeRoundDefinitions(programmeReference, months);
-  const roundCompletions = row.actualBudget === "Completed" ? getRoundCompletionIndexes(row, programmeReference, months) : [];
-  const monthRoundStatuses = row.actualBudget === "Completed" ? getRoundMonthStatusMap(roundCompletions) : new Map<string, string>();
-  const frequencyDisplay = plannedRounds.length || row.frequencyMonths || "-";
-  const completedRoundsDisplay = row.actualBudget === "Completed" && plannedRounds.length
-    ? `${roundCompletions.filter(isRoundComplete).length}/${plannedRounds.length}`
-    : row.completedRounds || "-";
+  const rowRoundCompletions = row.actualBudget === "Completed" ? getRoundCompletionIndexes(row, programmeReference, months) : [];
+  const metricsRoundCompletions = metricsReference.actualBudget === "Completed" ? getRoundCompletionIndexes(metricsReference, programmeReference, months) : rowRoundCompletions;
+  const monthRoundStatuses = row.actualBudget === "Completed" ? getRoundMonthStatusMap(rowRoundCompletions) : new Map<string, string>();
+  const frequencyDisplay = plannedRounds.length || metricsReference.frequencyMonths || row.frequencyMonths || "-";
+  const completedRoundsDisplay = metricsReference.actualBudget === "Completed" && plannedRounds.length
+    ? `${metricsRoundCompletions.filter(isRoundComplete).length}/${plannedRounds.length}`
+    : metricsReference.completedRounds || row.completedRounds || "-";
 
   return (
-    <tr className={row.actualBudget === "Programme" ? "programme-row" : "completed-row"}>
+    <tr
+      aria-expanded={canToggleProgrammeRow ? isProgrammeExpanded : undefined}
+      className={`${row.actualBudget === "Programme" ? "programme-row" : "completed-row"} ${canToggleProgrammeRow ? "programme-toggle-row" : ""}`}
+      onClick={canToggleProgrammeRow ? onToggleProgrammeRow : undefined}
+      onKeyDown={canToggleProgrammeRow ? (event) => {
+        if (event.key !== "Enter" && event.key !== " ") return;
+        event.preventDefault();
+        onToggleProgrammeRow();
+      } : undefined}
+      tabIndex={canToggleProgrammeRow ? 0 : undefined}
+    >
       {showSharedCells ? <th className={editMode ? "locked-template-cell" : ""} rowSpan={rowSpan}>{row.field}</th> : null}
       {showSharedCells ? <td className={editMode ? "locked-template-cell" : ""} rowSpan={rowSpan}>{row.category || "-"}</td> : null}
       {showSharedCells ? <td className={editMode ? "locked-template-cell" : ""} rowSpan={rowSpan}>{formatNumber(row.hect)}</td> : null}
+      {showSharedCells ? <td rowSpan={rowSpan}>{frequencyDisplay}</td> : null}
+      {showSharedCells ? <td rowSpan={rowSpan}>{completedRoundsDisplay}</td> : null}
+      {showSharedCells ? <td rowSpan={rowSpan}>{formatMonthYear(metricsReference.proposedNextDate || row.proposedNextDate)}</td> : null}
+      {showSharedCells ? <td rowSpan={rowSpan}>{formatIntervalDelay(metricsReference.intervalMonths || row.intervalMonths)}</td> : null}
       <td className={editMode ? "locked-template-cell" : ""}><span className={`row-type ${row.actualBudget.toLowerCase()}`}>{row.actualBudget}</span></td>
-      <td>{frequencyDisplay}</td>
-      <td>{completedRoundsDisplay}</td>
-      <td>{formatMonthYear(row.proposedNextDate)}</td>
-      <td>{formatIntervalDelay(row.intervalMonths)}</td>
       {months.map((month) => {
         const isCurrentMonth = month.key === currentMonthKey;
         const value = Number(row.months[month.key]) || 0;
@@ -682,7 +742,7 @@ function DashboardTableRow({
               </button>
             ) : null}
             {open && row.actualBudget === "Completed" ? (
-              <div className="month-popover">
+              <div className="month-popover" onClick={(event) => event.stopPropagation()}>
                 <strong>{row.field} · {month.label}</strong>
                 {plannedRound ? (
                   <span><b>Programme {plannedRound.label}</b>{formatNumber(plannedRound.targetHa)} ha planned</span>
