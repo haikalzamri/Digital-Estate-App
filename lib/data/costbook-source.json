@@ -1,0 +1,644 @@
+{
+  "metadata": {
+    "module": "Costbook",
+    "sourceDescription": "Prototype dummy cost records for management-view validation. Values are illustrative and are not operational records.",
+    "defaultActivityCode": "PM0112",
+    "defaultMonth": "2025-11",
+    "availableMonths": ["2025-10", "2025-11", "2025-12"]
+  },
+  "activities": [
+    {
+      "code": "PM0112",
+      "name": "Manuring",
+      "fieldCodes": ["P94A", "P94B", "P95A"],
+      "evitNumbers": ["TM002", "TM005", "TM011"]
+    },
+    {
+      "code": "PM0207",
+      "name": "Mechanical Spraying",
+      "fieldCodes": ["P95B", "P96A", "P96B"],
+      "evitNumbers": ["TM014", "TM018", "TM021"]
+    },
+    {
+      "code": "PM0315",
+      "name": "Road Maintenance",
+      "fieldCodes": ["P97A", "P97B", "P98A"],
+      "evitNumbers": ["TM024", "TM027", "TM030"]
+    }
+  ],
+  "records": [
+    {
+      "id": "CB-PM0112-20251003",
+      "activityCode": "PM0112",
+      "fieldCode": "P94A",
+      "date": "2025-10-03",
+      "labour": {
+        "workers": [
+          { "workerId": "WK001", "workerName": "Worker 01", "mandays": 1, "rate": 62, "overtimeHours": 4, "overtimeRate": 11.5 },
+          { "workerId": "WK002", "workerName": "Worker 02", "mandays": 1, "rate": 62, "overtimeHours": 0, "overtimeRate": 11.5 },
+          { "workerId": "WK003", "workerName": "Worker 03", "mandays": 1, "rate": 62, "overtimeHours": 0, "overtimeRate": 11.5 },
+          { "workerId": "WK004", "workerName": "Worker 04", "mandays": 1, "rate": 62, "overtimeHours": 0, "overtimeRate": 11.5 }
+        ],
+        "supervision": [
+          { "supervisorId": "SV001", "supervisorName": "Supervisor 01", "hours": 1, "rate": 70 },
+          { "supervisorId": "SV002", "supervisorName": "Supervisor 02", "hours": 1, "rate": 65 }
+        ]
+      },
+      "materials": [
+        { "id": "MAT-001", "name": "Urea Fertiliser", "unit": "bag", "quantity": 72, "unitPrice": 38.5 },
+        { "id": "MAT-002", "name": "MOP Fertiliser", "unit": "bag", "quantity": 48, "unitPrice": 44.2 }
+      ],
+      "evitUsage": [
+        { "evitNumber": "TM002", "hours": 7, "ratePerHour": 98, "transportCost": 170 },
+        { "evitNumber": "TM005", "hours": 5.5, "ratePerHour": 92, "transportCost": 145 }
+      ],
+      "hectaresCovered": 41.5,
+      "remark": "Completed as scheduled"
+    },
+    {
+      "id": "CB-PM0112-20251010",
+      "activityCode": "PM0112",
+      "fieldCode": "P94B",
+      "date": "2025-10-10",
+      "labour": {
+        "workers": [
+          { "workerId": "WK001", "workerName": "Worker 01", "mandays": 1, "rate": 62, "overtimeHours": 0, "overtimeRate": 11.5 },
+          { "workerId": "WK002", "workerName": "Worker 02", "mandays": 1, "rate": 62, "overtimeHours": 6, "overtimeRate": 11.5 },
+          { "workerId": "WK003", "workerName": "Worker 03", "mandays": 1, "rate": 62, "overtimeHours": 0, "overtimeRate": 11.5 },
+          { "workerId": "WK004", "workerName": "Worker 04", "mandays": 1, "rate": 62, "overtimeHours": 0, "overtimeRate": 11.5 }
+        ],
+        "supervision": [
+          { "supervisorId": "SV001", "supervisorName": "Supervisor 01", "hours": 1, "rate": 75 },
+          { "supervisorId": "SV002", "supervisorName": "Supervisor 02", "hours": 1, "rate": 70 }
+        ]
+      },
+      "materials": [
+        { "id": "MAT-003", "name": "NPK 12:12:17", "unit": "bag", "quantity": 96, "unitPrice": 52.4 }
+      ],
+      "evitUsage": [
+        { "evitNumber": "TM002", "hours": 7.5, "ratePerHour": 98, "transportCost": 180 },
+        { "evitNumber": "TM011", "hours": 4, "ratePerHour": 105, "transportCost": 120 }
+      ],
+      "hectaresCovered": 48,
+      "remark": "Normal progress"
+    },
+    {
+      "id": "CB-PM0112-20251017",
+      "activityCode": "PM0112",
+      "fieldCode": "P95A",
+      "date": "2025-10-17",
+      "labour": {
+        "workers": [
+          { "workerId": "WK001", "workerName": "Worker 01", "mandays": 1, "rate": 62, "overtimeHours": 0, "overtimeRate": 11.5 },
+          { "workerId": "WK002", "workerName": "Worker 02", "mandays": 1, "rate": 62, "overtimeHours": 0, "overtimeRate": 11.5 },
+          { "workerId": "WK003", "workerName": "Worker 03", "mandays": 1, "rate": 62, "overtimeHours": 3, "overtimeRate": 11.5 },
+          { "workerId": "WK004", "workerName": "Worker 04", "mandays": 0.5, "rate": 62, "overtimeHours": 0, "overtimeRate": 11.5 }
+        ],
+        "supervision": [
+          { "supervisorId": "SV001", "supervisorName": "Supervisor 01", "hours": 1, "rate": 70 },
+          { "supervisorId": "SV002", "supervisorName": "Supervisor 02", "hours": 1, "rate": 65 }
+        ]
+      },
+      "materials": [
+        { "id": "MAT-004", "name": "Urea Fertiliser", "unit": "bag", "quantity": 80, "unitPrice": 38.5 },
+        { "id": "MAT-005", "name": "Kieserite", "unit": "bag", "quantity": 34, "unitPrice": 31.8 }
+      ],
+      "evitUsage": [
+        { "evitNumber": "TM005", "hours": 6.5, "ratePerHour": 92, "transportCost": 160 },
+        { "evitNumber": "TM011", "hours": 5, "ratePerHour": 105, "transportCost": 125 }
+      ],
+      "hectaresCovered": 43.2,
+      "remark": "Light rain after completion"
+    },
+    {
+      "id": "CB-PM0112-20251101",
+      "activityCode": "PM0112",
+      "fieldCode": "P94A",
+      "date": "2025-11-01",
+      "labour": {
+        "workers": [
+          { "workerId": "WK001", "workerName": "Worker 01", "mandays": 1, "rate": 62, "overtimeHours": 6, "overtimeRate": 11.5 },
+          { "workerId": "WK002", "workerName": "Worker 02", "mandays": 1, "rate": 62, "overtimeHours": 0, "overtimeRate": 11.5 },
+          { "workerId": "WK003", "workerName": "Worker 03", "mandays": 1, "rate": 62, "overtimeHours": 0, "overtimeRate": 11.5 },
+          { "workerId": "WK004", "workerName": "Worker 04", "mandays": 1, "rate": 62, "overtimeHours": 0, "overtimeRate": 11.5 }
+        ],
+        "supervision": [
+          { "supervisorId": "SV001", "supervisorName": "Supervisor 01", "hours": 1, "rate": 75 },
+          { "supervisorId": "SV002", "supervisorName": "Supervisor 02", "hours": 1, "rate": 70 }
+        ]
+      },
+      "materials": [
+        { "id": "MAT-006", "name": "Urea Fertiliser", "unit": "bag", "quantity": 88, "unitPrice": 38.5 },
+        { "id": "MAT-007", "name": "Rock Phosphate", "unit": "bag", "quantity": 46, "unitPrice": 35.6 }
+      ],
+      "evitUsage": [
+        { "evitNumber": "TM002", "hours": 7.5, "ratePerHour": 98, "transportCost": 180 },
+        { "evitNumber": "TM005", "hours": 6, "ratePerHour": 92, "transportCost": 150 },
+        { "evitNumber": "TM011", "hours": 4.5, "ratePerHour": 105, "transportCost": 120 }
+      ],
+      "hectaresCovered": 46,
+      "remark": "All assigned machines utilised"
+    },
+    {
+      "id": "CB-PM0112-20251101-P94B",
+      "activityCode": "PM0112",
+      "fieldCode": "P94B",
+      "date": "2025-11-01",
+      "labour": {
+        "workers": [
+          { "workerId": "WK001", "workerName": "Worker 01", "mandays": 1, "rate": 62, "overtimeHours": 0, "overtimeRate": 11.5 },
+          { "workerId": "WK002", "workerName": "Worker 02", "mandays": 1, "rate": 62, "overtimeHours": 0, "overtimeRate": 11.5 },
+          { "workerId": "WK003", "workerName": "Worker 03", "mandays": 1, "rate": 62, "overtimeHours": 0, "overtimeRate": 11.5 },
+          { "workerId": "WK004", "workerName": "Worker 04", "mandays": 1, "rate": 62, "overtimeHours": 5, "overtimeRate": 11.5 },
+          { "workerId": "WK005", "workerName": "Worker 05", "mandays": 1, "rate": 62, "overtimeHours": 0, "overtimeRate": 11.5 }
+        ],
+        "supervision": [
+          { "supervisorId": "SV001", "supervisorName": "Supervisor 01", "hours": 1, "rate": 75 },
+          { "supervisorId": "SV002", "supervisorName": "Supervisor 02", "hours": 1, "rate": 70 }
+        ]
+      },
+      "materials": [
+        { "id": "MAT-008", "name": "NPK 12:12:17", "unit": "bag", "quantity": 105, "unitPrice": 52.4 },
+        { "id": "MAT-009", "name": "Kieserite", "unit": "bag", "quantity": 32, "unitPrice": 31.8 }
+      ],
+      "evitUsage": [
+        { "evitNumber": "TM002", "hours": 8, "ratePerHour": 98, "transportCost": 185 },
+        { "evitNumber": "TM005", "hours": 6.5, "ratePerHour": 92, "transportCost": 155 }
+      ],
+      "hectaresCovered": 50.5,
+      "remark": "Output above daily plan"
+    },
+    {
+      "id": "CB-PM0112-20251114",
+      "activityCode": "PM0112",
+      "fieldCode": "P95A",
+      "date": "2025-11-14",
+      "labour": {
+        "workers": [
+          { "workerId": "WK001", "workerName": "Worker 01", "mandays": 1, "rate": 62, "overtimeHours": 0, "overtimeRate": 11.5 },
+          { "workerId": "WK002", "workerName": "Worker 02", "mandays": 1, "rate": 62, "overtimeHours": 4, "overtimeRate": 11.5 },
+          { "workerId": "WK003", "workerName": "Worker 03", "mandays": 1, "rate": 62, "overtimeHours": 0, "overtimeRate": 11.5 },
+          { "workerId": "WK004", "workerName": "Worker 04", "mandays": 1, "rate": 62, "overtimeHours": 0, "overtimeRate": 11.5 }
+        ],
+        "supervision": [
+          { "supervisorId": "SV001", "supervisorName": "Supervisor 01", "hours": 1, "rate": 70 },
+          { "supervisorId": "SV002", "supervisorName": "Supervisor 02", "hours": 1, "rate": 65 }
+        ]
+      },
+      "materials": [
+        { "id": "MAT-010", "name": "Urea Fertiliser", "unit": "bag", "quantity": 76, "unitPrice": 38.5 }
+      ],
+      "evitUsage": [
+        { "evitNumber": "TM005", "hours": 7, "ratePerHour": 92, "transportCost": 165 },
+        { "evitNumber": "TM011", "hours": 5.5, "ratePerHour": 105, "transportCost": 130 }
+      ],
+      "hectaresCovered": 42.8,
+      "remark": "One material line only"
+    },
+    {
+      "id": "CB-PM0112-20251122",
+      "activityCode": "PM0112",
+      "fieldCode": "P94A",
+      "date": "2025-11-22",
+      "labour": {
+        "workers": [
+          { "workerId": "WK001", "workerName": "Worker 01", "mandays": 1, "rate": 62, "overtimeHours": 0, "overtimeRate": 11.5 },
+          { "workerId": "WK002", "workerName": "Worker 02", "mandays": 1, "rate": 62, "overtimeHours": 0, "overtimeRate": 11.5 },
+          { "workerId": "WK003", "workerName": "Worker 03", "mandays": 1, "rate": 62, "overtimeHours": 0, "overtimeRate": 11.5 },
+          { "workerId": "WK004", "workerName": "Worker 04", "mandays": 1, "rate": 62, "overtimeHours": 0, "overtimeRate": 11.5 },
+          { "workerId": "WK005", "workerName": "Worker 05", "mandays": 1, "rate": 62, "overtimeHours": 7, "overtimeRate": 11.5 }
+        ],
+        "supervision": [
+          { "supervisorId": "SV001", "supervisorName": "Supervisor 01", "hours": 1, "rate": 80 },
+          { "supervisorId": "SV002", "supervisorName": "Supervisor 02", "hours": 1, "rate": 75 }
+        ]
+      },
+      "materials": [
+        { "id": "MAT-011", "name": "MOP Fertiliser", "unit": "bag", "quantity": 58, "unitPrice": 44.2 },
+        { "id": "MAT-012", "name": "Rock Phosphate", "unit": "bag", "quantity": 42, "unitPrice": 35.6 },
+        { "id": "MAT-013", "name": "Kieserite", "unit": "bag", "quantity": 30, "unitPrice": 31.8 }
+      ],
+      "evitUsage": [
+        { "evitNumber": "TM002", "hours": 8, "ratePerHour": 98, "transportCost": 190 },
+        { "evitNumber": "TM005", "hours": 7, "ratePerHour": 92, "transportCost": 165 },
+        { "evitNumber": "TM011", "hours": 6, "ratePerHour": 105, "transportCost": 140 }
+      ],
+      "hectaresCovered": 54,
+      "remark": "Three material and EVIT entries"
+    },
+    {
+      "id": "CB-PM0112-20251204",
+      "activityCode": "PM0112",
+      "fieldCode": "P94A",
+      "date": "2025-12-04",
+      "labour": {
+        "workers": [
+          { "workerId": "WK001", "workerName": "Worker 01", "mandays": 1, "rate": 64, "overtimeHours": 4, "overtimeRate": 12 },
+          { "workerId": "WK002", "workerName": "Worker 02", "mandays": 1, "rate": 64, "overtimeHours": 0, "overtimeRate": 12 },
+          { "workerId": "WK003", "workerName": "Worker 03", "mandays": 1, "rate": 64, "overtimeHours": 0, "overtimeRate": 12 },
+          { "workerId": "WK004", "workerName": "Worker 04", "mandays": 1, "rate": 64, "overtimeHours": 0, "overtimeRate": 12 }
+        ],
+        "supervision": [
+          { "supervisorId": "SV001", "supervisorName": "Supervisor 01", "hours": 1, "rate": 75 },
+          { "supervisorId": "SV002", "supervisorName": "Supervisor 02", "hours": 1, "rate": 70 }
+        ]
+      },
+      "materials": [
+        { "id": "MAT-014", "name": "NPK 12:12:17", "unit": "bag", "quantity": 92, "unitPrice": 53.1 }
+      ],
+      "evitUsage": [
+        { "evitNumber": "TM002", "hours": 7, "ratePerHour": 100, "transportCost": 180 },
+        { "evitNumber": "TM011", "hours": 5, "ratePerHour": 107, "transportCost": 125 }
+      ],
+      "hectaresCovered": 45,
+      "remark": "December rate revision"
+    },
+    {
+      "id": "CB-PM0112-20251212",
+      "activityCode": "PM0112",
+      "fieldCode": "P94B",
+      "date": "2025-12-12",
+      "labour": {
+        "workers": [
+          { "workerId": "WK001", "workerName": "Worker 01", "mandays": 1, "rate": 64, "overtimeHours": 0, "overtimeRate": 12 },
+          { "workerId": "WK002", "workerName": "Worker 02", "mandays": 1, "rate": 64, "overtimeHours": 0, "overtimeRate": 12 },
+          { "workerId": "WK003", "workerName": "Worker 03", "mandays": 1, "rate": 64, "overtimeHours": 5, "overtimeRate": 12 },
+          { "workerId": "WK004", "workerName": "Worker 04", "mandays": 1, "rate": 64, "overtimeHours": 0, "overtimeRate": 12 },
+          { "workerId": "WK005", "workerName": "Worker 05", "mandays": 1, "rate": 64, "overtimeHours": 0, "overtimeRate": 12 }
+        ],
+        "supervision": [
+          { "supervisorId": "SV001", "supervisorName": "Supervisor 01", "hours": 1, "rate": 75 },
+          { "supervisorId": "SV002", "supervisorName": "Supervisor 02", "hours": 1, "rate": 75 }
+        ]
+      },
+      "materials": [
+        { "id": "MAT-015", "name": "Urea Fertiliser", "unit": "bag", "quantity": 84, "unitPrice": 39.2 },
+        { "id": "MAT-016", "name": "MOP Fertiliser", "unit": "bag", "quantity": 50, "unitPrice": 45.1 }
+      ],
+      "evitUsage": [
+        { "evitNumber": "TM002", "hours": 7.5, "ratePerHour": 100, "transportCost": 185 },
+        { "evitNumber": "TM005", "hours": 6, "ratePerHour": 94, "transportCost": 155 }
+      ],
+      "hectaresCovered": 49,
+      "remark": "Normal progress"
+    },
+    {
+      "id": "CB-PM0112-20251219",
+      "activityCode": "PM0112",
+      "fieldCode": "P95A",
+      "date": "2025-12-19",
+      "labour": {
+        "workers": [
+          { "workerId": "WK001", "workerName": "Worker 01", "mandays": 1, "rate": 64, "overtimeHours": 0, "overtimeRate": 12 },
+          { "workerId": "WK002", "workerName": "Worker 02", "mandays": 1, "rate": 64, "overtimeHours": 0, "overtimeRate": 12 },
+          { "workerId": "WK003", "workerName": "Worker 03", "mandays": 1, "rate": 64, "overtimeHours": 0, "overtimeRate": 12 },
+          { "workerId": "WK004", "workerName": "Worker 04", "mandays": 0.5, "rate": 64, "overtimeHours": 3, "overtimeRate": 12 }
+        ],
+        "supervision": [
+          { "supervisorId": "SV001", "supervisorName": "Supervisor 01", "hours": 1, "rate": 70 },
+          { "supervisorId": "SV002", "supervisorName": "Supervisor 02", "hours": 1, "rate": 65 }
+        ]
+      },
+      "materials": [
+        { "id": "MAT-017", "name": "Kieserite", "unit": "bag", "quantity": 38, "unitPrice": 32.4 }
+      ],
+      "evitUsage": [
+        { "evitNumber": "TM005", "hours": 6.5, "ratePerHour": 94, "transportCost": 160 },
+        { "evitNumber": "TM011", "hours": 4.5, "ratePerHour": 107, "transportCost": 120 }
+      ],
+      "hectaresCovered": 40.5,
+      "remark": "Short working week"
+    },
+    {
+      "id": "CB-PM0207-20251005",
+      "activityCode": "PM0207",
+      "fieldCode": "P95B",
+      "date": "2025-10-05",
+      "labour": {
+        "workers": [
+          { "workerId": "WK006", "workerName": "Worker 06", "mandays": 1, "rate": 68, "overtimeHours": 2, "overtimeRate": 13 },
+          { "workerId": "WK007", "workerName": "Worker 07", "mandays": 1, "rate": 68, "overtimeHours": 0, "overtimeRate": 13 },
+          { "workerId": "WK008", "workerName": "Worker 08", "mandays": 1, "rate": 68, "overtimeHours": 0, "overtimeRate": 13 }
+        ],
+        "supervision": [
+          { "supervisorId": "SV003", "supervisorName": "Supervisor 03", "hours": 1, "rate": 65 },
+          { "supervisorId": "SV004", "supervisorName": "Supervisor 04", "hours": 1, "rate": 55 }
+        ]
+      },
+      "materials": [
+        { "id": "MAT-018", "name": "Glyphosate", "unit": "litre", "quantity": 55, "unitPrice": 28.4 },
+        { "id": "MAT-019", "name": "Wetting Agent", "unit": "litre", "quantity": 12, "unitPrice": 16.5 }
+      ],
+      "evitUsage": [
+        { "evitNumber": "TM014", "hours": 7, "ratePerHour": 112, "transportCost": 185 },
+        { "evitNumber": "TM018", "hours": 6, "ratePerHour": 108, "transportCost": 170 }
+      ],
+      "hectaresCovered": 64,
+      "remark": "Routine spraying round"
+    },
+    {
+      "id": "CB-PM0207-20251014",
+      "activityCode": "PM0207",
+      "fieldCode": "P96A",
+      "date": "2025-10-14",
+      "labour": {
+        "workers": [
+          { "workerId": "WK006", "workerName": "Worker 06", "mandays": 1, "rate": 68, "overtimeHours": 0, "overtimeRate": 13 },
+          { "workerId": "WK007", "workerName": "Worker 07", "mandays": 1, "rate": 68, "overtimeHours": 3, "overtimeRate": 13 },
+          { "workerId": "WK008", "workerName": "Worker 08", "mandays": 1, "rate": 68, "overtimeHours": 0, "overtimeRate": 13 },
+          { "workerId": "WK009", "workerName": "Worker 09", "mandays": 0.5, "rate": 68, "overtimeHours": 0, "overtimeRate": 13 }
+        ],
+        "supervision": [
+          { "supervisorId": "SV003", "supervisorName": "Supervisor 03", "hours": 1, "rate": 65 },
+          { "supervisorId": "SV004", "supervisorName": "Supervisor 04", "hours": 1, "rate": 60 }
+        ]
+      },
+      "materials": [
+        { "id": "MAT-020", "name": "Glufosinate", "unit": "litre", "quantity": 48, "unitPrice": 34.7 }
+      ],
+      "evitUsage": [
+        { "evitNumber": "TM018", "hours": 7.5, "ratePerHour": 108, "transportCost": 180 },
+        { "evitNumber": "TM021", "hours": 5, "ratePerHour": 115, "transportCost": 155 }
+      ],
+      "hectaresCovered": 68.5,
+      "remark": "Wind delay in afternoon"
+    },
+    {
+      "id": "CB-PM0207-20251104",
+      "activityCode": "PM0207",
+      "fieldCode": "P95B",
+      "date": "2025-11-04",
+      "labour": {
+        "workers": [
+          { "workerId": "WK006", "workerName": "Worker 06", "mandays": 1, "rate": 68, "overtimeHours": 0, "overtimeRate": 13 },
+          { "workerId": "WK007", "workerName": "Worker 07", "mandays": 1, "rate": 68, "overtimeHours": 0, "overtimeRate": 13 },
+          { "workerId": "WK008", "workerName": "Worker 08", "mandays": 1, "rate": 68, "overtimeHours": 2, "overtimeRate": 13 },
+          { "workerId": "WK009", "workerName": "Worker 09", "mandays": 1, "rate": 68, "overtimeHours": 0, "overtimeRate": 13 }
+        ],
+        "supervision": [
+          { "supervisorId": "SV003", "supervisorName": "Supervisor 03", "hours": 1, "rate": 65 },
+          { "supervisorId": "SV004", "supervisorName": "Supervisor 04", "hours": 1, "rate": 60 }
+        ]
+      },
+      "materials": [
+        { "id": "MAT-021", "name": "Glyphosate", "unit": "litre", "quantity": 60, "unitPrice": 28.4 },
+        { "id": "MAT-022", "name": "Wetting Agent", "unit": "litre", "quantity": 14, "unitPrice": 16.5 }
+      ],
+      "evitUsage": [
+        { "evitNumber": "TM014", "hours": 7.5, "ratePerHour": 112, "transportCost": 190 },
+        { "evitNumber": "TM018", "hours": 6.5, "ratePerHour": 108, "transportCost": 175 },
+        { "evitNumber": "TM021", "hours": 4, "ratePerHour": 115, "transportCost": 145 }
+      ],
+      "hectaresCovered": 72,
+      "remark": "Three sprayers deployed"
+    },
+    {
+      "id": "CB-PM0207-20251118",
+      "activityCode": "PM0207",
+      "fieldCode": "P96A",
+      "date": "2025-11-18",
+      "labour": {
+        "workers": [
+          { "workerId": "WK006", "workerName": "Worker 06", "mandays": 1, "rate": 68, "overtimeHours": 1, "overtimeRate": 13 },
+          { "workerId": "WK007", "workerName": "Worker 07", "mandays": 1, "rate": 68, "overtimeHours": 0, "overtimeRate": 13 },
+          { "workerId": "WK008", "workerName": "Worker 08", "mandays": 1, "rate": 68, "overtimeHours": 0, "overtimeRate": 13 }
+        ],
+        "supervision": [
+          { "supervisorId": "SV003", "supervisorName": "Supervisor 03", "hours": 1, "rate": 60 },
+          { "supervisorId": "SV004", "supervisorName": "Supervisor 04", "hours": 1, "rate": 55 }
+        ]
+      },
+      "materials": [
+        { "id": "MAT-023", "name": "Glufosinate", "unit": "litre", "quantity": 44, "unitPrice": 34.7 }
+      ],
+      "evitUsage": [
+        { "evitNumber": "TM014", "hours": 6, "ratePerHour": 112, "transportCost": 170 },
+        { "evitNumber": "TM021", "hours": 5.5, "ratePerHour": 115, "transportCost": 160 }
+      ],
+      "hectaresCovered": 57,
+      "remark": "Reduced crew availability"
+    },
+    {
+      "id": "CB-PM0207-20251203",
+      "activityCode": "PM0207",
+      "fieldCode": "P96A",
+      "date": "2025-12-03",
+      "labour": {
+        "workers": [
+          { "workerId": "WK006", "workerName": "Worker 06", "mandays": 1, "rate": 70, "overtimeHours": 0, "overtimeRate": 13.5 },
+          { "workerId": "WK007", "workerName": "Worker 07", "mandays": 1, "rate": 70, "overtimeHours": 3, "overtimeRate": 13.5 },
+          { "workerId": "WK008", "workerName": "Worker 08", "mandays": 1, "rate": 70, "overtimeHours": 0, "overtimeRate": 13.5 },
+          { "workerId": "WK009", "workerName": "Worker 09", "mandays": 1, "rate": 70, "overtimeHours": 0, "overtimeRate": 13.5 }
+        ],
+        "supervision": [
+          { "supervisorId": "SV003", "supervisorName": "Supervisor 03", "hours": 1, "rate": 70 },
+          { "supervisorId": "SV004", "supervisorName": "Supervisor 04", "hours": 1, "rate": 60 }
+        ]
+      },
+      "materials": [
+        { "id": "MAT-024", "name": "Glyphosate", "unit": "litre", "quantity": 62, "unitPrice": 29.1 }
+      ],
+      "evitUsage": [
+        { "evitNumber": "TM014", "hours": 8, "ratePerHour": 114, "transportCost": 195 },
+        { "evitNumber": "TM018", "hours": 7, "ratePerHour": 110, "transportCost": 180 }
+      ],
+      "hectaresCovered": 75,
+      "remark": "December programme started"
+    },
+    {
+      "id": "CB-PM0207-20251216",
+      "activityCode": "PM0207",
+      "fieldCode": "P96B",
+      "date": "2025-12-16",
+      "labour": {
+        "workers": [
+          { "workerId": "WK006", "workerName": "Worker 06", "mandays": 1, "rate": 70, "overtimeHours": 0, "overtimeRate": 13.5 },
+          { "workerId": "WK007", "workerName": "Worker 07", "mandays": 1, "rate": 70, "overtimeHours": 0, "overtimeRate": 13.5 },
+          { "workerId": "WK008", "workerName": "Worker 08", "mandays": 1, "rate": 70, "overtimeHours": 2, "overtimeRate": 13.5 },
+          { "workerId": "WK009", "workerName": "Worker 09", "mandays": 0.5, "rate": 70, "overtimeHours": 0, "overtimeRate": 13.5 }
+        ],
+        "supervision": [
+          { "supervisorId": "SV003", "supervisorName": "Supervisor 03", "hours": 1, "rate": 65 },
+          { "supervisorId": "SV004", "supervisorName": "Supervisor 04", "hours": 1, "rate": 55 }
+        ]
+      },
+      "materials": [
+        { "id": "MAT-025", "name": "Glufosinate", "unit": "litre", "quantity": 50, "unitPrice": 35.2 },
+        { "id": "MAT-026", "name": "Wetting Agent", "unit": "litre", "quantity": 11, "unitPrice": 17.1 }
+      ],
+      "evitUsage": [
+        { "evitNumber": "TM018", "hours": 7, "ratePerHour": 110, "transportCost": 175 },
+        { "evitNumber": "TM021", "hours": 5, "ratePerHour": 117, "transportCost": 155 }
+      ],
+      "hectaresCovered": 62,
+      "remark": "Completed before rainfall"
+    },
+    {
+      "id": "CB-PM0315-20251008",
+      "activityCode": "PM0315",
+      "fieldCode": "P97A",
+      "date": "2025-10-08",
+      "labour": {
+        "workers": [
+          { "workerId": "WK010", "workerName": "Worker 10", "mandays": 1, "rate": 72, "overtimeHours": 4, "overtimeRate": 14 },
+          { "workerId": "WK011", "workerName": "Worker 11", "mandays": 1, "rate": 72, "overtimeHours": 0, "overtimeRate": 14 },
+          { "workerId": "WK012", "workerName": "Worker 12", "mandays": 1, "rate": 72, "overtimeHours": 0, "overtimeRate": 14 },
+          { "workerId": "WK013", "workerName": "Worker 13", "mandays": 1, "rate": 72, "overtimeHours": 0, "overtimeRate": 14 }
+        ],
+        "supervision": [
+          { "supervisorId": "SV005", "supervisorName": "Supervisor 05", "hours": 1, "rate": 75 },
+          { "supervisorId": "SV006", "supervisorName": "Supervisor 06", "hours": 1, "rate": 65 }
+        ]
+      },
+      "materials": [
+        { "id": "MAT-027", "name": "Crusher Run", "unit": "tonne", "quantity": 42, "unitPrice": 48 },
+        { "id": "MAT-028", "name": "Culvert Pipe", "unit": "unit", "quantity": 4, "unitPrice": 185 }
+      ],
+      "evitUsage": [
+        { "evitNumber": "TM024", "hours": 8, "ratePerHour": 145, "transportCost": 240 },
+        { "evitNumber": "TM027", "hours": 7, "ratePerHour": 138, "transportCost": 220 }
+      ],
+      "hectaresCovered": 18,
+      "remark": "Main access road section"
+    },
+    {
+      "id": "CB-PM0315-20251021",
+      "activityCode": "PM0315",
+      "fieldCode": "P97B",
+      "date": "2025-10-21",
+      "labour": {
+        "workers": [
+          { "workerId": "WK010", "workerName": "Worker 10", "mandays": 1, "rate": 72, "overtimeHours": 0, "overtimeRate": 14 },
+          { "workerId": "WK011", "workerName": "Worker 11", "mandays": 1, "rate": 72, "overtimeHours": 3, "overtimeRate": 14 },
+          { "workerId": "WK012", "workerName": "Worker 12", "mandays": 1, "rate": 72, "overtimeHours": 0, "overtimeRate": 14 },
+          { "workerId": "WK013", "workerName": "Worker 13", "mandays": 0.5, "rate": 72, "overtimeHours": 0, "overtimeRate": 14 }
+        ],
+        "supervision": [
+          { "supervisorId": "SV005", "supervisorName": "Supervisor 05", "hours": 1, "rate": 70 },
+          { "supervisorId": "SV006", "supervisorName": "Supervisor 06", "hours": 1, "rate": 65 }
+        ]
+      },
+      "materials": [
+        { "id": "MAT-029", "name": "Laterite", "unit": "tonne", "quantity": 38, "unitPrice": 39.5 }
+      ],
+      "evitUsage": [
+        { "evitNumber": "TM027", "hours": 7.5, "ratePerHour": 138, "transportCost": 225 },
+        { "evitNumber": "TM030", "hours": 6, "ratePerHour": 152, "transportCost": 235 }
+      ],
+      "hectaresCovered": 15.5,
+      "remark": "Drainage shoulder repaired"
+    },
+    {
+      "id": "CB-PM0315-20251109",
+      "activityCode": "PM0315",
+      "fieldCode": "P97A",
+      "date": "2025-11-09",
+      "labour": {
+        "workers": [
+          { "workerId": "WK010", "workerName": "Worker 10", "mandays": 1, "rate": 72, "overtimeHours": 0, "overtimeRate": 14 },
+          { "workerId": "WK011", "workerName": "Worker 11", "mandays": 1, "rate": 72, "overtimeHours": 0, "overtimeRate": 14 },
+          { "workerId": "WK012", "workerName": "Worker 12", "mandays": 1, "rate": 72, "overtimeHours": 5, "overtimeRate": 14 },
+          { "workerId": "WK013", "workerName": "Worker 13", "mandays": 1, "rate": 72, "overtimeHours": 0, "overtimeRate": 14 },
+          { "workerId": "WK014", "workerName": "Worker 14", "mandays": 1, "rate": 72, "overtimeHours": 0, "overtimeRate": 14 }
+        ],
+        "supervision": [
+          { "supervisorId": "SV005", "supervisorName": "Supervisor 05", "hours": 1, "rate": 75 },
+          { "supervisorId": "SV006", "supervisorName": "Supervisor 06", "hours": 1, "rate": 70 }
+        ]
+      },
+      "materials": [
+        { "id": "MAT-030", "name": "Crusher Run", "unit": "tonne", "quantity": 46, "unitPrice": 48 },
+        { "id": "MAT-031", "name": "Laterite", "unit": "tonne", "quantity": 24, "unitPrice": 39.5 }
+      ],
+      "evitUsage": [
+        { "evitNumber": "TM024", "hours": 8.5, "ratePerHour": 145, "transportCost": 250 },
+        { "evitNumber": "TM027", "hours": 7.5, "ratePerHour": 138, "transportCost": 225 },
+        { "evitNumber": "TM030", "hours": 5, "ratePerHour": 152, "transportCost": 230 }
+      ],
+      "hectaresCovered": 20,
+      "remark": "Three machines deployed"
+    },
+    {
+      "id": "CB-PM0315-20251123",
+      "activityCode": "PM0315",
+      "fieldCode": "P98A",
+      "date": "2025-11-23",
+      "labour": {
+        "workers": [
+          { "workerId": "WK010", "workerName": "Worker 10", "mandays": 1, "rate": 72, "overtimeHours": 2, "overtimeRate": 14 },
+          { "workerId": "WK011", "workerName": "Worker 11", "mandays": 1, "rate": 72, "overtimeHours": 0, "overtimeRate": 14 },
+          { "workerId": "WK012", "workerName": "Worker 12", "mandays": 1, "rate": 72, "overtimeHours": 0, "overtimeRate": 14 },
+          { "workerId": "WK013", "workerName": "Worker 13", "mandays": 1, "rate": 72, "overtimeHours": 0, "overtimeRate": 14 }
+        ],
+        "supervision": [
+          { "supervisorId": "SV005", "supervisorName": "Supervisor 05", "hours": 1, "rate": 70 },
+          { "supervisorId": "SV006", "supervisorName": "Supervisor 06", "hours": 1, "rate": 60 }
+        ]
+      },
+      "materials": [
+        { "id": "MAT-032", "name": "Culvert Pipe", "unit": "unit", "quantity": 6, "unitPrice": 185 }
+      ],
+      "evitUsage": [
+        { "evitNumber": "TM024", "hours": 6.5, "ratePerHour": 145, "transportCost": 220 },
+        { "evitNumber": "TM030", "hours": 6, "ratePerHour": 152, "transportCost": 235 }
+      ],
+      "hectaresCovered": 13,
+      "remark": "Culvert replacement work"
+    },
+    {
+      "id": "CB-PM0315-20251207",
+      "activityCode": "PM0315",
+      "fieldCode": "P97B",
+      "date": "2025-12-07",
+      "labour": {
+        "workers": [
+          { "workerId": "WK010", "workerName": "Worker 10", "mandays": 1, "rate": 74, "overtimeHours": 0, "overtimeRate": 14.5 },
+          { "workerId": "WK011", "workerName": "Worker 11", "mandays": 1, "rate": 74, "overtimeHours": 4, "overtimeRate": 14.5 },
+          { "workerId": "WK012", "workerName": "Worker 12", "mandays": 1, "rate": 74, "overtimeHours": 0, "overtimeRate": 14.5 },
+          { "workerId": "WK013", "workerName": "Worker 13", "mandays": 1, "rate": 74, "overtimeHours": 0, "overtimeRate": 14.5 }
+        ],
+        "supervision": [
+          { "supervisorId": "SV005", "supervisorName": "Supervisor 05", "hours": 1, "rate": 75 },
+          { "supervisorId": "SV006", "supervisorName": "Supervisor 06", "hours": 1, "rate": 70 }
+        ]
+      },
+      "materials": [
+        { "id": "MAT-033", "name": "Crusher Run", "unit": "tonne", "quantity": 40, "unitPrice": 49.2 }
+      ],
+      "evitUsage": [
+        { "evitNumber": "TM024", "hours": 8, "ratePerHour": 148, "transportCost": 245 },
+        { "evitNumber": "TM027", "hours": 7, "ratePerHour": 141, "transportCost": 225 }
+      ],
+      "hectaresCovered": 17,
+      "remark": "Grading and compacting"
+    },
+    {
+      "id": "CB-PM0315-20251220",
+      "activityCode": "PM0315",
+      "fieldCode": "P98A",
+      "date": "2025-12-20",
+      "labour": {
+        "workers": [
+          { "workerId": "WK010", "workerName": "Worker 10", "mandays": 1, "rate": 74, "overtimeHours": 0, "overtimeRate": 14.5 },
+          { "workerId": "WK011", "workerName": "Worker 11", "mandays": 1, "rate": 74, "overtimeHours": 0, "overtimeRate": 14.5 },
+          { "workerId": "WK012", "workerName": "Worker 12", "mandays": 1, "rate": 74, "overtimeHours": 3, "overtimeRate": 14.5 },
+          { "workerId": "WK013", "workerName": "Worker 13", "mandays": 0.5, "rate": 74, "overtimeHours": 0, "overtimeRate": 14.5 }
+        ],
+        "supervision": [
+          { "supervisorId": "SV005", "supervisorName": "Supervisor 05", "hours": 1, "rate": 75 },
+          { "supervisorId": "SV006", "supervisorName": "Supervisor 06", "hours": 1, "rate": 65 }
+        ]
+      },
+      "materials": [
+        { "id": "MAT-034", "name": "Laterite", "unit": "tonne", "quantity": 36, "unitPrice": 40.3 },
+        { "id": "MAT-035", "name": "Culvert Pipe", "unit": "unit", "quantity": 3, "unitPrice": 189 }
+      ],
+      "evitUsage": [
+        { "evitNumber": "TM027", "hours": 7, "ratePerHour": 141, "transportCost": 225 },
+        { "evitNumber": "TM030", "hours": 6.5, "ratePerHour": 155, "transportCost": 240 }
+      ],
+      "hectaresCovered": 16,
+      "remark": "Year-end road repair"
+    }
+  ]
+}

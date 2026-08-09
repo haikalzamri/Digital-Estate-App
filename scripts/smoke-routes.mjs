@@ -5,6 +5,7 @@ const routeChecks = [
   ["/management/work-program?view=records", ["Work Program Daily View", "Monthly Field Tracking", "Ha"]],
   ["/management/pmv", ["Machines Reported", "Manager Action Queue", "Daily Reports"]],
   ["/management/harvesting-interval", ["Harvesting Interval Report", "Monthly Interval Grid", "QC + C1 activities"]],
+  ["/management/costbook", ["Costbook Report", "Prototype dummy data", "Field", "All Fields", "EVIT Number", "PM0112", "Hectare (Ha)", "Section focus", "Rate Type", "Material Number", "Material Cost", "Running Hour Cost", "EVIT Cost", "expand supporting rows", "Labour Total Today", "EVIT Total Today"]],
   ["/input/work-program", ["Submit field completion", "Submit record"]],
   ["/input/pmv", ["Daily machine report", "Status Mesin", "Hantar Laporan"]],
 ];

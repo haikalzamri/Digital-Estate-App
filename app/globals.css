@@ -3601,3 +3601,820 @@ button {
     border-bottom: 1px solid var(--line);
   }
 }
+
+/* Costbook management prototype */
+
+.costbook-workspace {
+  min-width: 0;
+}
+
+.costbook-prototype-notice {
+  display: flex;
+  align-items: center;
+  gap: 10px 14px;
+  padding: 10px 13px;
+  color: #5d4513;
+  background: #fff7da;
+  border: 1px solid #e8d28b;
+  border-radius: 7px;
+  font-size: 0.78rem;
+  line-height: 1.4;
+}
+
+.costbook-prototype-notice strong {
+  flex: 0 0 auto;
+  color: #7b5510;
+}
+
+.costbook-filter-panel {
+  position: relative;
+  z-index: 4;
+  box-shadow: none;
+}
+
+.costbook-filter-grid {
+  display: grid;
+  grid-template-columns: minmax(230px, 1.25fr) minmax(145px, 0.65fr) minmax(180px, 0.8fr) minmax(210px, 0.9fr);
+  align-items: end;
+  gap: 12px;
+}
+
+.costbook-filter-grid .select-control select {
+  width: 100%;
+  min-width: 0;
+}
+
+.costbook-filter-grid .select-control > span em {
+  color: var(--danger);
+  font-style: normal;
+}
+
+.costbook-filter-helper {
+  margin: 9px 0 0;
+  color: var(--muted);
+  font-size: 0.72rem;
+}
+
+.costbook-multi-select-control {
+  position: relative;
+  display: grid;
+  gap: 4px;
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 750;
+}
+
+.costbook-multi-select-control details {
+  position: relative;
+  color: var(--ink);
+  font-size: 0.82rem;
+  font-weight: 650;
+}
+
+.costbook-multi-select-control summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 38px;
+  padding: 7px 10px;
+  cursor: pointer;
+  list-style: none;
+  background: var(--surface);
+  border: 1px solid #cbd5cc;
+  border-radius: 6px;
+}
+
+.costbook-multi-select-control summary::-webkit-details-marker {
+  display: none;
+}
+
+.costbook-multi-select-control details[open] summary {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(23, 107, 77, 0.12);
+}
+
+.costbook-multi-select-control details[open] summary svg {
+  transform: rotate(180deg);
+}
+
+.costbook-multi-select-menu {
+  position: absolute;
+  z-index: 15;
+  top: calc(100% + 6px);
+  right: 0;
+  left: 0;
+  display: grid;
+  min-width: 220px;
+  padding: 6px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  box-shadow: 0 14px 30px rgba(25, 42, 31, 0.16);
+}
+
+.costbook-multi-select-menu button,
+.costbook-multi-select-menu label {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 36px;
+  padding: 7px 9px;
+  color: var(--ink);
+  background: transparent;
+  border: 0;
+  border-radius: 5px;
+  font-size: 0.78rem;
+  text-align: left;
+}
+
+.costbook-multi-select-menu button {
+  border-bottom: 1px solid var(--line);
+  border-radius: 5px 5px 0 0;
+}
+
+.costbook-multi-select-menu button:hover,
+.costbook-multi-select-menu label:hover {
+  background: var(--surface-soft);
+}
+
+.costbook-multi-select-menu input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--primary);
+}
+
+.costbook-check-box {
+  display: grid;
+  width: 16px;
+  height: 16px;
+  place-items: center;
+  color: #fff;
+  background: #fff;
+  border: 1px solid #aebbb0;
+  border-radius: 3px;
+}
+
+.costbook-multi-select-menu button.selected .costbook-check-box {
+  background: var(--primary);
+  border-color: var(--primary);
+}
+
+.costbook-kpi-item small {
+  display: block;
+  margin-top: 5px;
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 0.7rem;
+  line-height: 1.35;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.costbook-kpi-item strong {
+  font-size: 1.28rem;
+}
+
+.costbook-report-panel {
+  padding: 14px;
+}
+
+.costbook-section-focus {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 16px;
+  margin: 0 0 12px;
+  padding: 9px 10px;
+  background: #f5f8f5;
+  border: 1px solid #d6ddd7;
+  border-radius: 7px;
+}
+
+.costbook-section-focus > span {
+  color: #435248;
+  font-size: 0.7rem;
+  font-weight: 850;
+  letter-spacing: 0.035em;
+  text-transform: uppercase;
+}
+
+.costbook-section-focus > div {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px;
+  background: #e7ece8;
+  border-radius: 6px;
+}
+
+.costbook-section-focus button {
+  min-height: 30px;
+  padding: 5px 12px;
+  color: #4d5a51;
+  background: transparent;
+  border: 0;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 850;
+}
+
+.costbook-section-focus button:hover,
+.costbook-section-focus button:focus-visible {
+  color: #173827;
+  background: rgba(255, 255, 255, 0.72);
+  outline: 0;
+}
+
+.costbook-section-focus button[aria-pressed="true"] {
+  color: #fff;
+  background: #365e49;
+  box-shadow: 0 1px 3px rgba(20, 48, 32, 0.18);
+}
+
+.costbook-section-focus button.labour[aria-pressed="true"] { background: #174d73; }
+.costbook-section-focus button.material[aria-pressed="true"] { background: #4d782c; }
+.costbook-section-focus button.evit[aria-pressed="true"] { background: #974407; }
+.costbook-section-focus button.summary[aria-pressed="true"] { background: #515554; }
+
+.costbook-table-scroll {
+  border: 1px solid #b9c1ba;
+  border-radius: 6px;
+}
+
+.costbook-table {
+  width: 100%;
+  min-width: 3510px !important;
+  border-collapse: separate;
+  border-spacing: 0;
+  color: #202923;
+  background: #fff;
+  font-size: 0.66rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.costbook-table.costbook-view-labour { min-width: 1600px !important; }
+.costbook-table.costbook-view-material { min-width: 1240px !important; }
+.costbook-table.costbook-view-evit { min-width: 1360px !important; }
+.costbook-table.costbook-view-summary { min-width: 1240px !important; }
+
+.costbook-table th,
+.costbook-table td {
+  height: 37px;
+  padding: 5px 7px;
+  border-right: 1px solid #b9c1ba;
+  border-bottom: 1px solid #b9c1ba;
+  text-align: right;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.costbook-table thead th {
+  text-align: center;
+}
+
+.costbook-table .costbook-group-heading th {
+  height: 34px;
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.025em;
+  text-transform: uppercase;
+}
+
+.costbook-table .costbook-group-heading .costbook-date-heading {
+  position: sticky;
+  z-index: 5;
+  left: 0;
+  width: 132px;
+  min-width: 132px;
+  color: #202923;
+  background: #e0e3e0;
+  box-shadow: 1px 0 0 #aeb7af;
+}
+
+.costbook-table .costbook-group-heading .costbook-field-heading {
+  position: sticky;
+  z-index: 5;
+  left: 132px;
+  width: 120px;
+  min-width: 120px;
+  color: #202923;
+  background: #e0e3e0;
+  box-shadow: 1px 0 0 #aeb7af;
+}
+
+.costbook-table .costbook-group-heading .costbook-hectare-heading {
+  position: sticky;
+  z-index: 5;
+  left: 252px;
+  width: 92px;
+  min-width: 92px;
+  color: #202923;
+  background: #e0e3e0;
+  box-shadow: 1px 0 0 #aeb7af;
+}
+
+.costbook-labour-heading { background: #174d73; }
+.costbook-material-heading { background: #4d782c; }
+.costbook-evit-heading { background: #974407; }
+.costbook-summary-heading { background: #515554; }
+
+.costbook-table .costbook-group-heading th.is-active {
+  filter: brightness(1.16) saturate(1.08);
+  box-shadow: inset 0 0 0 3px rgba(255, 255, 255, 0.72);
+}
+
+.costbook-table.costbook-active-labour .costbook-material-heading,
+.costbook-table.costbook-active-labour .costbook-evit-heading,
+.costbook-table.costbook-active-material .costbook-labour-heading,
+.costbook-table.costbook-active-material .costbook-evit-heading,
+.costbook-table.costbook-active-evit .costbook-labour-heading,
+.costbook-table.costbook-active-evit .costbook-material-heading {
+  opacity: 0.68;
+  filter: saturate(0.55);
+}
+
+.costbook-table .costbook-column-heading th {
+  height: 48px;
+  padding: 5px;
+  color: #202923;
+  background: #e3e5e3;
+  font-size: 0.62rem;
+  font-weight: 850;
+  line-height: 1.15;
+  white-space: normal;
+}
+
+.costbook-table tbody th,
+.costbook-table tbody td {
+  background: #fff;
+}
+
+.costbook-table tbody tr.costbook-day-alt th,
+.costbook-table tbody tr.costbook-day-alt td {
+  background: #f7f9f7;
+}
+
+.costbook-table tbody tr.costbook-day-start th,
+.costbook-table tbody tr.costbook-day-start td {
+  border-top: 2px solid #829087;
+}
+
+.costbook-table .costbook-date-cell {
+  position: sticky;
+  z-index: 3;
+  left: 0;
+  min-width: 132px;
+  color: #1c3d2c;
+  font-size: 0.7rem;
+  font-weight: 900;
+  text-align: center;
+  vertical-align: top;
+  box-shadow: 1px 0 0 #aeb7af;
+}
+
+.costbook-date-cell > span {
+  display: block;
+  padding-top: 18px;
+}
+
+.costbook-table .costbook-field-cell {
+  position: sticky;
+  z-index: 3;
+  left: 132px;
+  width: 120px;
+  min-width: 120px;
+  color: #31523e;
+  text-align: center;
+  box-shadow: 1px 0 0 #aeb7af;
+}
+
+.costbook-table .costbook-hectare-cell {
+  position: sticky;
+  z-index: 3;
+  left: 252px;
+  width: 92px;
+  min-width: 92px;
+  color: #31523e;
+  text-align: center;
+  vertical-align: top;
+  box-shadow: 1px 0 0 #aeb7af;
+}
+
+.costbook-table .costbook-hectare-cell > strong {
+  display: block;
+  padding-top: 18px;
+}
+
+.costbook-summary-expand-control {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-width: max-content;
+}
+
+.costbook-summary-expand-control > span {
+  display: inline-block;
+}
+
+.costbook-cell-expand-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  flex: 0 0 24px;
+  padding: 0;
+  color: #0f5c3f;
+  background: #e5f3e9;
+  border: 1px solid #b9d6c2;
+  border-radius: 5px;
+}
+
+.costbook-cell-expand-button:hover,
+.costbook-cell-expand-button:focus-visible,
+.costbook-cell-expand-button[aria-expanded="true"] {
+  color: #fff;
+  background: var(--primary);
+  border-color: var(--primary);
+  outline: 0;
+}
+
+.costbook-table .costbook-line-label,
+.costbook-table .costbook-remark {
+  max-width: 155px;
+  overflow: hidden;
+  text-align: left;
+  text-overflow: ellipsis;
+}
+
+.costbook-table .costbook-line-label,
+.costbook-table .costbook-evit-number {
+  font-weight: 850;
+}
+
+.costbook-table .costbook-expandable-summary-cell {
+  min-width: 88px;
+  overflow: visible;
+  text-align: center;
+}
+
+.costbook-table .costbook-expandable-summary-cell.is-active {
+  position: relative;
+  z-index: 2;
+}
+
+.costbook-table .costbook-expandable-summary-cell.labour.is-active {
+  box-shadow: inset 0 0 0 3px #174d73;
+}
+
+.costbook-table .costbook-expandable-summary-cell.material.is-active {
+  box-shadow: inset 0 0 0 3px #4d782c;
+}
+
+.costbook-table .costbook-expandable-summary-cell.evit.is-active {
+  box-shadow: inset 0 0 0 3px #974407;
+}
+
+.costbook-table .costbook-expandable-summary-cell.material .costbook-cell-expand-button {
+  color: #426422;
+  background: #edf3e8;
+  border-color: #c6d6b8;
+}
+
+.costbook-table .costbook-expandable-summary-cell.evit .costbook-cell-expand-button {
+  color: #82400e;
+  background: #fbefe5;
+  border-color: #ebc9ae;
+}
+
+.costbook-table .costbook-expandable-summary-cell .costbook-cell-expand-button:hover,
+.costbook-table .costbook-expandable-summary-cell .costbook-cell-expand-button:focus-visible,
+.costbook-table .costbook-expandable-summary-cell .costbook-cell-expand-button[aria-expanded="true"] {
+  color: #fff;
+  background: var(--primary);
+  border-color: var(--primary);
+}
+
+.costbook-table .costbook-evit-number {
+  color: #82400e;
+  text-align: center;
+}
+
+.costbook-table .costbook-mtd-cell {
+  color: #153d29;
+  background: #edf4ef !important;
+  font-weight: 900;
+}
+
+.costbook-table .costbook-daily-total-cell {
+  font-weight: 900;
+}
+
+.costbook-table .costbook-daily-total-cell.labour {
+  color: #153f5c;
+  background: #e7f0f6 !important;
+}
+
+.costbook-table .costbook-daily-total-cell.material {
+  color: #36551f;
+  background: #edf3e8 !important;
+}
+
+.costbook-table .costbook-daily-total-cell.evit {
+  color: #783807;
+  background: #fbefe5 !important;
+}
+
+.costbook-table .costbook-running-cost-cell {
+  color: #783807;
+  background: #fff7ef !important;
+  font-weight: 850;
+}
+
+.costbook-table .costbook-summary-value {
+  color: #142c20;
+  background: #e7efe9 !important;
+  font-weight: 900;
+}
+
+.costbook-table .costbook-summary-row th,
+.costbook-table .costbook-summary-row td {
+  height: 64px;
+}
+
+.costbook-table tfoot th,
+.costbook-table tfoot td {
+  height: 42px;
+  color: #113725;
+  background: #dbe9de;
+  border-top: 2px solid #4f745c;
+  font-weight: 900;
+}
+
+.costbook-table tfoot th {
+  position: sticky;
+  z-index: 3;
+  left: 0;
+  text-align: center;
+  box-shadow: 1px 0 0 #9eaea2;
+}
+
+.costbook-table tfoot .costbook-field-total-cell {
+  position: sticky;
+  z-index: 3;
+  left: 132px;
+  width: 120px;
+  min-width: 120px;
+  text-align: center;
+  box-shadow: 1px 0 0 #9eaea2;
+}
+
+.costbook-table tfoot .costbook-hectare-total-cell {
+  position: sticky;
+  z-index: 3;
+  left: 252px;
+  width: 92px;
+  min-width: 92px;
+  text-align: center;
+  box-shadow: 1px 0 0 #9eaea2;
+}
+
+.costbook-table tfoot td[colspan] {
+  color: #607066;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.costbook-empty {
+  display: grid;
+  min-height: 180px;
+  place-items: center;
+  color: var(--muted);
+  background: #f8faf8;
+  border: 1px dashed #cbd5cc;
+  border-radius: 6px;
+  font-size: 0.82rem;
+  font-weight: 750;
+}
+
+.costbook-table .costbook-inline-detail-row th,
+.costbook-table .costbook-inline-detail-row td {
+  height: 46px;
+  border-top: 1px dashed #cbd2cc;
+  font-size: 0.64rem;
+}
+
+.costbook-table .costbook-inline-detail-row.labour td {
+  background: #f2f7fb;
+}
+
+.costbook-table .costbook-inline-detail-row.supervision td {
+  background: #f4f5f6;
+}
+
+.costbook-table .costbook-inline-detail-row.material td {
+  background: #f3f7ef;
+}
+
+.costbook-table .costbook-inline-detail-row.evit td {
+  background: #fdf5ee;
+}
+
+.costbook-table .costbook-inline-detail-row.is-active-detail th,
+.costbook-table .costbook-inline-detail-row.is-active-detail td {
+  border-top-style: solid;
+}
+
+.costbook-table .costbook-inline-detail-row.labour.is-active-detail .costbook-inline-detail-label {
+  box-shadow: inset 5px 0 #174d73, 1px 0 0 #9eb4c3;
+}
+
+.costbook-table .costbook-inline-detail-row.material.is-active-detail .costbook-inline-detail-label {
+  box-shadow: inset 5px 0 #4d782c, 1px 0 0 #adbea0;
+}
+
+.costbook-table .costbook-inline-detail-row.evit.is-active-detail .costbook-inline-detail-label {
+  box-shadow: inset 5px 0 #974407, 1px 0 0 #c8a88f;
+}
+
+.costbook-table .costbook-inline-detail-label {
+  position: sticky;
+  z-index: 3;
+  left: 132px;
+  width: 120px;
+  min-width: 120px;
+  padding: 6px 8px;
+  text-align: left;
+  white-space: normal;
+  box-shadow: 1px 0 0 #aeb7af;
+}
+
+.costbook-table .costbook-inline-detail-row.labour .costbook-inline-detail-label {
+  background: #e4eff6;
+  border-left: 4px solid #174d73;
+}
+
+.costbook-table .costbook-inline-detail-row.supervision .costbook-inline-detail-label {
+  background: #eceeef;
+  border-left: 4px solid #6b7280;
+}
+
+.costbook-table .costbook-inline-detail-row.material .costbook-inline-detail-label {
+  background: #e9f1e3;
+  border-left: 4px solid #4d782c;
+}
+
+.costbook-table .costbook-inline-detail-row.evit .costbook-inline-detail-label {
+  background: #f9eadf;
+  border-left: 4px solid #974407;
+}
+
+.costbook-inline-detail-label span,
+.costbook-inline-detail-label strong,
+.costbook-inline-detail-label small,
+.costbook-inline-detail-label em {
+  display: block;
+}
+
+.costbook-inline-detail-label span {
+  color: var(--muted);
+  font-size: 0.52rem;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.costbook-inline-detail-label strong {
+  margin-top: 2px;
+  color: #1c3426;
+  font-size: 0.65rem;
+}
+
+.costbook-inline-detail-label small,
+.costbook-inline-detail-label em {
+  margin-top: 1px;
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 0.55rem;
+  font-style: normal;
+  font-weight: 700;
+  text-overflow: ellipsis;
+}
+
+.costbook-table .costbook-inline-detail-row .costbook-inline-empty {
+  background: #f1f3f1 !important;
+}
+
+.costbook-table .costbook-inline-detail-row .costbook-inline-text-value {
+  min-width: 145px;
+  text-align: left;
+}
+
+.costbook-table .costbook-inline-detail-row .costbook-material-number {
+  color: #36551f;
+  text-align: center;
+}
+
+.costbook-table .costbook-inline-detail-row .costbook-rate-type {
+  min-width: 112px;
+  text-align: left;
+  font-weight: 850;
+}
+
+.costbook-table .costbook-inline-detail-row .costbook-inline-line-total {
+  color: #173827;
+  font-weight: 900;
+}
+
+.costbook-table .costbook-inline-detail-row.has-overtime td:nth-child(n+6):nth-child(-n+8) {
+  color: #80530d;
+  background: #fff7dc;
+  font-weight: 900;
+}
+
+.costbook-table .costbook-inline-empty-message {
+  color: var(--muted);
+  text-align: center;
+  font-weight: 750;
+}
+
+@media (max-width: 1100px) {
+  .costbook-filter-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 720px) {
+  .costbook-prototype-notice {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 3px;
+  }
+
+  .costbook-filter-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .costbook-section-focus {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .costbook-section-focus > div {
+    width: 100%;
+    overflow-x: auto;
+  }
+
+  .costbook-section-focus button {
+    flex: 1 1 0;
+    min-width: 0;
+    padding: 5px;
+    font-size: 0.64rem;
+  }
+
+  .costbook-kpi-strip {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .costbook-kpi-strip .kpi-item:nth-child(even) {
+    border-right: 0;
+  }
+
+  .costbook-kpi-strip .kpi-item:nth-child(-n+2) {
+    border-bottom: 1px solid var(--line);
+  }
+
+  .costbook-table .costbook-group-heading .costbook-date-heading,
+  .costbook-table .costbook-date-cell,
+  .costbook-table tfoot th {
+    width: 92px;
+    min-width: 92px;
+  }
+
+  .costbook-table .costbook-group-heading .costbook-field-heading,
+  .costbook-table .costbook-field-cell,
+  .costbook-table tfoot .costbook-field-total-cell,
+  .costbook-table .costbook-inline-detail-label {
+    left: 92px;
+    width: 100px;
+    min-width: 100px;
+  }
+
+  .costbook-table .costbook-group-heading .costbook-hectare-heading,
+  .costbook-table .costbook-hectare-cell,
+  .costbook-table tfoot .costbook-hectare-total-cell {
+    position: static;
+    left: auto;
+    width: 72px;
+    min-width: 72px;
+  }
+
+  .costbook-table .costbook-group-heading .costbook-hectare-heading {
+    line-height: 1.15;
+    white-space: normal;
+  }
+
+}

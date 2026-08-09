@@ -1,6 +1,6 @@
 # Digital Estate App
 
-Operational tracking application for estate field execution, PMV reporting, and harvesting interval review.
+Operational tracking application for estate field execution, PMV reporting, harvesting interval review, and prototype cost analysis.
 
 Production: [https://digital-estate-app.vercel.app](https://digital-estate-app.vercel.app)
 
@@ -15,6 +15,7 @@ The current production modules are:
 | Work Program Monthly View and Daily View | Management | [`/management/work-program`](https://digital-estate-app.vercel.app/management/work-program) |
 | PMV Dashboard | Management | [`/management/pmv`](https://digital-estate-app.vercel.app/management/pmv) |
 | Harvesting Interval | Management | [`/management/harvesting-interval`](https://digital-estate-app.vercel.app/management/harvesting-interval) |
+| Costbook prototype | Management | [`/management/costbook`](https://digital-estate-app.vercel.app/management/costbook) |
 | Work Program Input | Field users | [`/input/work-program`](https://digital-estate-app.vercel.app/input/work-program) |
 | PMV Input | Field users | [`/input/pmv`](https://digital-estate-app.vercel.app/input/pmv) |
 
@@ -27,6 +28,7 @@ The root route redirects to `/management/work-program`.
 - PMV daily machine status reporting for working, breakdown, and idle machines.
 - PMV management dashboard for readiness, breakdown/idle visibility, repeat issue tracking, action queue, and export.
 - Harvesting Interval prototype with monthly grid, metric toggles, dispatch comparison, activity overlays, field interval summary, map view, and CSV export.
+- Costbook management prototype with required activity/month filters, multi-select EVIT filtering, collapsed daily summary rows, independent inline Labour/Supervision, Material and EVIT expansion rows, reconciled daily totals, month-to-date calculations, and CSV export.
 - Leaflet/OpenStreetMap field boundary map using KMZ-derived GeoJSON.
 - Browser localStorage offline queue for pending Work Program and PMV uploads/deletes.
 - Supabase-backed API routes for production Work Program and PMV records.
@@ -55,6 +57,7 @@ app/
   layout.tsx
   page.tsx
 components/
+  costbook/
   harvesting-interval/
   maps/
   pmv/
@@ -91,6 +94,7 @@ supabase/
 | PMV records | Supabase table `public.pmv_records` |
 | Field boundaries | `public/data/field-map-data.geojson` |
 | Harvesting Interval prototype | Static fallback data in `lib/data/harvesting-interval-source.json` |
+| Costbook prototype | Static dummy data in `lib/data/costbook-source.json` |
 
 ### Static Fallback Data
 
@@ -99,6 +103,7 @@ supabase/
 | `lib/data/work-program-source.json` | Work Program historical fallback data. |
 | `lib/data/pmv-source.json` | PMV historical fallback data. |
 | `lib/data/harvesting-interval-source.json` | Harvesting Interval prototype dataset. |
+| `lib/data/costbook-source.json` | Costbook prototype dummy activity, worker-level labour, supervision, material, and EVIT data. |
 
 ### Demo Data Handling
 
@@ -210,6 +215,7 @@ Recommended release flow:
 - PMV and Work Program APIs use server-side Supabase service-role credentials.
 - User authentication and role-based permissions are not yet implemented for API endpoints.
 - Harvesting Interval is currently a static-data prototype and is not yet integrated with Supabase.
+- Costbook is currently a management-only static dummy-data prototype and is not yet connected to an approved source file.
 - Rainfall data is shown as a placeholder until an approved rainfall source is integrated.
 
 ## License
