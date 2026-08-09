@@ -116,6 +116,36 @@ export function useWorkProgramData() {
     [persistRecords, records],
   );
 
+  const saveRecords = useCallback(
+    async (nextRecords: WorkProgramRecord[]) => {
+      const timestamp = new Date().toISOString();
+      const payloads = nextRecords.map((record) => normaliseRecord({ ...record, updatedAt: timestamp }));
+      const payloadIds = new Set(payloads.map((record) => record.id));
+      const optimistic = mergeRecords(records.filter((item) => !payloadIds.has(item.id)), payloads);
+      persistRecords(optimistic);
+      try {
+        const data = await requestRecords(undefined, {
+          method: "POST",
+          body: JSON.stringify({ records: payloads.map((payload) => ({ ...payload, syncStatus: "Synced" })) }),
+        });
+        const saved = data.records?.length
+          ? data.records.map(normaliseRecord)
+          : payloads.map((payload) => ({ ...payload, syncStatus: "Synced" }));
+        const savedIds = new Set(saved.map((record) => record.id));
+        persistRecords(mergeRecords(optimistic.filter((item) => !savedIds.has(item.id)), saved));
+        setMessage(`${saved.length} record${saved.length === 1 ? "" : "s"} saved to Supabase.`);
+        setSource("Supabase");
+        return saved;
+      } catch {
+        const pending = payloads.map((payload) => ({ ...payload, syncStatus: "Pending Sync" }));
+        persistRecords(mergeRecords(optimistic.filter((item) => !payloadIds.has(item.id)), pending));
+        setMessage(`${pending.length} record${pending.length === 1 ? "" : "s"} saved locally. Supabase sync is unavailable.`);
+        return pending;
+      }
+    },
+    [persistRecords, records],
+  );
+
   const approveRecord = useCallback(
     async (record: WorkProgramRecord) => saveRecord({ ...record, approvalStatus: "Approved" }),
     [saveRecord],
@@ -174,7 +204,7 @@ export function useWorkProgramData() {
   }, [syncPending]);
 
   return useMemo(
-    () => ({ records, loading, source, message, setMessage, refresh, saveRecord, approveRecord, deleteRecord, syncPending }),
-    [records, loading, source, message, refresh, saveRecord, approveRecord, deleteRecord, syncPending],
+    () => ({ records, loading, source, message, setMessage, refresh, saveRecord, saveRecords, approveRecord, deleteRecord, syncPending }),
+    [records, loading, source, message, refresh, saveRecord, saveRecords, approveRecord, deleteRecord, syncPending],
   );
 }
