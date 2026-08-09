@@ -6,6 +6,8 @@ import {
   EXCEL_RECORD_SOURCE,
   MAP_STATUS_RULES,
   MONTHS_2026,
+  monthsForYear,
+  type DashboardMonth,
   type MapStatus,
 } from "./config";
 
@@ -157,27 +159,40 @@ export function getProgrammeRows(programType: string, fields: FieldFeature[]): D
   }));
 }
 
-export function getDashboardRows(programType: string, records: WorkProgramRecord[], fields: FieldFeature[]) {
+export function getDashboardRows(programType: string, records: WorkProgramRecord[], fields: FieldFeature[], year = DASHBOARD_YEAR) {
+  const months = monthsForYear(year);
   const programmeRows = getProgrammeRows(programType, fields);
-  const approvedRecords = records.filter((record) => record.programType === programType && record.approvalStatus === "Approved");
+  const approvedRecords = records.filter(
+    (record) =>
+      record.programType === programType &&
+      record.approvalStatus === "Approved" &&
+      (record.actualCompletionDate || record.deadline || "").startsWith(`${year}-`),
+  );
   const recordsByField = groupBy(approvedRecords, (record) => fieldKey(record.blockField));
   const completedRows = programmeRows.map((programmeRow) =>
-    buildCompletedRow(programType, programmeRow.field, programmeRow, recordsByField.get(fieldKey(programmeRow.field)) || []),
+    buildCompletedRow(programType, programmeRow.field, programmeRow, recordsByField.get(fieldKey(programmeRow.field)) || [], months, year),
   );
   recordsByField.forEach((fieldRecords, key) => {
     if (completedRows.some((row) => fieldKey(row.field) === key)) return;
-    completedRows.push(buildCompletedRow(programType, fieldRecords[0]?.blockField || key, null, fieldRecords));
+    completedRows.push(buildCompletedRow(programType, fieldRecords[0]?.blockField || key, null, fieldRecords, months, year));
   });
   return { programmeRows, completedRows, rows: [...completedRows, ...programmeRows] };
 }
 
-function buildCompletedRow(programType: string, field: string, programmeRow: DashboardRow | null, records: WorkProgramRecord[]): DashboardRow {
+function buildCompletedRow(
+  programType: string,
+  field: string,
+  programmeRow: DashboardRow | null,
+  records: WorkProgramRecord[],
+  months: DashboardMonth[],
+  year: number,
+): DashboardRow {
   const sourceCompleted = dashboardSourceRows.find(
     (row) => row.programType === programType && row.actualBudget === "Completed" && fieldKey(row.field) === fieldKey(field),
   );
   const latest = [...records].sort(sortRecordsDescending)[0];
   const manualRecords = records.filter((record) => record.source !== EXCEL_RECORD_SOURCE);
-  const preserveSource = Boolean(sourceCompleted && !manualRecords.length);
+  const preserveSource = year === DASHBOARD_YEAR && Boolean(sourceCompleted && !manualRecords.length);
   const frequencyMonths = preserveSource
     ? sourceCompleted?.frequencyMonths ?? ""
     : sourceCompleted?.frequencyMonths || programmeRow?.frequencyMonths || "";
@@ -201,7 +216,7 @@ function buildCompletedRow(programType: string, field: string, programmeRow: Das
     intervalMonths,
     proposedNextDate,
     months: Object.fromEntries(
-      MONTHS_2026.map((month) => [
+      months.map((month) => [
         month.key,
         records
           .filter((record) => monthKey(record.actualCompletionDate || record.deadline || "") === month.key)
@@ -212,9 +227,10 @@ function buildCompletedRow(programType: string, field: string, programmeRow: Das
   };
 }
 
-export function getMapStatuses(programType: string, records: WorkProgramRecord[], fields: FieldFeature[]): MapFieldStatus[] {
-  const { programmeRows, completedRows } = getDashboardRows(programType, records, fields);
-  const currentMonth = currentMonthKey();
+export function getMapStatuses(programType: string, records: WorkProgramRecord[], fields: FieldFeature[], year = DASHBOARD_YEAR): MapFieldStatus[] {
+  const months = monthsForYear(year);
+  const { programmeRows, completedRows } = getDashboardRows(programType, records, fields, year);
+  const currentMonth = comparisonMonthKey(year);
   const rule = MAP_STATUS_RULES[programType];
   return sortFields(fields).map((field) => {
     const key = fieldKey(field.properties.field_no || field.properties.field_gis);
@@ -222,8 +238,8 @@ export function getMapStatuses(programType: string, records: WorkProgramRecord[]
     const completedRow = completedRows.find((item) => fieldKey(item.field) === key) || null;
     const intervalMonths = firstNonBlank(completedRow?.intervalMonths, row?.intervalMonths);
     const intervalValue = numericValue(intervalMonths);
-    const plannedToDate = sumMonthsToDate(row, currentMonth);
-    const completedToDate = sumMonthsToDate(completedRow, currentMonth);
+    const plannedToDate = sumMonthsToDate(row, currentMonth, months);
+    const completedToDate = sumMonthsToDate(completedRow, currentMonth, months);
 
     if (!row && !completedRow) {
       return mapStatus(field, row, completedRow, "grey", "No planned data", intervalValue, intervalMonths, plannedToDate, completedToDate);
@@ -265,7 +281,7 @@ function mapStatus(
     message:
       status === "grey"
         ? `${label}; this field is not colour-rated.`
-        : `${label} based on ${formatNumber(intervalValue ?? 0)} month interval.`,
+        : `${label} based on ${formatMonthInterval(intervalValue ?? 0)} interval.`,
   };
 }
 
@@ -317,8 +333,8 @@ export function formatNumber(value: unknown, maximumFractionDigits = 4) {
   return new Intl.NumberFormat("en-US", { maximumFractionDigits }).format(number);
 }
 
-export function sumRowMonths(row: DashboardRow) {
-  return MONTHS_2026.reduce((total, month) => total + Number(row.months[month.key] || 0), 0);
+export function sumRowMonths(row: DashboardRow, months: DashboardMonth[] = MONTHS_2026) {
+  return months.reduce((total, month) => total + Number(row.months[month.key] || 0), 0);
 }
 
 export function sortRecordsDescending(a: WorkProgramRecord, b: WorkProgramRecord) {
@@ -345,6 +361,12 @@ function monthEndDate(month: string) {
 function currentMonthKey() {
   const today = new Date();
   return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}`;
+}
+
+function comparisonMonthKey(year: number) {
+  const today = new Date();
+  if (year === today.getFullYear()) return currentMonthKey();
+  return `${year}-12`;
 }
 
 function intervalFromDate(date: string) {
@@ -374,12 +396,16 @@ function firstNonBlank(...values: Array<number | string | null | undefined>) {
   return values.find((value) => value !== "" && value != null) ?? "";
 }
 
-function sumMonthsToDate(row: DashboardRow | null, currentMonth: string) {
+function sumMonthsToDate(row: DashboardRow | null, currentMonth: string, months: DashboardMonth[] = MONTHS_2026) {
   if (!row) return 0;
-  return MONTHS_2026.filter((month) => month.key <= currentMonth).reduce(
+  return months.filter((month) => month.key <= currentMonth).reduce(
     (total, month) => total + Number(row.months[month.key] || 0),
     0,
   );
+}
+
+function formatMonthInterval(value: number) {
+  return `${formatNumber(value)} month${value === 1 ? "" : "s"}`;
 }
 
 function fieldCategory(field: FieldFeature) {
@@ -400,6 +426,6 @@ function groupBy<T>(items: T[], key: (item: T) => string) {
   return groups;
 }
 
-export function dashboardYearLabel() {
-  return String(DASHBOARD_YEAR);
+export function dashboardYearLabel(year = DASHBOARD_YEAR) {
+  return String(year);
 }

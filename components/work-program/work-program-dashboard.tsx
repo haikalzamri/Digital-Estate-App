@@ -1,7 +1,7 @@
 "use client";
 
 import { CalendarDays, Database, Download, Eye, EyeOff, Info, MapPinned, Pencil, Plus, RotateCcw, Save, Table2, Trash2, X } from "lucide-react";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useState, useSyncExternalStore } from "react";
 import { DashboardFieldMap } from "@/components/maps/work-program-map";
 import {
   dashboardYearLabel,
@@ -12,12 +12,12 @@ import {
   getMapStatuses,
   normaliseKey,
   recordsForMonthCell,
-  sumRowMonths,
   type DashboardRow,
   type FieldFeature,
   type FieldFeatureCollection,
+  type MapFieldStatus,
 } from "@/lib/work-program/analytics";
-import { MAP_STATUS_RULES, MONTHS_2026, PROGRAM_TYPES } from "@/lib/work-program/config";
+import { DASHBOARD_YEAR, MAP_STATUS_RULES, monthsForYear, PROGRAM_TYPES, WORK_PROGRAM_YEARS, type DashboardMonth } from "@/lib/work-program/config";
 import type { WorkProgramRecord } from "@/lib/types/work-program";
 
 type DashboardProps = {
@@ -29,6 +29,25 @@ type DashboardProps = {
 
 type SelectedCell = { field: string; month: string } | null;
 type ProgrammeRowsByName = Record<string, DashboardRow[]>;
+type RoundDefinition = {
+  id: string;
+  label: string;
+  index: number;
+  monthKey: string;
+  plannedMonth: string;
+  targetHa: number;
+};
+type RoundCompletion = ReturnType<typeof getRoundCompletionIndexes>[number];
+type MapRoundContext = {
+  programmeRow: DashboardRow | null;
+  completedRow: DashboardRow | null;
+  rounds: RoundCompletion[];
+  activeRound: RoundCompletion | null;
+  completedRoundCount: number;
+  totalRounds: number;
+  proposedNextMonth: string;
+  roundFrequencyText: string;
+};
 type ChangeLogEntry = {
   id: string;
   programme: string;
@@ -38,24 +57,42 @@ type ChangeLogEntry = {
   time: string;
 };
 
+function subscribeCurrentMonth() {
+  return () => {};
+}
+
+function currentMonthSnapshot() {
+  const today = new Date();
+  return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}`;
+}
+
+function serverMonthSnapshot() {
+  return "";
+}
+
 export function WorkProgramDashboard({ fieldMap, records, loading, source }: DashboardProps) {
   const [programOptions, setProgramOptions] = useState<string[]>(() => [...PROGRAM_TYPES]);
   const [programmeRowsByProgram, setProgrammeRowsByProgram] = useState<ProgrammeRowsByName>({});
   const [draftProgramOptions, setDraftProgramOptions] = useState<string[]>([]);
   const [draftRowsByProgram, setDraftRowsByProgram] = useState<ProgrammeRowsByName>({});
+  const [editBaselineProgramOptions, setEditBaselineProgramOptions] = useState<string[]>([]);
+  const [editBaselineRowsByProgram, setEditBaselineRowsByProgram] = useState<ProgrammeRowsByName>({});
   const [changeLogs, setChangeLogs] = useState<ChangeLogEntry[]>([]);
   const [programType, setProgramType] = useState<string>(PROGRAM_TYPES[0]);
-  const [view, setView] = useState<"table" | "map">("table");
+  const [selectedYear, setSelectedYear] = useState(DASHBOARD_YEAR);
+  const [view, setView] = useState<"table" | "map">("map");
   const [showProgramme, setShowProgramme] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [newProgramName, setNewProgramName] = useState("");
   const [selectedCell, setSelectedCell] = useState<SelectedCell>(null);
   const [selectedField, setSelectedField] = useState("");
   const [showRules, setShowRules] = useState(false);
+  const currentMonthKey = useSyncExternalStore(subscribeCurrentMonth, currentMonthSnapshot, serverMonthSnapshot);
+  const dashboardMonths = useMemo(() => monthsForYear(selectedYear), [selectedYear]);
 
   const baseDashboard = useMemo(
-    () => getDashboardRows(programType, records, fieldMap.features),
-    [fieldMap.features, programType, records],
+    () => getDashboardRows(programType, records, fieldMap.features, selectedYear),
+    [fieldMap.features, programType, records, selectedYear],
   );
   const activeProgramOptions = editMode ? draftProgramOptions : programOptions;
   const currentProgrammeRows = useMemo(() => {
@@ -71,17 +108,28 @@ export function WorkProgramDashboard({ fieldMap, records, loading, source }: Das
     [baseDashboard.completedRows, dashboard.programmeRows],
   );
   const mapStatuses = useMemo(
-    () => getMapStatuses(programType, records, fieldMap.features),
-    [fieldMap.features, programType, records],
+    () => getMapStatuses(programType, records, fieldMap.features, selectedYear),
+    [fieldMap.features, programType, records, selectedYear],
+  );
+  const mapRoundContexts = useMemo(
+    () => buildMapRoundContexts(mapStatuses, dashboard.programmeRows, baseDashboard.completedRows, dashboardMonths),
+    [baseDashboard.completedRows, dashboard.programmeRows, dashboardMonths, mapStatuses],
   );
   const approved = useMemo(
-    () => records.filter((record) => record.programType === programType && record.approvalStatus === "Approved"),
-    [programType, records],
+    () =>
+      records.filter(
+        (record) =>
+          record.programType === programType &&
+          record.approvalStatus === "Approved" &&
+          (record.actualCompletionDate || record.deadline || "").startsWith(`${selectedYear}-`),
+      ),
+    [programType, records, selectedYear],
   );
   const totalHectares = approved.reduce((total, record) => total + Number(record.hectares || 0), 0);
   const activeFields = new Set(approved.map((record) => fieldKey(record.blockField))).size;
   const selectedStatus =
     mapStatuses.find((item) => item.field.properties.field_gis === selectedField) || mapStatuses[0] || null;
+  const selectedMapContext = selectedStatus ? mapRoundContexts.get(mapStatusFieldKey(selectedStatus)) || null : null;
   const selectMapField = useCallback((fieldGis: string) => setSelectedField(fieldGis), []);
   const shouldShowProgramme = editMode || showProgramme;
   const logChange = useCallback((programme: string, action: string, detail: string) => {
@@ -109,13 +157,20 @@ export function WorkProgramDashboard({ fieldMap, records, loading, source }: Das
   }, [baseDashboard.programmeRows, fieldMap.features, programType, programmeRowsByProgram]);
 
   const startEditMode = () => {
+    const baselineRows = buildEditableRowsByProgram(programOptions, {
+      activeProgramme: programType,
+      activeRows: currentProgrammeRows,
+      fieldMap,
+      records,
+      rowsByProgram: programmeRowsByProgram,
+      year: selectedYear,
+    });
     setView("table");
     setShowProgramme(true);
     setDraftProgramOptions(programOptions);
-    setDraftRowsByProgram({
-      ...cloneRowsByProgram(programmeRowsByProgram),
-      [programType]: cloneRows(currentProgrammeRows),
-    });
+    setDraftRowsByProgram(cloneRowsByProgram(baselineRows));
+    setEditBaselineProgramOptions([...programOptions]);
+    setEditBaselineRowsByProgram(cloneRowsByProgram(baselineRows));
     setEditMode(true);
   };
 
@@ -131,13 +186,28 @@ export function WorkProgramDashboard({ fieldMap, records, loading, source }: Das
     setProgrammeRowsByProgram(nextRows);
     setEditMode(false);
     setNewProgramName("");
-    logChange(programType, "Saved template", `${draftProgramOptions.length} programmes available in prototype setup.`);
+    logChange(
+      programType,
+      "Saved edit session",
+      buildSavedEditLogDetail({
+        afterOptions: draftProgramOptions,
+        afterRowsByProgram: nextRows,
+        beforeOptions: editBaselineProgramOptions,
+        beforeRowsByProgram: editBaselineRowsByProgram,
+        months: dashboardMonths,
+        year: selectedYear,
+      }),
+    );
+    setEditBaselineProgramOptions([]);
+    setEditBaselineRowsByProgram({});
   };
 
   const cancelTemplateChanges = () => {
     setEditMode(false);
     setDraftProgramOptions([]);
     setDraftRowsByProgram({});
+    setEditBaselineProgramOptions([]);
+    setEditBaselineRowsByProgram({});
     setNewProgramName("");
   };
 
@@ -165,7 +235,6 @@ export function WorkProgramDashboard({ fieldMap, records, loading, source }: Das
     setDraftRowsByProgram((current) => ({ ...current, [name]: templateRowsFromFields(name, fieldMap.features) }));
     setProgramType(name);
     setNewProgramName("");
-    logChange(name, "Programme created", "New programme template created with field, category, ha, and monthly planning cells.");
   };
 
   const deleteProgramme = () => {
@@ -179,12 +248,18 @@ export function WorkProgramDashboard({ fieldMap, records, loading, source }: Das
       return next;
     });
     setProgramType(nextOptions[0] || "");
-    logChange(deleted, "Programme deleted", "Removed from the prototype work programme listing.");
   };
 
   const clearProgrammeMonths = () => {
-    updateProgrammeRows((rows) => rows.map((row) => ({ ...row, months: emptyMonthValues() })));
-    logChange(programType, "Monthly plan cleared", "Cleared all monthly programme values for this programme.");
+    updateProgrammeRows((rows) =>
+      rows.map((row) => ({
+        ...row,
+        months: {
+          ...row.months,
+          ...Object.fromEntries(dashboardMonths.map((month) => [month.key, 0])),
+        },
+      })),
+    );
   };
 
   const downloadDataset = () => {
@@ -193,7 +268,7 @@ export function WorkProgramDashboard({ fieldMap, records, loading, source }: Das
       "Category",
       "Ha",
       "Actual/Budget",
-      "Frequency",
+      "Programme Frequency / Year",
       "Completed Rounds",
       "Interval (months)",
       "Proposed Next Date",
@@ -217,7 +292,7 @@ export function WorkProgramDashboard({ fieldMap, records, loading, source }: Das
       ];
     });
     const budgetRows = dashboard.programmeRows.flatMap((row) =>
-      MONTHS_2026.filter((month) => Number(row.months[month.key]) > 0).map((month) => [
+      dashboardMonths.filter((month) => Number(row.months[month.key]) > 0).map((month) => [
         row.field,
         row.category,
         row.hect,
@@ -234,7 +309,7 @@ export function WorkProgramDashboard({ fieldMap, records, loading, source }: Das
     const url = URL.createObjectURL(new Blob([`\uFEFF${csv}`], { type: "text/csv;charset=utf-8" }));
     const link = document.createElement("a");
     link.href = url;
-    link.download = `work-program-${programType.toLowerCase().replace(/[^a-z0-9]+/g, "-")}-${dashboardYearLabel()}.csv`;
+    link.download = `work-program-${programType.toLowerCase().replace(/[^a-z0-9]+/g, "-")}-${dashboardYearLabel(selectedYear)}.csv`;
     link.click();
     URL.revokeObjectURL(url);
   };
@@ -253,6 +328,23 @@ export function WorkProgramDashboard({ fieldMap, records, loading, source }: Das
               {activeProgramOptions.map((program) => (
                 <option key={program} value={program}>
                   {program}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="select-control year-select-control">
+            <span>Year</span>
+            <select
+              value={selectedYear}
+              onChange={(event) => {
+                setSelectedYear(Number(event.target.value));
+                setSelectedCell(null);
+                setSelectedField("");
+              }}
+            >
+              {WORK_PROGRAM_YEARS.map((year) => (
+                <option key={year} value={year}>
+                  {year}
                 </option>
               ))}
             </select>
@@ -301,7 +393,7 @@ export function WorkProgramDashboard({ fieldMap, records, loading, source }: Das
         <div className="data-panel dashboard-table-panel">
           <div className="panel-heading">
             <div>
-              <h3>{dashboardYearLabel()} field plan and completion</h3>
+              <h3>{dashboardYearLabel(selectedYear)} field plan and completion</h3>
               <p>{editMode ? "Edit programme planning values in the Programme rows, then save the prototype setup." : "Click a completed month value to review its daily entries."}</p>
             </div>
             <button className="secondary-button" type="button" onClick={() => setShowProgramme((current) => !current)} disabled={editMode}>
@@ -334,49 +426,77 @@ export function WorkProgramDashboard({ fieldMap, records, loading, source }: Das
                   <th>Category</th>
                   <th>Ha</th>
                   <th>Actual / Budget</th>
-                  <th>Frequency</th>
+                  <th>Programme Frequency / Year</th>
                   <th>Completed Rounds</th>
-                  <th>Interval</th>
-                  <th>Proposed Next Date</th>
-                  {MONTHS_2026.map((month) => (
-                    <th className={selectedCell?.month === month.key ? "column-selected" : ""} key={month.key}>
+                  <th>Next Programme (Month)</th>
+                  <th>Delay in Months (from Next Programme)</th>
+                  {dashboardMonths.map((month) => (
+                    <th
+                      aria-label={month.key === currentMonthKey ? `${month.label}, current month` : month.label}
+                      className={`month-header-cell ${month.key === currentMonthKey ? "current-month-cell" : ""} ${selectedCell?.month === month.key ? "column-selected" : ""}`}
+                      key={month.key}
+                    >
+                      {month.key === currentMonthKey ? <span aria-hidden="true" className="current-month-marker">*</span> : null}
                       {month.label}
                     </th>
                   ))}
-                  <th>Completion Index</th>
+                  <th className="round-index-header">Round Completion</th>
                 </tr>
               </thead>
               {tablePairs.map(({ completed, programme }) => {
-                const completedDisplay = programme ? { ...completed, field: programme.field, category: programme.category, hect: programme.hect } : completed;
+                const plannedRounds = getProgrammeRoundDefinitions(programme, dashboardMonths);
+                const completedDisplay = programme ? { ...completed, field: programme.field, category: programme.category, hect: programme.hect, frequencyMonths: plannedRounds.length || completed.frequencyMonths } : completed;
                 const selected = selectedCell?.field === completedDisplay.field;
                 return (
                   <tbody className={selected ? "row-selected" : ""} key={`${completed.id}-${programme?.id || "actual"}`}>
-                    <DashboardTableRow
-                      row={completedDisplay}
-                      records={records}
-                      selectedCell={selectedCell}
-                      setSelectedCell={setSelectedCell}
-                      rowSpan={shouldShowProgramme && programme ? 2 : 1}
-                      showSharedCells
-                      editMode={editMode}
-                      completionTarget={programme}
-                      onUpdateProgrammeRow={updateProgrammeRow}
-                      onLogChange={logChange}
-                    />
                     {shouldShowProgramme && programme ? (
+                      <>
+                        <DashboardTableRow
+                          row={programme}
+                          records={records}
+                          selectedCell={selectedCell}
+                          setSelectedCell={setSelectedCell}
+                          rowSpan={2}
+                          showSharedCells
+                          editMode={editMode}
+                          completionTarget={programme}
+                          roundCompletionRow={completedDisplay}
+                          months={dashboardMonths}
+                          currentMonthKey={currentMonthKey}
+                          showProgrammeIndicator={false}
+                          onUpdateProgrammeRow={updateProgrammeRow}
+                        />
+                        <DashboardTableRow
+                          row={completedDisplay}
+                          records={records}
+                          selectedCell={selectedCell}
+                          setSelectedCell={setSelectedCell}
+                          rowSpan={1}
+                          showSharedCells={false}
+                          editMode={editMode}
+                          completionTarget={programme}
+                          months={dashboardMonths}
+                          currentMonthKey={currentMonthKey}
+                          showProgrammeIndicator={false}
+                          onUpdateProgrammeRow={updateProgrammeRow}
+                        />
+                      </>
+                    ) : (
                       <DashboardTableRow
-                        row={programme}
+                        row={completedDisplay}
                         records={records}
                         selectedCell={selectedCell}
                         setSelectedCell={setSelectedCell}
                         rowSpan={1}
-                        showSharedCells={false}
+                        showSharedCells
                         editMode={editMode}
                         completionTarget={programme}
+                        months={dashboardMonths}
+                        currentMonthKey={currentMonthKey}
+                        showProgrammeIndicator={Boolean(programme && !shouldShowProgramme)}
                         onUpdateProgrammeRow={updateProgrammeRow}
-                        onLogChange={logChange}
                       />
-                    ) : null}
+                    )}
                   </tbody>
                 );
               })}
@@ -390,11 +510,11 @@ export function WorkProgramDashboard({ fieldMap, records, loading, source }: Das
           <div className="data-panel map-panel">
             <div className="panel-heading">
               <div>
-                <h3>Estate interval status</h3>
-                <p>Field colours are calculated from the current month interval.</p>
+                <h3>{programType}</h3>
+                <p>Field colours follow the current interval rules for the selected year.</p>
               </div>
               <button className="secondary-button" type="button" onClick={() => setShowRules(true)}>
-                <Info aria-hidden="true" size={16} /> Colour rules
+                <Info aria-hidden="true" size={16} /> Colour Rules
               </button>
             </div>
             <DashboardFieldMap
@@ -410,15 +530,13 @@ export function WorkProgramDashboard({ fieldMap, records, loading, source }: Das
                 <span className={`status-pill status-${selectedStatus.status}`}>{selectedStatus.label}</span>
                 <h3>{selectedStatus.field.properties.field_no || selectedStatus.field.properties.field_gis}</h3>
                 <dl className="detail-list">
-                  <Detail label="GIS ID" value={selectedStatus.field.properties.field_gis} />
-                  <Detail label="Programme" value={programType} />
-                  <Detail label="Category" value={selectedStatus.row?.category || selectedStatus.completedRow?.category || "-"} />
-                  <Detail label="GIS hectares" value={formatNumber(selectedStatus.field.properties.ha_gis)} />
-                  <Detail label="Planned to date" value={formatNumber(selectedStatus.plannedToDate)} />
-                  <Detail label="Completed to date" value={formatNumber(selectedStatus.completedToDate)} />
-                  <Detail label="Proposed next date" value={formatDate(selectedStatus.proposedNextDate)} />
-                  <Detail label="Interval" value={selectedStatus.intervalValue == null ? "-" : `${formatNumber(selectedStatus.intervalValue)} months`} />
+                  <Detail label="Category" value={selectedMapContext?.programmeRow?.category || selectedStatus.row?.category || selectedStatus.completedRow?.category || "-"} />
+                  <Detail label="Hectares (Ha)" value={formatNumber(selectedMapContext?.programmeRow?.hect || selectedStatus.row?.hect || selectedStatus.completedRow?.hect || selectedStatus.field.properties.ha_gis)} />
+                  <Detail label="Round Completion" value={selectedMapContext?.roundFrequencyText || "-"} />
+                  <Detail label="Next Programme (Month)" value={selectedMapContext?.proposedNextMonth || formatMonthYear(selectedStatus.proposedNextDate)} />
+                  <Detail label="Delay in Months (from Next Programme)" value={formatDelay(selectedStatus.intervalValue)} />
                 </dl>
+                <MapRoundDetails context={selectedMapContext} />
                 <p className="detail-note">{selectedStatus.message}</p>
               </>
             ) : (
@@ -434,7 +552,7 @@ export function WorkProgramDashboard({ fieldMap, records, loading, source }: Das
             <div className="modal-heading">
               <div>
                 <p className="eyebrow">Map reference</p>
-                <h2 id="map-rules-title">Interval colour rules</h2>
+                <h2 id="map-rules-title">Map Colour Rules</h2>
               </div>
               <button className="secondary-button" type="button" onClick={() => setShowRules(false)}>Close</button>
             </div>
@@ -464,8 +582,11 @@ function DashboardTableRow({
   showSharedCells,
   editMode,
   completionTarget,
+  roundCompletionRow,
+  months,
+  currentMonthKey,
+  showProgrammeIndicator,
   onUpdateProgrammeRow,
-  onLogChange,
 }: {
   row: DashboardRow;
   records: WorkProgramRecord[];
@@ -475,10 +596,20 @@ function DashboardTableRow({
   showSharedCells: boolean;
   editMode: boolean;
   completionTarget: DashboardRow | null;
+  roundCompletionRow?: DashboardRow;
+  months: DashboardMonth[];
+  currentMonthKey: string;
+  showProgrammeIndicator: boolean;
   onUpdateProgrammeRow: (rowId: string, updater: (row: DashboardRow) => DashboardRow) => void;
-  onLogChange: (programme: string, action: string, detail: string) => void;
 }) {
-  const completion = getCompletionIndex(row, completionTarget);
+  const programmeReference = row.actualBudget === "Programme" ? row : completionTarget;
+  const plannedRounds = getProgrammeRoundDefinitions(programmeReference, months);
+  const roundCompletions = row.actualBudget === "Completed" ? getRoundCompletionIndexes(row, programmeReference, months) : [];
+  const monthRoundStatuses = row.actualBudget === "Completed" ? getRoundMonthStatusMap(roundCompletions) : new Map<string, string>();
+  const frequencyDisplay = plannedRounds.length || row.frequencyMonths || "-";
+  const completedRoundsDisplay = row.actualBudget === "Completed" && plannedRounds.length
+    ? `${roundCompletions.filter(isRoundComplete).length}/${plannedRounds.length}`
+    : row.completedRounds || "-";
 
   return (
     <tr className={row.actualBudget === "Programme" ? "programme-row" : "completed-row"}>
@@ -486,14 +617,17 @@ function DashboardTableRow({
       {showSharedCells ? <td className={editMode ? "locked-template-cell" : ""} rowSpan={rowSpan}>{row.category || "-"}</td> : null}
       {showSharedCells ? <td className={editMode ? "locked-template-cell" : ""} rowSpan={rowSpan}>{formatNumber(row.hect)}</td> : null}
       <td className={editMode ? "locked-template-cell" : ""}><span className={`row-type ${row.actualBudget.toLowerCase()}`}>{row.actualBudget}</span></td>
-      <td>{row.frequencyMonths || "-"}</td>
-      <td>{row.completedRounds || "-"}</td>
-      <td>{row.intervalMonths === "" ? "-" : row.intervalMonths}</td>
-      <td>{formatDate(row.proposedNextDate)}</td>
-      {MONTHS_2026.map((month) => {
+      <td>{frequencyDisplay}</td>
+      <td>{completedRoundsDisplay}</td>
+      <td>{formatMonthYear(row.proposedNextDate)}</td>
+      <td>{formatIntervalDelay(row.intervalMonths)}</td>
+      {months.map((month) => {
+        const isCurrentMonth = month.key === currentMonthKey;
         const value = Number(row.months[month.key]) || 0;
+        const plannedRound = showProgrammeIndicator ? plannedRounds.find((round) => round.monthKey === month.key) : null;
         const open = selectedCell?.field === row.field && selectedCell.month === month.key;
         const entries = row.actualBudget === "Completed" ? recordsForMonthCell(records, row.programType, row.field, month.key) : [];
+        const roundMonthStatus = monthRoundStatuses.get(month.key);
         const canSelectMonth = !editMode;
         const toggleMonthCell = () => {
           if (!canSelectMonth) return;
@@ -501,7 +635,7 @@ function DashboardTableRow({
         };
         return (
           <td
-            className={`${selectedCell?.month === month.key ? "column-selected" : ""} ${canSelectMonth ? "selectable-month-cell" : ""} month-cell`}
+            className={`${isCurrentMonth ? "current-month-column" : ""} ${plannedRound ? "planned-programme-cell" : ""} ${selectedCell?.month === month.key ? "column-selected" : ""} ${canSelectMonth ? "selectable-month-cell" : ""} month-cell`}
             key={month.key}
             onClick={canSelectMonth ? toggleMonthCell : undefined}
           >
@@ -517,7 +651,6 @@ function DashboardTableRow({
                       ...current,
                       months: { ...current.months, [month.key]: nextValue },
                     }));
-                    onLogChange(row.programType, value ? "Monthly value selected" : "Monthly value filled", `${row.field} · ${month.label}: ${formatNumber(nextValue)} ha from Ha column.`);
                   }}
                 >
                   {value ? formatNumber(value) : "+"}
@@ -532,7 +665,6 @@ function DashboardTableRow({
                         ...current,
                         months: { ...current.months, [month.key]: 0 },
                       }));
-                      onLogChange(row.programType, "Monthly value deleted", `${row.field} · ${month.label} cleared.`);
                     }}
                   >
                     <X aria-hidden="true" size={10} />
@@ -541,7 +673,7 @@ function DashboardTableRow({
               </div>
             ) : value ? (
               <button
-                className="month-value"
+                className={`month-value ${roundMonthStatus ? `month-value-${roundMonthStatus}` : ""}`}
                 type="button"
                 onClick={toggleMonthCell}
                 aria-expanded={open}
@@ -552,6 +684,9 @@ function DashboardTableRow({
             {open && row.actualBudget === "Completed" ? (
               <div className="month-popover">
                 <strong>{row.field} · {month.label}</strong>
+                {plannedRound ? (
+                  <span><b>Programme {plannedRound.label}</b>{formatNumber(plannedRound.targetHa)} ha planned</span>
+                ) : null}
                 <div className={entries.length > 5 ? "month-entry-scroll" : ""}>
                   {entries.length ? entries.map((entry) => (
                     <span key={entry.id}><b>{formatDate(entry.actualCompletionDate)}</b>{formatNumber(entry.hectares)} ha</span>
@@ -562,16 +697,84 @@ function DashboardTableRow({
           </td>
         );
       })}
-      {showSharedCells ? (
-        <td className="completion-index-cell" rowSpan={rowSpan}>
-          <strong>{completion.percent}</strong>
-          <div className="completion-progress" aria-label={`${completion.percent} completion`}>
-            <span style={{ width: `${completion.progress}%` }} />
-          </div>
-          <small>{completion.hectares}</small>
-        </td>
-      ) : null}
+      {showSharedCells ? <RoundCompletionOverview row={roundCompletionRow || row} programmeRow={completionTarget} rowSpan={rowSpan} months={months} /> : null}
     </tr>
+  );
+}
+
+function RoundCompletionOverview({
+  row,
+  programmeRow,
+  rowSpan,
+  months,
+}: {
+  row: DashboardRow;
+  programmeRow: DashboardRow | null;
+  rowSpan: number;
+  months: DashboardMonth[];
+}) {
+  const completions = getRoundCompletionIndexes(row, programmeRow, months);
+
+  return (
+    <td className="completion-index-cell round-completion-cell" rowSpan={rowSpan}>
+      {completions.length ? <div className="round-completion-list">
+        {completions.map((completion) => (
+          <button className={`round-cycle-card round-${completion.status}`} key={completion.id} type="button">
+            <span>{completion.shortLabel}</span>
+            <strong>{completion.percent}</strong>
+            <div className="completion-progress" aria-label={`${completion.label} ${completion.percent} completion`}>
+              <span style={{ width: `${completion.progress}%` }} />
+            </div>
+            <small>{completion.hectares}</small>
+            <em>{completion.statusLabel}</em>
+            <div className="round-cycle-popover">
+              <strong>{completion.label}</strong>
+              <span>Status: {completion.statusLabel}</span>
+              <span>Programme: {completion.plannedMonth}</span>
+              <span>Ha: {completion.hectares}</span>
+            </div>
+          </button>
+        ))}
+      </div> : <span className="round-empty-message">No programme dates</span>}
+    </td>
+  );
+}
+
+function MapRoundDetails({ context }: { context: MapRoundContext | null }) {
+  if (!context?.rounds.length) {
+    return (
+      <section className="map-round-summary">
+        <div className="map-round-heading">
+          <h4>Programme Rounds</h4>
+          <span>No Programme Dates</span>
+        </div>
+      </section>
+    );
+  }
+
+  return (
+    <section className="map-round-summary">
+      <div className="map-round-heading">
+        <h4>Programme Rounds</h4>
+        <span>{context.completedRoundCount}/{context.totalRounds} Completed</span>
+      </div>
+      <div className="map-round-list">
+        {context.rounds.map((round) => (
+          <article className={`map-round-card round-${round.status}`} key={round.id}>
+            <div>
+              <strong>{round.shortLabel}</strong>
+              <span>{formatMonthYearFromKey(round.monthKey)}</span>
+            </div>
+            <b>{round.percent}</b>
+            <div className="completion-progress" aria-label={`${round.label} ${round.percent} completion`}>
+              <span style={{ width: `${round.progress}%` }} />
+            </div>
+            <small>{round.statusLabel}</small>
+            <em>{round.hectares}</em>
+          </article>
+        ))}
+      </div>
+    </section>
   );
 }
 
@@ -618,25 +821,249 @@ function csvValue(value: unknown) {
   return /[",\n]/.test(text) ? `"${text.replaceAll('"', '""')}"` : text;
 }
 
-function getCompletionIndex(row: DashboardRow, programmeRow: DashboardRow | null) {
-  const targetRow = programmeRow || row;
-  const plannedHa = sumRowMonths(targetRow);
-  const completedHa = row.actualBudget === "Completed" ? sumRowMonths(row) : plannedHa;
-  const percentage = plannedHa > 0 ? Math.min(999, (completedHa / plannedHa) * 100) : 0;
+function formatMonthYear(date: string) {
+  if (!date || !/^\d{4}-\d{2}/.test(date)) return date || "-";
+  return new Intl.DateTimeFormat("en-US", { month: "short", year: "numeric" }).format(new Date(`${date.slice(0, 7)}-01T00:00:00`));
+}
 
-  if (row.actualBudget === "Programme") {
+function formatMonthYearFromKey(monthKeyValue: string) {
+  if (!/^\d{4}-\d{2}$/.test(monthKeyValue)) return monthKeyValue || "-";
+  return formatMonthYear(`${monthKeyValue}-01`);
+}
+
+function formatDelay(value: number | null | undefined) {
+  if (value == null) return "-";
+  return `${formatNumber(value)} month${value === 1 ? "" : "s"}`;
+}
+
+function formatIntervalDelay(value: number | string) {
+  if (value === "" || value == null) return "-";
+  const numericValue = Number(value);
+  if (!Number.isFinite(numericValue)) return String(value);
+  return formatDelay(numericValue);
+}
+
+function getProgrammeRoundDefinitions(programmeRow: DashboardRow | null, months: DashboardMonth[]): RoundDefinition[] {
+  if (!programmeRow) return [];
+
+  return months.filter((month) => Number(programmeRow.months[month.key]) > 0).map((month, index) => ({
+    id: `${programmeRow.id}-${month.key}`,
+    label: `Round ${index + 1}`,
+    index,
+    monthKey: month.key,
+    plannedMonth: month.label,
+    targetHa: Number(programmeRow.months[month.key]) || 0,
+  }));
+}
+
+function getRoundCompletionIndexes(row: DashboardRow, programmeRow: DashboardRow | null, months: DashboardMonth[]) {
+  const rounds = getProgrammeRoundDefinitions(programmeRow, months);
+  const fallbackTargetHa = Number(programmeRow?.hect || row.hect || 0);
+  const allocations = rounds.map((round) => ({
+    ...round,
+    completedHa: 0,
+    allocations: [] as Array<{ month: string; monthKey: string; value: number }>,
+  }));
+  let activeRoundIndex = 0;
+
+  months.forEach((month) => {
+    let remainingValue = Number(row.months[month.key]) || 0;
+
+    while (remainingValue > 0 && allocations[activeRoundIndex]) {
+      const activeRound = allocations[activeRoundIndex];
+      const targetHa = activeRound.targetHa || fallbackTargetHa;
+      const remainingTarget = targetHa > 0 ? Math.max(targetHa - activeRound.completedHa, 0) : remainingValue;
+      const assignedValue = targetHa > 0 ? Math.min(remainingValue, remainingTarget) : remainingValue;
+
+      if (assignedValue <= 0) {
+        activeRoundIndex += 1;
+        continue;
+      }
+
+      activeRound.completedHa += assignedValue;
+      activeRound.allocations.push({ month: month.label, monthKey: month.key, value: assignedValue });
+      remainingValue -= assignedValue;
+
+      if (targetHa > 0 && activeRound.completedHa >= targetHa - 0.0001) {
+        activeRoundIndex += 1;
+      }
+    }
+
+    if (remainingValue > 0 && allocations.length) {
+      const finalRound = allocations[allocations.length - 1];
+      finalRound.completedHa += remainingValue;
+      finalRound.allocations.push({ month: month.label, monthKey: month.key, value: remainingValue });
+    }
+  });
+
+  return allocations.map((round) => {
+    const targetHa = round.targetHa || fallbackTargetHa;
+    const percentage = targetHa > 0 ? Math.min(999, (round.completedHa / targetHa) * 100) : 0;
+    const status = getRoundStatus(percentage, round.completedHa, targetHa);
     return {
-      percent: plannedHa ? "100%" : "-",
-      hectares: plannedHa ? `${formatNumber(plannedHa)} ha target` : "No target",
-      progress: plannedHa ? 100 : 0,
+      ...round,
+      shortLabel: `R${round.index + 1}`,
+      percent: targetHa ? `${formatNumber(percentage, 0)}%` : "-",
+      hectares: targetHa ? `${formatNumber(round.completedHa)} / ${formatNumber(targetHa)} ha` : `${formatNumber(round.completedHa)} ha`,
+      progress: Math.min(100, percentage),
+      status,
+      statusLabel: roundStatusLabel(status),
+      targetHa,
     };
+  });
+}
+
+function getRoundMonthStatusMap(rounds: ReturnType<typeof getRoundCompletionIndexes>) {
+  const monthStatuses = new Map<string, string>();
+
+  rounds.forEach((round) => {
+    const monthStatus = round.status === "complete" || round.status === "over" ? "complete" : "partial";
+    round.allocations.forEach((allocation) => monthStatuses.set(allocation.monthKey, monthStatus));
+  });
+
+  return monthStatuses;
+}
+
+function getRoundStatus(percentage: number, completedHa: number, targetHa: number) {
+  const completeTolerance = Math.max(0.01, targetHa * 0.0001);
+  if (completedHa > targetHa + completeTolerance) return "over";
+  if (targetHa > 0 && completedHa >= targetHa - completeTolerance) return "complete";
+  if (completedHa > 0) return "partial";
+  if (percentage >= 100) return "complete";
+  return "empty";
+}
+
+function isRoundComplete(round: RoundCompletion) {
+  return round.status === "complete" || round.status === "over";
+}
+
+function roundStatusLabel(status: string) {
+  if (status === "complete") return "Completed";
+  if (status === "over") return "Over target";
+  if (status === "partial") return "In progress";
+  return "Not started";
+}
+
+function buildMapRoundContexts(
+  statuses: MapFieldStatus[],
+  programmeRows: DashboardRow[],
+  completedRows: DashboardRow[],
+  months: DashboardMonth[],
+) {
+  const contexts = new Map<string, MapRoundContext>();
+
+  statuses.forEach((status) => {
+    const key = mapStatusFieldKey(status);
+    const programmeRow = programmeRows.find((row) => fieldKey(row.field) === key) || status.row || null;
+    const matchedCompletedRow = completedRows.find((row) => fieldKey(row.field) === key) || status.completedRow || null;
+    const completedRow = matchedCompletedRow && programmeRow
+      ? {
+          ...matchedCompletedRow,
+          field: programmeRow.field,
+          category: programmeRow.category,
+          hect: programmeRow.hect,
+        }
+      : matchedCompletedRow;
+    const rounds = completedRow ? getRoundCompletionIndexes(completedRow, programmeRow, months) : [];
+    const activeRound = rounds.find((round) => !isRoundComplete(round)) || rounds.at(-1) || null;
+    const completedRoundCount = rounds.filter(isRoundComplete).length;
+    const totalRounds = rounds.length;
+
+    contexts.set(key, {
+      programmeRow,
+      completedRow,
+      rounds,
+      activeRound,
+      completedRoundCount,
+      totalRounds,
+      proposedNextMonth: formatMonthYear(status.proposedNextDate),
+      roundFrequencyText: totalRounds ? `${completedRoundCount}/${totalRounds} Completed` : "-",
+    });
+  });
+
+  return contexts;
+}
+
+function mapStatusFieldKey(status: MapFieldStatus) {
+  return fieldKey(status.field.properties.field_no || status.field.properties.field_gis);
+}
+
+function buildEditableRowsByProgram(
+  options: string[],
+  {
+    activeProgramme,
+    activeRows,
+    fieldMap,
+    records,
+    rowsByProgram,
+    year,
+  }: {
+    activeProgramme: string;
+    activeRows: DashboardRow[];
+    fieldMap: FieldFeatureCollection;
+    records: WorkProgramRecord[];
+    rowsByProgram: ProgrammeRowsByName;
+    year: number;
+  },
+) {
+  return Object.fromEntries(options.map((programme) => {
+    const rows = rowsByProgram[programme] || (programme === activeProgramme ? activeRows : getDashboardRows(programme, records, fieldMap.features, year).programmeRows);
+    return [programme, cloneRows(rows)];
+  }));
+}
+
+function buildSavedEditLogDetail({
+  afterOptions,
+  afterRowsByProgram,
+  beforeOptions,
+  beforeRowsByProgram,
+  months,
+  year,
+}: {
+  afterOptions: string[];
+  afterRowsByProgram: ProgrammeRowsByName;
+  beforeOptions: string[];
+  beforeRowsByProgram: ProgrammeRowsByName;
+  months: DashboardMonth[];
+  year: number;
+}) {
+  const beforeSet = new Set(beforeOptions);
+  const afterSet = new Set(afterOptions);
+  const addedProgrammes = afterOptions.filter((programme) => !beforeSet.has(programme));
+  const deletedProgrammes = beforeOptions.filter((programme) => !afterSet.has(programme));
+  const monthlyChanges = afterOptions.flatMap((programme) =>
+    getMonthlyPlanChanges(programme, beforeRowsByProgram[programme] || [], afterRowsByProgram[programme] || [], months),
+  );
+  const parts = [];
+
+  if (addedProgrammes.length) parts.push(`Added programme: ${addedProgrammes.join(", ")}.`);
+  if (deletedProgrammes.length) parts.push(`Deleted programme: ${deletedProgrammes.join(", ")}.`);
+  if (monthlyChanges.length) {
+    const shownChanges = monthlyChanges.slice(0, 8);
+    const hiddenCount = monthlyChanges.length - shownChanges.length;
+    parts.push(`Monthly plan changes: ${shownChanges.join("; ")}${hiddenCount > 0 ? `; and ${hiddenCount} more` : ""}.`);
   }
 
-  return {
-    percent: plannedHa ? `${formatNumber(percentage, 0)}%` : "-",
-    hectares: plannedHa ? `${formatNumber(completedHa)} / ${formatNumber(plannedHa)} ha` : `${formatNumber(completedHa)} ha`,
-    progress: Math.min(100, percentage),
-  };
+  return parts.length
+    ? `Saved ${dashboardYearLabel(year)} edit session. ${parts.join(" ")}`
+    : `Saved ${dashboardYearLabel(year)} edit session. No net changes detected.`;
+}
+
+function getMonthlyPlanChanges(programme: string, beforeRows: DashboardRow[], afterRows: DashboardRow[], months: DashboardMonth[]) {
+  const beforeByField = new Map(beforeRows.map((row) => [fieldKey(row.field), row]));
+  const changes: string[] = [];
+
+  afterRows.forEach((afterRow) => {
+    const beforeRow = beforeByField.get(fieldKey(afterRow.field));
+    months.forEach((month) => {
+      const beforeValue = Number(beforeRow?.months[month.key]) || 0;
+      const afterValue = Number(afterRow.months[month.key]) || 0;
+      if (Math.abs(afterValue - beforeValue) < 0.0001) return;
+      changes.push(`${programme} · ${afterRow.field} ${month.label}: ${formatNumber(beforeValue)} -> ${formatNumber(afterValue)} ha`);
+    });
+  });
+
+  return changes;
 }
 
 function buildTablePairs(completedRows: DashboardRow[], programmeRows: DashboardRow[]): Array<{ completed: DashboardRow; programme: DashboardRow | null }> {
@@ -688,7 +1115,7 @@ function templateRowsFromFields(programme: string, fields: FieldFeature[]): Dash
 }
 
 function emptyMonthValues() {
-  return Object.fromEntries(MONTHS_2026.map((month) => [month.key, 0]));
+  return Object.fromEntries(monthsForYear(DASHBOARD_YEAR).map((month) => [month.key, 0]));
 }
 
 function cloneRows(rows: DashboardRow[]) {

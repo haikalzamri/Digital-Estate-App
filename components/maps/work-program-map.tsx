@@ -59,7 +59,7 @@ export function DashboardFieldMap({ fieldMap, statuses, selectedField, onSelectF
             permanent: true,
           });
           featureLayer.bindPopup(
-            `<div class="map-popup"><strong>${escapeHtml(fieldName)}</strong><span>${escapeHtml(item?.label || "No interval")}</span><dl><div><dt>GIS ha</dt><dd>${formatNumber(feature.properties?.ha_gis)}</dd></div><div><dt>Proposed</dt><dd>${escapeHtml(formatDate(item?.proposedNextDate || ""))}</dd></div><div><dt>Interval</dt><dd>${escapeHtml(formatInterval(item?.intervalValue))}</dd></div></dl></div>`,
+            `<div class="map-popup"><strong>${escapeHtml(fieldName)}</strong><span>${escapeHtml(item?.label || "No interval")}</span><dl><div><dt>GIS Hectares</dt><dd>${formatNumber(feature.properties?.ha_gis)}</dd></div><div><dt>Next Programme (Month)</dt><dd>${escapeHtml(formatMapMonthYear(item?.proposedNextDate || ""))}</dd></div><div><dt>Delay</dt><dd>${escapeHtml(formatInterval(item?.intervalValue))}</dd></div></dl></div>`,
           );
           featureLayer.on("click", () => onSelectField(fieldGis));
         },
@@ -163,6 +163,11 @@ function recordPinIcon(leaflet: typeof import("leaflet"), colour: string, select
 function formatInterval(value: number | null | undefined) {
   if (value == null) return "-";
   return `${formatNumber(value)} month${value === 1 ? "" : "s"}`;
+}
+
+function formatMapMonthYear(date: string) {
+  if (!date || !/^\d{4}-\d{2}/.test(date)) return date || "-";
+  return new Intl.DateTimeFormat("en-US", { month: "short", year: "numeric" }).format(new Date(`${date.slice(0, 7)}-01T00:00:00`));
 }
 
 function escapeHtml(value: unknown) {

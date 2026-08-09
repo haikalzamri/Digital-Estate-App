@@ -1,19 +1,20 @@
 export const DASHBOARD_YEAR = 2026;
 
-export const MONTHS_2026 = [
-  { key: "2026-01", label: "Jan" },
-  { key: "2026-02", label: "Feb" },
-  { key: "2026-03", label: "Mar" },
-  { key: "2026-04", label: "Apr" },
-  { key: "2026-05", label: "May" },
-  { key: "2026-06", label: "Jun" },
-  { key: "2026-07", label: "Jul" },
-  { key: "2026-08", label: "Aug" },
-  { key: "2026-09", label: "Sep" },
-  { key: "2026-10", label: "Oct" },
-  { key: "2026-11", label: "Nov" },
-  { key: "2026-12", label: "Dec" },
-] as const;
+export const WORK_PROGRAM_YEARS = [2026, 2027, 2028, 2029, 2030] as const;
+
+const MONTH_LABELS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+export type DashboardMonth = { key: string; label: string };
+
+export function monthsForYear(year: number | string): DashboardMonth[] {
+  const parsedYear = Number(year) || DASHBOARD_YEAR;
+  return MONTH_LABELS.map((label, index) => ({
+    key: `${parsedYear}-${String(index + 1).padStart(2, "0")}`,
+    label,
+  }));
+}
+
+export const MONTHS_2026 = monthsForYear(DASHBOARD_YEAR);
 
 export const PROGRAM_TYPES = [
   "Mature Circle",
