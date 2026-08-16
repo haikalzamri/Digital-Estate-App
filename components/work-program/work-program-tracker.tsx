@@ -138,6 +138,8 @@ export function WorkProgramTracker() {
   const activeActivity = tracker.activities.find((activity) => activity.id === tracker.activeActivityId) || null;
   const activityForAdd = activeActivity || tracker.activities.at(-1) || null;
   const activeEntriesReady = activityForAdd ? getEntriesForSubmission(activityForAdd.entries) : [];
+  const inactiveBlankActivity = tracker.activities.find((activity) => activity.id !== tracker.activeActivityId && isBlankActivity(activity)) || null;
+  const canUseAddActivity = Boolean(fields.length && tracker.actualCompletionDate && (inactiveBlankActivity || activeEntriesReady.length));
   const readyEntries = getEntriesForSubmission(tracker.activities.flatMap((activity) => activity.entries));
   const readyTotalHa = readyEntries.reduce((total, entry) => total + Number(entry.hectares || 0), 0);
 
@@ -281,6 +283,14 @@ export function WorkProgramTracker() {
     setErrors({});
     setSubmissionEntries(null);
     setLastSubmission(null);
+  };
+
+  const handleAddActivity = () => {
+    if (inactiveBlankActivity) {
+      toggleActivity(inactiveBlankActivity.id);
+      return;
+    }
+    addActivity();
   };
 
   const removeActivity = (activityId: string) => {
@@ -487,11 +497,7 @@ export function WorkProgramTracker() {
                 const activityTitle = getActivitySummaryTitle(activity);
                 const canRemoveActivity = tracker.activities.length > 1 || !isBlankActivity(activity);
                 if (!activityOpen && isBlankActivity(activity)) {
-                  return (
-                    <button className="activity-create-button" type="button" onClick={() => toggleActivity(activity.id)} key={activity.id}>
-                      <Plus aria-hidden="true" size={18} /> Add Activity
-                    </button>
-                  );
+                  return null;
                 }
                 return (
                   <article className={`activity-entry-card ${activityOpen ? "is-open" : ""}`} key={activity.id}>
@@ -642,7 +648,7 @@ export function WorkProgramTracker() {
               {tracker.activities.length > 1 ? <small>{tracker.activities.length} activities in draft.</small> : null}
             </div>
             <div className="tracker-submit-actions">
-              <button className="secondary-button optional-add-button" type="button" onClick={addActivity} disabled={saving || !fields.length || !tracker.actualCompletionDate || !activeEntriesReady.length}>
+              <button className="secondary-button optional-add-button" type="button" onClick={handleAddActivity} disabled={saving || !canUseAddActivity}>
                 <Plus aria-hidden="true" size={17} /> Add Activity
               </button>
               <button className="primary-button tracker-submit" type="submit" disabled={saving || !fields.length || !tracker.actualCompletionDate || !readyEntries.length}>

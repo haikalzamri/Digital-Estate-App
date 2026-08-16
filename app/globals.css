@@ -1655,30 +1655,6 @@ button {
   margin-top: 18px;
 }
 
-.activity-create-button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  justify-self: flex-start;
-  gap: 12px;
-  min-width: 220px;
-  min-height: 56px;
-  padding: 0 22px;
-  color: #789c8d;
-  background: #f7fbf8;
-  border: 1px solid #dce7df;
-  border-radius: 8px;
-  font-size: 0.86rem;
-  font-weight: 900;
-  box-shadow: 0 4px 14px rgba(25, 42, 31, 0.03);
-}
-
-.activity-create-button:hover {
-  color: var(--primary);
-  background: #f0f8f2;
-  border-color: #c8dbcf;
-}
-
 .activity-entry-card {
   --activity-accent: #176b4d;
   --activity-line: #cfded2;
