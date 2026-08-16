@@ -49,6 +49,12 @@ export function getHarvestingIntervalReport(source: HarvestingIntervalSource, se
   const sourceMonthActivity = [...visibleFieldNames].map((field) =>
     Object.keys(source.activityByField[field] || {}).filter((date) => date.startsWith(selectedMonth)).length,
   );
+  const dailyProductionDataDates = Object.fromEntries(
+    days.map((day) => [day.date, Boolean(source.dailyTotals?.[day.date])]),
+  );
+  const dailyDispatchDataDates = Object.fromEntries(
+    days.map((day) => [day.date, Boolean(source.dispatchDailyTotals?.[day.date])]),
+  );
   const dailyTotals = Object.fromEntries(
     days.map((day) => [day.date, source.dailyTotals?.[day.date] || emptyMetrics()]),
   );
@@ -70,6 +76,10 @@ export function getHarvestingIntervalReport(source: HarvestingIntervalSource, se
     dailyTotals,
     dispatchDailyTotals,
     dailyBalances,
+    dailyProductionDataDates,
+    dailyDispatchDataDates,
+    hasMonthlyProductionData: Object.values(dailyProductionDataDates).some(Boolean),
+    hasMonthlyDispatchData: Object.values(dailyDispatchDataDates).some(Boolean),
     monthlyTotals,
     monthlyDispatchTotals,
     monthlyBalances,

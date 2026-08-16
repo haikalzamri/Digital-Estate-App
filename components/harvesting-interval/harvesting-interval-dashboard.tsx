@@ -1,6 +1,6 @@
 "use client";
 
-import { BarChart3, CalendarDays, ChevronDown, ChevronRight, Download, Grid2X2, Sprout } from "lucide-react";
+import { BarChart3, CalendarDays, ChevronDown, ChevronRight, Download, Grid2X2, MapPinned, Sprout, Table2 } from "lucide-react";
 import { Fragment, useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import type { GeoJsonObject } from "geojson";
 import { ModuleShell } from "@/components/module-shell";
@@ -37,7 +37,19 @@ const OVERLAY_COLORS: Record<string, string> = {
   QG: "#dc2626",
   R1: "#9333ea",
   LF: "#16a34a",
+  C1: "#475569",
+  QC: "#dc2626",
 };
+
+const VALUE_OVERLAY_CODES = ["C1", "QC", "LF"] as const;
+const HARVESTING_REPORT_MODES = [
+  { key: "daily-forecast", label: "Daily Harvesting Forecast" },
+  { key: "production-dispatch", label: "Production vs Dispatch" },
+] as const;
+const FIELD_STATUS_MODES = [
+  { key: "daily-forecast", label: "Daily Forecast" },
+  { key: "production", label: "Production" },
+] as const;
 
 const RAINFALL_DATA_LABEL = "Rainfall Data";
 const RAINFALL_PLACEHOLDER = "-";
@@ -65,6 +77,9 @@ const INTERVAL_STATUS_COLOURS = {
 };
 
 type TotalColumnKind = "production" | "dispatch" | "balance";
+type HarvestingDashboardTab = "harvesting-report" | "field-status";
+type HarvestingReportMode = typeof HARVESTING_REPORT_MODES[number]["key"];
+type FieldStatusMode = typeof FIELD_STATUS_MODES[number]["key"];
 
 type TotalColumn = {
   id: string;
@@ -98,9 +113,12 @@ type FieldIntervalSummary = {
 
 export function HarvestingIntervalDashboard() {
   const fieldMap = useFieldMap();
+  const [activeTab, setActiveTab] = useState<HarvestingDashboardTab>("harvesting-report");
   const [selectedMonth, setSelectedMonth] = useState(getDefaultHarvestingMonth(source));
   const [summaryAsOfDate, setSummaryAsOfDate] = useState(source.metadata.lastActivityDate);
   const [selectedSummaryField, setSelectedSummaryField] = useState("");
+  const [reportMode, setReportMode] = useState<HarvestingReportMode>("production-dispatch");
+  const [fieldStatusMode, setFieldStatusMode] = useState<FieldStatusMode>("production");
   const [selectedMetric, setSelectedMetric] = useState<HarvestingIntervalMetricKey>("hectare");
   const [expandedDates, setExpandedDates] = useState<Set<string>>(new Set());
   const [expandedTotalGroups, setExpandedTotalGroups] = useState<Set<HarvestingIntervalMetricKey>>(new Set());
@@ -109,11 +127,16 @@ export function HarvestingIntervalDashboard() {
   const report = useMemo(() => getHarvestingIntervalReport(source, selectedMonth), [selectedMonth]);
   const summaryReport = useMemo(() => getHarvestingIntervalReport(source, summaryAsOfDate.slice(0, 7)), [summaryAsOfDate]);
   const dayGroups = useMemo(() => getHarvestingDayGroups(report.fields), [report.fields]);
-  const totalColumns = useMemo(() => getTotalColumns(report, expandedTotalGroups), [report, expandedTotalGroups]);
+  const isProductionDispatch = reportMode === "production-dispatch";
+  const totalColumns = useMemo(
+    () => isProductionDispatch ? getTotalColumns(report, expandedTotalGroups) : [],
+    [expandedTotalGroups, isProductionDispatch, report],
+  );
   const fieldIntervalSummary = useMemo(() => getFieldIntervalSummary(summaryReport, source, summaryAsOfDate), [summaryReport, summaryAsOfDate]);
   const selectedSummaryRow = fieldIntervalSummary.find((row) => row.field === selectedSummaryField) || null;
   const overlayCodes = useMemo(() => getOverlayCodes(source), []);
   const metricLabel = METRIC_OPTIONS.find((option) => option.key === selectedMetric)?.longLabel || "Actual Covered Ha";
+  const reportModeLabel = HARVESTING_REPORT_MODES.find((option) => option.key === reportMode)?.label || "Production vs Dispatch";
 
   const toggleDate = (date: string) => {
     setExpandedDates((current) => {
@@ -156,12 +179,13 @@ export function HarvestingIntervalDashboard() {
   };
 
   const exportCsv = () => {
+    const includeProductionComparison = reportMode === "production-dispatch";
     const headers = [
       "Date",
       "Day",
       ...report.fields.map((field) => `${field.block} ${field.field}`),
-      ...totalColumns.map((column) => column.label),
-      RAINFALL_DATA_LABEL,
+      ...(includeProductionComparison ? totalColumns.map((column) => column.label) : []),
+      ...(includeProductionComparison ? [RAINFALL_DATA_LABEL] : []),
     ];
     const rows = report.days.flatMap((day, rowIndex) => {
       const productionRow = [
@@ -169,12 +193,13 @@ export function HarvestingIntervalDashboard() {
         day.dayName,
         ...report.fields.map((field) => {
           const cell = field.cells[rowIndex];
+          if (!includeProductionComparison) return "";
           return cell.harvest && cell.activity ? formatMetricValue(cell.activity[selectedMetric], selectedMetric) : String(cell.interval);
         }),
-        ...totalColumns.map((column) => column.getDailyValue(day.date)),
-        RAINFALL_PLACEHOLDER,
+        ...(includeProductionComparison ? totalColumns.map((column) => column.getDailyValue(day.date)) : []),
+        ...(includeProductionComparison ? [RAINFALL_PLACEHOLDER] : []),
       ];
-      if (!expandedDates.has(day.date)) return [productionRow];
+      if (!includeProductionComparison || !expandedDates.has(day.date)) return [productionRow];
 
       return [
         productionRow,
@@ -190,15 +215,16 @@ export function HarvestingIntervalDashboard() {
     const monthlyTotalRow = [
       "Total Ha",
       report.monthLabel,
-      ...report.fields.map((field) => formatMetricValue(field.monthlyHectareTotal, "hectare")),
-      ...totalColumns.map((column) => column.getMonthlyValue()),
-      RAINFALL_PLACEHOLDER,
+      ...report.fields.map((field) => report.hasMonthlyProductionData ? formatMetricValue(field.monthlyHectareTotal, "hectare") : "-"),
+      ...(includeProductionComparison ? totalColumns.map((column) => column.getMonthlyValue()) : []),
+      ...(includeProductionComparison ? [RAINFALL_PLACEHOLDER] : []),
     ];
-    const csv = [headers, ...rows, monthlyTotalRow].map((row) => row.map(csvValue).join(",")).join("\n");
+    const csvRows = includeProductionComparison ? [headers, ...rows, monthlyTotalRow] : [headers, ...rows];
+    const csv = csvRows.map((row) => row.map(csvValue).join(",")).join("\n");
     const url = URL.createObjectURL(new Blob([`\uFEFF${csv}`], { type: "text/csv;charset=utf-8" }));
     const link = document.createElement("a");
     link.href = url;
-    link.download = `harvesting-interval-${selectedMonth}-${selectedMetric}.csv`;
+    link.download = `harvesting-interval-${selectedMonth}-${reportMode}.csv`;
     link.click();
     URL.revokeObjectURL(url);
   };
@@ -210,45 +236,109 @@ export function HarvestingIntervalDashboard() {
       subtitle="Monthly field interval report using source-system harvesting productivity data"
     >
       <section className="harvesting-workspace workspace-section" aria-labelledby="harvesting-interval-title">
+        <div className="harvesting-module-tabs" role="tablist" aria-label="Harvesting interval views">
+          <button
+            className={activeTab === "harvesting-report" ? "active" : ""}
+            type="button"
+            role="tab"
+            aria-selected={activeTab === "harvesting-report"}
+            onClick={() => setActiveTab("harvesting-report")}
+          >
+            <Table2 aria-hidden="true" size={16} />
+            Harvesting Report
+          </button>
+          <button
+            className={activeTab === "field-status" ? "active" : ""}
+            type="button"
+            role="tab"
+            aria-selected={activeTab === "field-status"}
+            onClick={() => setActiveTab("field-status")}
+          >
+            <MapPinned aria-hidden="true" size={16} />
+            Field Status
+          </button>
+        </div>
         <div className="workspace-toolbar">
           <div className="section-heading">
-            <p>Management overview</p>
-            <h2 id="harvesting-interval-title">Harvesting Interval Report</h2>
+            <p>{activeTab === "harvesting-report" ? "Management overview" : "Map and field status"}</p>
+            <h2 id="harvesting-interval-title">{activeTab === "harvesting-report" ? "Harvesting Interval Report" : "Field Status"}</h2>
           </div>
           <div className="toolbar-actions">
-            <label className="select-control">
-              <span>Month</span>
-              <select value={selectedMonth} onChange={(event) => setSelectedMonth(event.target.value)}>
-                {source.metadata.availableMonths.map((month) => (
-                  <option key={month} value={month}>
-                    {formatHarvestingMonth(month)}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <div className="segmented-control harvesting-metric-toggle" aria-label="Activity metric">
-              {METRIC_OPTIONS.map((option) => (
-                <button
-                  className={selectedMetric === option.key ? "active" : ""}
-                  type="button"
-                  aria-pressed={selectedMetric === option.key}
-                  key={option.key}
-                  onClick={() => setSelectedMetric(option.key)}
-                >
-                  {option.label}
+            {activeTab === "harvesting-report" ? (
+              <>
+                <label className="select-control">
+                  <span>Month</span>
+                  <select value={selectedMonth} onChange={(event) => setSelectedMonth(event.target.value)}>
+                    {source.metadata.availableMonths.map((month) => (
+                      <option key={month} value={month}>
+                        {formatHarvestingMonth(month)}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label className="select-control report-filter-control">
+                  <span>Report Filter</span>
+                  <select value={reportMode} onChange={(event) => setReportMode(event.target.value as HarvestingReportMode)}>
+                    {HARVESTING_REPORT_MODES.map((mode) => (
+                      <option key={mode.key} value={mode.key}>{mode.label}</option>
+                    ))}
+                  </select>
+                </label>
+                {isProductionDispatch ? (
+                  <div className="segmented-control harvesting-metric-toggle" aria-label="Activity metric">
+                    {METRIC_OPTIONS.map((option) => (
+                      <button
+                        className={selectedMetric === option.key ? "active" : ""}
+                        type="button"
+                        aria-pressed={selectedMetric === option.key}
+                        key={option.key}
+                        onClick={() => setSelectedMetric(option.key)}
+                      >
+                        {option.label}
+                      </button>
+                    ))}
+                  </div>
+                ) : null}
+                <button className="command-button" type="button" onClick={exportCsv}>
+                  <Download aria-hidden="true" size={16} /> Export
                 </button>
-              ))}
-            </div>
-            <button className="command-button" type="button" onClick={exportCsv}>
-              <Download aria-hidden="true" size={16} /> Export
-            </button>
+              </>
+            ) : (
+              <label className="select-control report-filter-control">
+                <span>Report Filter</span>
+                <select
+                  value={fieldStatusMode}
+                  onChange={(event) => {
+                    const nextMode = event.target.value as FieldStatusMode;
+                    setFieldStatusMode(nextMode);
+                    setSelectedSummaryField("");
+                  }}
+                >
+                  {FIELD_STATUS_MODES.map((mode) => (
+                    <option key={mode.key} value={mode.key}>{mode.label}</option>
+                  ))}
+                </select>
+              </label>
+            )}
           </div>
         </div>
 
+        {activeTab === "harvesting-report" ? (
+          <>
         <div className="kpi-strip harvesting-kpi-strip">
           <Kpi label="Selected month" value={report.monthLabel} helper={`${report.days.length} calendar days`} icon={<CalendarDays size={18} />} />
-          <Kpi label="QC + C1 activities" value={report.sourceActivityCount.toString()} helper={`${report.sourceActiveFields} active fields`} icon={<Sprout size={18} />} />
-          <Kpi label="Display metric" value={metricLabel} helper="Orange activity cells" icon={<BarChart3 size={18} />} />
+          <Kpi
+            label="QC + C1 activities"
+            value={report.sourceActivityCount.toString()}
+            helper={isProductionDispatch ? `${report.sourceActiveFields} production active fields` : `${reportModeLabel} selected`}
+            icon={<Sprout size={18} />}
+          />
+          <Kpi
+            label={isProductionDispatch ? "Display metric" : "Forecast layer"}
+            value={isProductionDispatch ? metricLabel : "No interval count"}
+            helper={isProductionDispatch ? "Orange activity cells" : "Activity overlays remain available"}
+            icon={<BarChart3 size={18} />}
+          />
           <Kpi label="Display fields" value={report.fields.length.toString()} helper="Screenshot template fields" icon={<Grid2X2 size={18} />} />
           <div className="kpi-item data-source-kpi">
             <span>Data sources</span>
@@ -300,10 +390,15 @@ export function HarvestingIntervalDashboard() {
             </div>
           </div>
           <div className="wide-table-scroll harvesting-table-scroll">
-            <table className="harvesting-table" style={{ minWidth: `${135 + report.fields.length * 58 + totalColumns.length * 96 + RAINFALL_COLUMN_WIDTH}px` }}>
+            <table
+              className="harvesting-table"
+              style={{ minWidth: `${135 + report.fields.length * 58 + totalColumns.length * 96 + (isProductionDispatch ? RAINFALL_COLUMN_WIDTH : 0)}px` }}
+            >
               <thead>
                 <tr className="harvesting-report-title">
-                  <th colSpan={report.fields.length + totalColumns.length + 2}>DIGITAL ESTATE HARVESTING INTERVAL | {report.monthLabel.toUpperCase()}</th>
+                  <th colSpan={report.fields.length + totalColumns.length + (isProductionDispatch ? 2 : 1)}>
+                    DIGITAL ESTATE HARVESTING INTERVAL | {report.monthLabel.toUpperCase()} | {reportModeLabel.toUpperCase()}
+                  </th>
                 </tr>
                 <tr>
                   <th className="harvesting-sticky-col" rowSpan={3}>Date</th>
@@ -312,10 +407,14 @@ export function HarvestingIntervalDashboard() {
                       {group.label}
                     </th>
                   ))}
-                  <th className="harvesting-total-heading" colSpan={totalColumns.length}>
-                    DAILY TOTAL
-                  </th>
-                  <th className="rainfall-data-col rainfall-data-heading" rowSpan={3}>{RAINFALL_DATA_LABEL}</th>
+                  {isProductionDispatch ? (
+                    <>
+                      <th className="harvesting-total-heading" colSpan={totalColumns.length}>
+                        DAILY TOTAL
+                      </th>
+                      <th className="rainfall-data-col rainfall-data-heading" rowSpan={3}>{RAINFALL_DATA_LABEL}</th>
+                    </>
+                  ) : null}
                 </tr>
                 <tr>
                   {dayGroups.map((group, index) => (
@@ -323,29 +422,31 @@ export function HarvestingIntervalDashboard() {
                       {group.totalHectares == null ? "-" : group.totalHectares.toFixed(2)}
                     </th>
                   ))}
-                  <th className="harvesting-total-heading" colSpan={totalColumns.length}>
-                    TOTAL
-                  </th>
+                  {isProductionDispatch ? (
+                    <th className="harvesting-total-heading" colSpan={totalColumns.length}>
+                      TOTAL
+                    </th>
+                  ) : null}
                 </tr>
                 <tr>
                   {report.fields.map((field) => (
                     <th key={`${field.id}-field`}>{field.field}</th>
                   ))}
-                  {totalColumns.map((column, index) => (
+                  {isProductionDispatch ? totalColumns.map((column, index) => (
                     <th className={getTotalColumnClass(column, index, expandedTotalGroups)} key={column.id}>
                       {renderTotalColumnHeader(column, expandedTotalGroups, toggleTotalGroup)}
                     </th>
-                  ))}
+                  )) : null}
                 </tr>
                 <tr>
                   <th className="harvesting-sticky-col">HA</th>
                   {report.fields.map((field) => (
                     <th key={`${field.id}-ha`}>{field.hectares == null ? "-" : field.hectares.toFixed(2)}</th>
                   ))}
-                  {totalColumns.map((column, index) => (
+                  {isProductionDispatch ? totalColumns.map((column, index) => (
                     <th className={`${getTotalColumnClass(column, index, expandedTotalGroups)} harvesting-total-muted`} key={`${column.id}-ha`}>-</th>
-                  ))}
-                  <th className="rainfall-data-col harvesting-total-muted">{RAINFALL_PLACEHOLDER}</th>
+                  )) : null}
+                  {isProductionDispatch ? <th className="rainfall-data-col harvesting-total-muted">{RAINFALL_PLACEHOLDER}</th> : null}
                 </tr>
                 <tr>
                   <th className="harvesting-sticky-col">B/F</th>
@@ -354,10 +455,10 @@ export function HarvestingIntervalDashboard() {
                       {field.bfDisplay || field.baseInterval}
                     </th>
                   ))}
-                  {totalColumns.map((column, index) => (
+                  {isProductionDispatch ? totalColumns.map((column, index) => (
                     <th className={`${getTotalColumnClass(column, index, expandedTotalGroups)} harvesting-total-muted`} key={`${column.id}-bf`}>-</th>
-                  ))}
-                  <th className="rainfall-data-col harvesting-total-muted">{RAINFALL_PLACEHOLDER}</th>
+                  )) : null}
+                  {isProductionDispatch ? <th className="rainfall-data-col harvesting-total-muted">{RAINFALL_PLACEHOLDER}</th> : null}
                 </tr>
               </thead>
               <tbody>
@@ -367,16 +468,18 @@ export function HarvestingIntervalDashboard() {
                     <Fragment key={day.date}>
                       <tr className={day.isSunday ? "sunday-row" : ""}>
                         <th className="harvesting-sticky-col">
-                          <span className="harvesting-date-cell">
-                            <button
-                              className="date-expand-button"
-                              type="button"
-                              aria-expanded={isExpanded}
-                              onClick={() => toggleDate(day.date)}
-                              title={isExpanded ? `Hide dispatch for ${day.date}` : `Show dispatch for ${day.date}`}
-                            >
-                              {isExpanded ? <ChevronDown aria-hidden="true" size={13} /> : <ChevronRight aria-hidden="true" size={13} />}
-                            </button>
+                          <span className={isProductionDispatch ? "harvesting-date-cell" : "harvesting-date-cell forecast-date-cell"}>
+                            {isProductionDispatch ? (
+                              <button
+                                className="date-expand-button"
+                                type="button"
+                                aria-expanded={isExpanded}
+                                onClick={() => toggleDate(day.date)}
+                                title={isExpanded ? `Hide dispatch for ${day.date}` : `Show dispatch for ${day.date}`}
+                              >
+                                {isExpanded ? <ChevronDown aria-hidden="true" size={13} /> : <ChevronRight aria-hidden="true" size={13} />}
+                              </button>
+                            ) : null}
                             <span>
                               <span>{day.day}</span>
                               <small>{day.dayName}</small>
@@ -390,15 +493,16 @@ export function HarvestingIntervalDashboard() {
                           selectedOverlays,
                           setSelectedActivity,
                           fields: report.fields,
+                          forecastMode: !isProductionDispatch,
                         })}
-                        {totalColumns.map((column, index) => (
+                        {isProductionDispatch ? totalColumns.map((column, index) => (
                           <td className={`${getTotalColumnClass(column, index, expandedTotalGroups)} daily-total-cell`} key={`${day.date}-${column.id}`}>
                             {column.getDailyValue(day.date)}
                           </td>
-                        ))}
-                        <td className="rainfall-data-col rainfall-data-cell">{RAINFALL_PLACEHOLDER}</td>
+                        )) : null}
+                        {isProductionDispatch ? <td className="rainfall-data-col rainfall-data-cell">{RAINFALL_PLACEHOLDER}</td> : null}
                       </tr>
-                      {isExpanded ? (
+                      {isProductionDispatch && isExpanded ? (
                         <tr className="dispatch-layer-row">
                           <th className="harvesting-sticky-col">
                             <span>Dispatch</span>
@@ -416,35 +520,41 @@ export function HarvestingIntervalDashboard() {
                     </Fragment>
                   );
                 })}
-                <tr className="harvesting-month-total-row">
+                {isProductionDispatch ? (
+                  <tr className="harvesting-month-total-row">
                   <th className="harvesting-sticky-col">
                     <span>Total Ha</span>
                     <small>Month</small>
                   </th>
-                  {renderMonthlyHectareCells(report.fields)}
+                  {renderMonthlyHectareCells(report.fields, report.hasMonthlyProductionData)}
                   {totalColumns.map((column, index) => (
                     <td className={`${getTotalColumnClass(column, index, expandedTotalGroups)} daily-total-cell month-total-cell`} key={`monthly-${column.id}`}>
                       {column.getMonthlyValue()}
                     </td>
                   ))}
                   <td className="rainfall-data-col rainfall-data-cell month-total-cell">{RAINFALL_PLACEHOLDER}</td>
-                </tr>
+                  </tr>
+                ) : null}
               </tbody>
             </table>
           </div>
         </section>
 
-        <FieldIntervalSummaryPanel
-          asOfDate={summaryAsOfDate}
-          maxDate={source.metadata.lastActivityDate}
-          minDate={source.metadata.startDate}
-          onAsOfDateChange={setSummaryAsOfDate}
-          onSelectField={setSelectedSummaryField}
-          selectedField={selectedSummaryField}
-          selectedRow={selectedSummaryRow}
-          fieldMap={fieldMap}
-          rows={fieldIntervalSummary}
-        />
+          </>
+        ) : (
+          <FieldIntervalSummaryPanel
+            asOfDate={summaryAsOfDate}
+            maxDate={source.metadata.lastActivityDate}
+            minDate={source.metadata.startDate}
+            mode={fieldStatusMode}
+            onAsOfDateChange={setSummaryAsOfDate}
+            onSelectField={setSelectedSummaryField}
+            selectedField={fieldStatusMode === "production" ? selectedSummaryField : ""}
+            selectedRow={fieldStatusMode === "production" ? selectedSummaryRow : null}
+            fieldMap={fieldMap}
+            rows={fieldIntervalSummary}
+          />
+        )}
       </section>
 
       {selectedActivity ? (
@@ -461,6 +571,7 @@ function renderFieldCells({
   selectedOverlays,
   setSelectedActivity,
   fields,
+  forecastMode,
 }: {
   day: HarvestingIntervalCell;
   rowIndex: number;
@@ -468,6 +579,7 @@ function renderFieldCells({
   selectedOverlays: Set<string>;
   setSelectedActivity: (activity: SelectedActivity) => void;
   fields: Array<{ id: string; field: string; cells: HarvestingIntervalCell[] }>;
+  forecastMode: boolean;
 }) {
   const cells: React.ReactNode[] = [];
 
@@ -475,21 +587,22 @@ function renderFieldCells({
     const field = fields[index];
     const cell = field.cells[rowIndex];
     const activeOverlays = getActiveOverlays(cell, selectedOverlays);
-    const lfOverlayValue = getLfOverlayValue(cell, activeOverlays);
+    const valueOverlay = getValueOverlay(cell, activeOverlays);
     const overlayClass = activeOverlays.length ? " overlay-layer-cell" : "";
-    const displayValue = lfOverlayValue == null ? null : formatOverlayValue(lfOverlayValue);
-    const overlayStyle = getOverlayStyle(activeOverlays);
+    const displayValue = valueOverlay == null ? null : formatOverlayValue(valueOverlay.value, valueOverlay.codes);
+    const overlayStyle = getOverlayStyle(activeOverlays, { filledCodes: valueOverlay?.codes || [] });
 
-    if (displayValue != null) {
-      const span = getLfMergeSpan(fields, rowIndex, index, selectedOverlays);
-      const title = `${field.field} | ${cell.date} | LF ${displayValue} | interval ${cell.interval}`;
-      const lfOverlayStyle = getOverlayStyle(activeOverlays, {
-        productionHarvest: hasHarvestInLfSpan(fields, rowIndex, index, span),
+    if (valueOverlay && displayValue != null) {
+      const span = getValueOverlayMergeSpan(fields, rowIndex, index, selectedOverlays);
+      const title = `${field.field} | ${cell.date} | ${valueOverlay.label} ${displayValue}${forecastMode ? "" : ` | interval ${cell.interval}`}`;
+      const valueOverlayStyle = getOverlayStyle(activeOverlays, {
+        filledCodes: valueOverlay.codes,
+        productionHarvest: valueOverlay.codes.includes("LF") && hasHarvestInOverlaySpan(fields, rowIndex, index, span),
       });
 
-      if (cell.harvest && cell.activity) {
+      if (!forecastMode && cell.harvest && cell.activity) {
         cells.push(
-          <td className={`harvest-cell${overlayClass}`} colSpan={span} key={`${field.id}-${cell.date}-lf`} style={lfOverlayStyle}>
+          <td className={`harvest-cell${overlayClass}`} colSpan={span} key={`${field.id}-${cell.date}-${valueOverlay.key}`} style={valueOverlayStyle}>
             <button
               className="harvest-cell-button"
               type="button"
@@ -511,9 +624,9 @@ function renderFieldCells({
             </button>
           </td>,
         );
-      } else if (cell.dispatch) {
+      } else if (!forecastMode && cell.dispatch) {
         cells.push(
-          <td className={`comparison-cell${overlayClass}`} colSpan={span} key={`${field.id}-${cell.date}-lf`} style={lfOverlayStyle}>
+          <td className={`comparison-cell${overlayClass}`} colSpan={span} key={`${field.id}-${cell.date}-${valueOverlay.key}`} style={valueOverlayStyle}>
             <button
               className="comparison-cell-button"
               type="button"
@@ -537,13 +650,22 @@ function renderFieldCells({
         );
       } else {
         cells.push(
-          <td className={activeOverlays.length ? "overlay-layer-cell" : ""} colSpan={span} key={`${field.id}-${cell.date}-lf`} title={title} style={lfOverlayStyle}>
+          <td className={activeOverlays.length ? "overlay-layer-cell" : ""} colSpan={span} key={`${field.id}-${cell.date}-${valueOverlay.key}`} title={title} style={valueOverlayStyle}>
             {displayValue}
           </td>,
         );
       }
 
       index += span - 1;
+      continue;
+    }
+
+    if (forecastMode) {
+      cells.push(
+        <td className={activeOverlays.length ? "overlay-layer-cell forecast-empty-cell" : "forecast-empty-cell"} key={`${field.id}-${cell.date}`} title={`${field.field} | ${cell.date}`} style={overlayStyle}>
+          {" "}
+        </td>,
+      );
       continue;
     }
 
@@ -677,10 +799,15 @@ function getOverlayColor(code: string) {
   return OVERLAY_COLORS[code] || "#334155";
 }
 
-function getOverlayStyle(codes: string[], options: { productionHarvest?: boolean } = {}): CSSProperties | undefined {
+function getOverlayStyle(codes: string[], options: { productionHarvest?: boolean; filledCodes?: string[] } = {}): CSSProperties | undefined {
   if (!codes.length) return undefined;
 
-  const borderCodes = codes.filter((code) => code !== "LF");
+  const filledCodes = new Set(options.filledCodes || []);
+  const hasC1Fill = filledCodes.has("C1");
+  const hasQcFill = filledCodes.has("QC");
+  const hasHarvestQuantityFill = hasC1Fill || hasQcFill;
+  const hasLfFill = filledCodes.has("LF");
+  const borderCodes = codes.filter((code) => !filledCodes.has(code));
   const showProductionRing = options.productionHarvest && codes.includes("LF");
   const shadowLayers = [
     ...(showProductionRing ? ["inset 0 0 0 3px #f97316"] : []),
@@ -689,41 +816,69 @@ function getOverlayStyle(codes: string[], options: { productionHarvest?: boolean
       .map((code, index) => `inset 0 0 0 ${3 + (index + (showProductionRing ? 1 : 0)) * 3}px ${getOverlayColor(code)}`),
   ];
   const boxShadow = shadowLayers.concat(shadowLayers.length ? ["0 4px 12px rgba(15, 61, 44, 0.18)"] : []).join(", ");
+  const harvestQuantityFill = hasC1Fill && hasQcFill
+    ? { background: "linear-gradient(135deg, #e2e8f0 0 50%, #fecaca 50% 100%)", color: "#111827" }
+    : hasC1Fill
+      ? { backgroundColor: "#e2e8f0", color: "#111827" }
+      : hasQcFill
+        ? { backgroundColor: "#fecaca", color: "#7f1d1d" }
+        : {};
 
   return {
-    ...(codes.includes("LF") ? { backgroundColor: "#bbf7d0", color: "#064e3b" } : {}),
+    ...harvestQuantityFill,
+    ...(!hasHarvestQuantityFill && hasLfFill ? { backgroundColor: "#bbf7d0", color: "#064e3b" } : {}),
     ...(boxShadow ? { boxShadow } : {}),
   };
 }
 
-function getLfOverlayValue(cell: HarvestingIntervalCell, activeOverlays: string[]) {
-  if (!activeOverlays.includes("LF")) return null;
-  const value = cell.overlayValues?.LF;
-  return typeof value === "number" ? value : null;
+function getValueOverlay(cell: HarvestingIntervalCell, activeOverlays: string[]) {
+  const harvestQuantityCodes = VALUE_OVERLAY_CODES.filter((code) => code !== "LF").filter((code) =>
+    activeOverlays.includes(code) && typeof cell.overlayValues?.[code] === "number",
+  );
+  if (harvestQuantityCodes.length) {
+    return {
+      key: harvestQuantityCodes.join("-").toLowerCase(),
+      label: harvestQuantityCodes.join(" + "),
+      codes: harvestQuantityCodes,
+      value: harvestQuantityCodes.reduce((total, code) => total + (cell.overlayValues?.[code] || 0), 0),
+    };
+  }
+
+  if (activeOverlays.includes("LF") && typeof cell.overlayValues?.LF === "number") {
+    return {
+      key: "lf",
+      label: "LF",
+      codes: ["LF"],
+      value: cell.overlayValues.LF,
+    };
+  }
+
+  return null;
 }
 
-function getLfMergeSpan(
+function getValueOverlayMergeSpan(
   fields: Array<{ field: string; cells: HarvestingIntervalCell[] }>,
   rowIndex: number,
   startIndex: number,
   selectedOverlays: Set<string>,
 ) {
   const field = fields[startIndex];
+  const currentOverlay = getValueOverlay(field.cells[rowIndex], getActiveOverlays(field.cells[rowIndex], selectedOverlays));
   let span = 1;
 
   while (startIndex + span < fields.length) {
     const nextField = fields[startIndex + span];
     if (nextField.field !== field.field) break;
     const nextCell = nextField.cells[rowIndex];
-    const nextLfValue = getLfOverlayValue(nextCell, getActiveOverlays(nextCell, selectedOverlays));
-    if (nextLfValue == null) break;
+    const nextOverlay = getValueOverlay(nextCell, getActiveOverlays(nextCell, selectedOverlays));
+    if (!nextOverlay || !currentOverlay || nextOverlay.key !== currentOverlay.key || nextOverlay.value !== currentOverlay.value) break;
     span += 1;
   }
 
   return span;
 }
 
-function hasHarvestInLfSpan(
+function hasHarvestInOverlaySpan(
   fields: Array<{ cells: HarvestingIntervalCell[] }>,
   rowIndex: number,
   startIndex: number,
@@ -771,6 +926,10 @@ function getTotalColumnClass(column: TotalColumn, index: number, expandedGroups:
 }
 
 function getTotalColumns(report: HarvestingIntervalMonthReport, expandedGroups: Set<HarvestingIntervalMetricKey>): TotalColumn[] {
+  const hasDailyProductionData = (date: string) => Boolean(report.dailyProductionDataDates[date]);
+  const hasDailyDispatchData = (date: string) => Boolean(report.dailyDispatchDataDates[date]);
+  const hasDailyComparisonData = (date: string) => hasDailyProductionData(date) || hasDailyDispatchData(date);
+
   const baseColumns: TotalColumn[] = [
     {
       id: "production-hectare",
@@ -778,8 +937,8 @@ function getTotalColumns(report: HarvestingIntervalMonthReport, expandedGroups: 
       kind: "production",
       group: "hectare",
       metric: "hectare",
-      getDailyValue: (date) => formatMetricValue(report.dailyTotals[date].hectare, "hectare"),
-      getMonthlyValue: () => formatMetricValue(report.monthlyTotals.hectare, "hectare"),
+      getDailyValue: (date) => hasDailyProductionData(date) ? formatMetricValue(report.dailyTotals[date].hectare, "hectare") : "-",
+      getMonthlyValue: () => report.hasMonthlyProductionData ? formatMetricValue(report.monthlyTotals.hectare, "hectare") : "-",
     },
     {
       id: "production-bunches",
@@ -787,8 +946,8 @@ function getTotalColumns(report: HarvestingIntervalMonthReport, expandedGroups: 
       kind: "production",
       group: "bunches",
       metric: "bunches",
-      getDailyValue: (date) => formatMetricValue(report.dailyTotals[date].bunches, "bunches"),
-      getMonthlyValue: () => formatMetricValue(report.monthlyTotals.bunches, "bunches"),
+      getDailyValue: (date) => hasDailyProductionData(date) ? formatMetricValue(report.dailyTotals[date].bunches, "bunches") : "-",
+      getMonthlyValue: () => report.hasMonthlyProductionData ? formatMetricValue(report.monthlyTotals.bunches, "bunches") : "-",
     },
     {
       id: "production-tonnage",
@@ -796,8 +955,8 @@ function getTotalColumns(report: HarvestingIntervalMonthReport, expandedGroups: 
       kind: "production",
       group: "tonnage",
       metric: "tonnage",
-      getDailyValue: (date) => formatMetricValue(report.dailyTotals[date].tonnage, "tonnage"),
-      getMonthlyValue: () => formatMetricValue(report.monthlyTotals.tonnage, "tonnage"),
+      getDailyValue: (date) => hasDailyProductionData(date) ? formatMetricValue(report.dailyTotals[date].tonnage, "tonnage") : "-",
+      getMonthlyValue: () => report.hasMonthlyProductionData ? formatMetricValue(report.monthlyTotals.tonnage, "tonnage") : "-",
     },
   ];
 
@@ -813,8 +972,8 @@ function getTotalColumns(report: HarvestingIntervalMonthReport, expandedGroups: 
           kind: "dispatch" as const,
           group: "hectare" as const,
           metric: "hectare" as const,
-          getDailyValue: (date: string) => formatMetricValue(report.dispatchDailyTotals[date].hectare, "hectare"),
-          getMonthlyValue: () => formatMetricValue(report.monthlyDispatchTotals.hectare, "hectare"),
+          getDailyValue: (date: string) => hasDailyDispatchData(date) ? formatMetricValue(report.dispatchDailyTotals[date].hectare, "hectare") : "-",
+          getMonthlyValue: () => report.hasMonthlyDispatchData ? formatMetricValue(report.monthlyDispatchTotals.hectare, "hectare") : "-",
         },
         {
           id: "difference-hectare",
@@ -822,8 +981,8 @@ function getTotalColumns(report: HarvestingIntervalMonthReport, expandedGroups: 
           kind: "balance" as const,
           group: "hectare" as const,
           metric: "hectare" as const,
-          getDailyValue: (date: string) => formatMetricValue(report.dailyBalances[date].hectare, "hectare"),
-          getMonthlyValue: () => formatMetricValue(report.monthlyBalances.hectare, "hectare"),
+          getDailyValue: (date: string) => hasDailyComparisonData(date) ? formatMetricValue(report.dailyBalances[date].hectare, "hectare") : "-",
+          getMonthlyValue: () => report.hasMonthlyProductionData || report.hasMonthlyDispatchData ? formatMetricValue(report.monthlyBalances.hectare, "hectare") : "-",
         },
       ];
     }
@@ -837,8 +996,8 @@ function getTotalColumns(report: HarvestingIntervalMonthReport, expandedGroups: 
           kind: "dispatch" as const,
           group: "bunches" as const,
           metric: "bunches" as const,
-          getDailyValue: (date: string) => formatMetricValue(report.dispatchDailyTotals[date].bunches, "bunches"),
-          getMonthlyValue: () => formatMetricValue(report.monthlyDispatchTotals.bunches, "bunches"),
+          getDailyValue: (date: string) => hasDailyDispatchData(date) ? formatMetricValue(report.dispatchDailyTotals[date].bunches, "bunches") : "-",
+          getMonthlyValue: () => report.hasMonthlyDispatchData ? formatMetricValue(report.monthlyDispatchTotals.bunches, "bunches") : "-",
         },
         {
           id: "difference-bunches",
@@ -846,8 +1005,8 @@ function getTotalColumns(report: HarvestingIntervalMonthReport, expandedGroups: 
           kind: "balance" as const,
           group: "bunches" as const,
           metric: "bunches" as const,
-          getDailyValue: (date: string) => formatMetricValue(report.dailyBalances[date].bunches, "bunches"),
-          getMonthlyValue: () => formatMetricValue(report.monthlyBalances.bunches, "bunches"),
+          getDailyValue: (date: string) => hasDailyComparisonData(date) ? formatMetricValue(report.dailyBalances[date].bunches, "bunches") : "-",
+          getMonthlyValue: () => report.hasMonthlyProductionData || report.hasMonthlyDispatchData ? formatMetricValue(report.monthlyBalances.bunches, "bunches") : "-",
         },
       ];
     }
@@ -860,8 +1019,8 @@ function getTotalColumns(report: HarvestingIntervalMonthReport, expandedGroups: 
         kind: "dispatch" as const,
         group: "tonnage" as const,
         metric: "tonnage" as const,
-        getDailyValue: (date: string) => formatMetricValue(report.dispatchDailyTotals[date].tonnage || 0, "tonnage"),
-        getMonthlyValue: () => formatMetricValue(report.monthlyDispatchTotals.tonnage || 0, "tonnage"),
+        getDailyValue: (date: string) => hasDailyDispatchData(date) ? formatMetricValue(report.dispatchDailyTotals[date].tonnage || 0, "tonnage") : "-",
+        getMonthlyValue: () => report.hasMonthlyDispatchData ? formatMetricValue(report.monthlyDispatchTotals.tonnage || 0, "tonnage") : "-",
       },
       {
         id: "difference-tonnage",
@@ -869,14 +1028,14 @@ function getTotalColumns(report: HarvestingIntervalMonthReport, expandedGroups: 
         kind: "balance" as const,
         group: "tonnage" as const,
         metric: "tonnage" as const,
-        getDailyValue: (date: string) => formatMetricValue(report.dailyBalances[date].tonnage, "tonnage"),
-        getMonthlyValue: () => formatMetricValue(report.monthlyBalances.tonnage, "tonnage"),
+        getDailyValue: (date: string) => hasDailyComparisonData(date) ? formatMetricValue(report.dailyBalances[date].tonnage, "tonnage") : "-",
+        getMonthlyValue: () => report.hasMonthlyProductionData || report.hasMonthlyDispatchData ? formatMetricValue(report.monthlyBalances.tonnage, "tonnage") : "-",
       },
     ];
   });
 }
 
-function renderMonthlyHectareCells(fields: Array<{ id: string; field: string; monthlyHectareTotal: number }>) {
+function renderMonthlyHectareCells(fields: Array<{ id: string; field: string; monthlyHectareTotal: number }>, hasMonthlyProductionData: boolean) {
   const cells: React.ReactNode[] = [];
 
   for (let index = 0; index < fields.length; index += 1) {
@@ -889,7 +1048,7 @@ function renderMonthlyHectareCells(fields: Array<{ id: string; field: string; mo
 
     cells.push(
       <td className="field-month-total-cell" colSpan={span} key={`${field.id}-monthly-total`}>
-        {formatMetricValue(field.monthlyHectareTotal, "hectare")}
+        {hasMonthlyProductionData ? formatMetricValue(field.monthlyHectareTotal, "hectare") : "-"}
       </td>,
     );
     index += span - 1;
@@ -904,6 +1063,7 @@ function FieldIntervalSummaryPanel({
   fieldMap,
   maxDate,
   minDate,
+  mode,
   selectedField,
   selectedRow,
   onAsOfDateChange,
@@ -914,13 +1074,17 @@ function FieldIntervalSummaryPanel({
   fieldMap: FieldFeatureCollection;
   maxDate: string;
   minDate: string;
+  mode: FieldStatusMode;
   selectedField: string;
   selectedRow: FieldIntervalSummary | null;
   onAsOfDateChange: (date: string) => void;
   onSelectField: (field: string) => void;
 }) {
-  const totalRow = getFieldIntervalTotalRow(rows);
+  const isForecastMode = mode === "daily-forecast";
+  const visibleRows = isForecastMode ? [] : rows;
+  const totalRow = getFieldIntervalTotalRow(visibleRows);
   const toggleFieldSelection = (field: string) => {
+    if (isForecastMode) return;
     onSelectField(field === selectedField ? "" : field);
   };
 
@@ -929,28 +1093,38 @@ function FieldIntervalSummaryPanel({
       <div className="panel-heading interval-summary-heading">
         <div>
           <h3>Field Interval Status Summary</h3>
-          <p>Independent as-at view | {formatSummaryDateLabel(asOfDate)}</p>
+          <p>{isForecastMode ? "Daily forecast status map | Status logic pending" : `Independent as-at view | ${formatSummaryDateLabel(asOfDate)}`}</p>
         </div>
-        <label className="select-control interval-summary-date-control">
-          <span>As at date</span>
-          <input
-            max={maxDate}
-            min={minDate}
-            type="date"
-            value={asOfDate}
-            onChange={(event) => {
-              if (event.target.value) onAsOfDateChange(event.target.value);
-            }}
-          />
-        </label>
-        <div className="interval-status-legend" aria-label="Interval status legend">
-          <span><span className="interval-status-dot status-on-track" />On Track: 0-12 days</span>
-          <span><span className="interval-status-dot status-watch" />Watch: 13-15 days</span>
-          <span><span className="interval-status-dot status-caution" />Caution: 16-20 days</span>
-          <span><span className="interval-status-dot status-overdue" />Overdue: 21+ days</span>
-        </div>
+        {isForecastMode ? null : (
+          <>
+            <label className="select-control interval-summary-date-control">
+              <span>As at date</span>
+              <input
+                max={maxDate}
+                min={minDate}
+                type="date"
+                value={asOfDate}
+                onChange={(event) => {
+                  if (event.target.value) onAsOfDateChange(event.target.value);
+                }}
+              />
+            </label>
+            <div className="interval-status-legend" aria-label="Interval status legend">
+              <span><span className="interval-status-dot status-on-track" />On Track: 0-12 days</span>
+              <span><span className="interval-status-dot status-watch" />Watch: 13-15 days</span>
+              <span><span className="interval-status-dot status-caution" />Caution: 16-20 days</span>
+              <span><span className="interval-status-dot status-overdue" />Overdue: 21+ days</span>
+            </div>
+          </>
+        )}
       </div>
-      <FieldIntervalTotalCards totalRow={totalRow} />
+      {isForecastMode ? (
+        <div className="forecast-empty-note">
+          Daily Forecast field status is prepared as a map view only for now. Boundaries are visible, but interval status will remain neutral until forecast data is connected.
+        </div>
+      ) : (
+        <FieldIntervalTotalCards totalRow={totalRow} />
+      )}
       <div className="interval-summary-content">
         <div className="wide-table-scroll interval-summary-scroll">
           <table className="field-interval-summary-table">
@@ -965,15 +1139,21 @@ function FieldIntervalSummaryPanel({
               </tr>
             </thead>
             <tbody>
-              {rows.map((row) => (
+              {visibleRows.length ? visibleRows.map((row) => (
                 <FieldIntervalSummaryRow
                   key={row.field}
                   row={row}
                   selected={row.field === selectedField}
                   onSelectField={toggleFieldSelection}
                 />
-              ))}
-              <FieldIntervalSummaryRow isTotal row={totalRow} />
+              )) : (
+                <tr>
+                  <td className="forecast-empty-table-cell" colSpan={6}>
+                    Forecast field status data is not available yet.
+                  </td>
+                </tr>
+              )}
+              {isForecastMode ? null : <FieldIntervalSummaryRow isTotal row={totalRow} />}
             </tbody>
           </table>
         </div>
@@ -981,7 +1161,7 @@ function FieldIntervalSummaryPanel({
           <div className="map-panel interval-summary-map-panel">
             <HarvestingIntervalSummaryMap
               fieldMap={fieldMap}
-              rows={rows}
+              rows={visibleRows}
               selectedField={selectedField}
               onSelectField={toggleFieldSelection}
             />
@@ -1000,7 +1180,9 @@ function FieldIntervalSummaryPanel({
                 <p className="detail-note">Click the selected table row again to reset the map view.</p>
               </>
             ) : (
-              <p className="empty-state">Select a field row to highlight it on the map.</p>
+              <p className="empty-state">
+                {isForecastMode ? "Forecast status is not available yet, so the map is shown without interval colouring." : "Select a field row to highlight it on the map."}
+              </p>
             )}
           </aside>
         </div>
@@ -1426,7 +1608,11 @@ function formatPercentValue(value: number) {
   return Math.round(value).toLocaleString("en-MY");
 }
 
-function formatOverlayValue(value: number) {
+function formatOverlayValue(value: number, codes: string[] = []) {
+  if (codes.includes("C1") || codes.includes("QC")) {
+    return Math.round(value).toLocaleString("en-MY");
+  }
+
   return value.toLocaleString("en-MY", {
     maximumFractionDigits: 2,
     minimumFractionDigits: 2,

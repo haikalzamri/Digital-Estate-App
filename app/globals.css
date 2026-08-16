@@ -3858,6 +3858,43 @@ button {
   gap: 16px;
 }
 
+.harvesting-module-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 4px;
+  width: fit-content;
+  background: #eef4ef;
+  border: 1px solid #d5e0d8;
+  border-radius: 8px;
+}
+
+.harvesting-module-tabs button {
+  display: inline-flex;
+  min-height: 34px;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 12px;
+  color: #536159;
+  font-size: 0.78rem;
+  font-weight: 900;
+  cursor: pointer;
+  background: transparent;
+  border: 0;
+  border-radius: 6px;
+}
+
+.harvesting-module-tabs button.active {
+  color: #1f5f17;
+  background: #d8f99a;
+  box-shadow: 0 4px 10px rgba(37, 78, 28, 0.14);
+}
+
+.report-filter-control {
+  min-width: 210px;
+}
+
 .harvesting-kpi-strip .kpi-item small {
   display: block;
   margin-top: 4px;
@@ -4018,6 +4055,10 @@ button {
   gap: 3px;
 }
 
+.forecast-date-cell {
+  grid-template-columns: minmax(0, 1fr);
+}
+
 .date-expand-button {
   display: grid;
   width: 18px;
@@ -4153,6 +4194,11 @@ button {
 .harvesting-table tbody td.overlay-layer-cell {
   position: relative;
   z-index: 2;
+}
+
+.harvesting-table tbody td.forecast-empty-cell {
+  color: #9aa7a0;
+  background: #fbfcfb;
 }
 
 .harvesting-table tbody tr.sunday-row td,
@@ -4308,6 +4354,17 @@ button {
 
 .interval-summary-date-control {
   min-width: 180px;
+}
+
+.forecast-empty-note {
+  margin-top: 12px;
+  padding: 11px 12px;
+  color: #536159;
+  background: #f6faf7;
+  border: 1px solid #cfdbd3;
+  border-radius: 6px;
+  font-size: 0.76rem;
+  font-weight: 820;
 }
 
 .interval-total-card-grid {
@@ -4601,6 +4658,14 @@ button {
 .field-interval-summary-table .interval-zero-cell {
   color: #d11c1c;
   font-weight: 900;
+}
+
+.field-interval-summary-table .forecast-empty-table-cell {
+  height: 96px;
+  color: #68776f;
+  background: #fbfcfb;
+  font-weight: 850;
+  text-align: center;
 }
 
 .interval-status-pill {

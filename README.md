@@ -27,7 +27,7 @@ The root route redirects to `/management/work-program`.
 - Work Program management views with approval workflow, daily tracking, monthly dashboard table/map monitoring, and CSV export.
 - PMV daily machine status reporting for working, breakdown, and idle machines.
 - PMV management dashboard for readiness, breakdown/idle visibility, repeat issue tracking, action queue, and export.
-- Harvesting Interval prototype with monthly grid, metric toggles, dispatch comparison, activity overlays, field interval summary, map view, and CSV export.
+- Harvesting Interval prototype with Harvesting Report and Field Status views, monthly grid, daily forecast/prod-vs-dispatch filters, metric toggles, dispatch comparison, activity overlays, field interval summary, map view, and CSV export.
 - Costbook management prototype with required activity/month filters, multi-select EVIT filtering, collapsed daily summary rows, independent inline Labour/Supervision, Material and EVIT expansion rows, reconciled daily totals, month-to-date calculations, and CSV export.
 - Leaflet/OpenStreetMap field boundary map using KMZ-derived GeoJSON.
 - Browser localStorage offline queue for pending Work Program and PMV uploads/deletes.

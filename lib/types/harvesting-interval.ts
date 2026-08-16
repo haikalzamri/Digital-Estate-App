@@ -102,6 +102,10 @@ export type HarvestingIntervalMonthReport = {
   dailyTotals: Record<string, HarvestingIntervalActivityMetrics>;
   dispatchDailyTotals: Record<string, HarvestingIntervalDispatchMetrics>;
   dailyBalances: Record<string, HarvestingIntervalBalanceMetrics>;
+  dailyProductionDataDates: Record<string, boolean>;
+  dailyDispatchDataDates: Record<string, boolean>;
+  hasMonthlyProductionData: boolean;
+  hasMonthlyDispatchData: boolean;
   monthlyTotals: HarvestingIntervalActivityMetrics;
   monthlyDispatchTotals: HarvestingIntervalDispatchMetrics;
   monthlyBalances: HarvestingIntervalBalanceMetrics;
