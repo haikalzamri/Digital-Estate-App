@@ -6,6 +6,7 @@ export type WorkProgramRecord = {
   blockField: string;
   taskName?: string;
   schedulerStage?: string;
+  activityRound?: number;
   hectares: number;
   actualCompletionDate: string;
   deadline?: string;
@@ -29,6 +30,7 @@ export type WorkProgramDatabaseRecord = {
   block_field: string;
   task_name: string | null;
   scheduler_stage: string | null;
+  activity_round: number | null;
   hectares: number;
   actual_completion_date: string;
   deadline: string | null;

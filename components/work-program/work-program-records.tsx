@@ -121,7 +121,7 @@ export function WorkProgramRecords({ fieldMap, records, loading, source, onSave,
               <span className="program-swatch" style={{ backgroundColor: programColour(record.programType) }} />
               <div className="record-main">
                 <strong>{record.blockField} - {record.programType}</strong>
-                <span>{formatDate(record.actualCompletionDate)} | {formatNumber(record.hectares, 8)} ha | {record.reporterName}</span>
+                <span>{formatDate(record.actualCompletionDate)} | Round {normaliseActivityRound(record.activityRound)} | {formatNumber(record.hectares, 8)} ha | {record.reporterName}</span>
               </div>
               <span className={`status-pill ${record.approvalStatus === "Approved" ? "approved" : "pending"}`}>{record.approvalStatus}</span>
               <div className="record-actions">
@@ -163,7 +163,7 @@ export function WorkProgramRecords({ fieldMap, records, loading, source, onSave,
                       return (
                         <td className={`${selectedDay === day ? "column-selected" : ""} tracking-cell`} key={day}>
                           {total ? <button className={`tracking-value ${approvalClass(entries)}`} type="button" onClick={() => { setSelectedRecordId(entries[0].id); setOpenTrackingCell(openTrackingCell === cellKey ? "" : cellKey); }}>{formatNumber(total, 8)}</button> : null}
-                          {openTrackingCell === cellKey && entries.length ? <div className="tracking-popover"><strong>{field} · Day {day}</strong><div className={entries.length > 5 ? "tracking-entry-scroll" : ""}>{entries.map((record) => <button type="button" key={record.id} onClick={() => { setSelectedRecordId(record.id); setEditingRecord(record); }}><span>{formatNumber(record.hectares, 8)} ha</span><small>{record.approvalStatus}</small><Edit3 size={14} /></button>)}</div></div> : null}
+                          {openTrackingCell === cellKey && entries.length ? <div className="tracking-popover"><strong>{field} · Day {day}</strong><div className={entries.length > 5 ? "tracking-entry-scroll" : ""}>{entries.map((record) => <button type="button" key={record.id} onClick={() => { setSelectedRecordId(record.id); setEditingRecord(record); }}><span>R{normaliseActivityRound(record.activityRound)} · {formatNumber(record.hectares, 8)} ha</span><small>{record.approvalStatus}</small><Edit3 size={14} /></button>)}</div></div> : null}
                         </td>
                       );
                     })}
@@ -200,4 +200,9 @@ function programColour(program: string) {
     "Mature Circle": "#2563eb", "Mature Woodies & Steno": "#8b5cf6", Pruning: "#22a65a", Raking: "#d8912b",
   };
   return colours[program] || "#176b4d";
+}
+
+function normaliseActivityRound(value: unknown) {
+  const round = Number(value);
+  return Number.isFinite(round) && round > 0 ? Math.floor(round) : 1;
 }

@@ -71,7 +71,17 @@ work_program_seed_records = 78
 
 The seed script is idempotent and upserts by `id`, so it can be rerun if needed.
 
-## Step 6: Deploy And Validate Preview
+## Step 6: Add Work Program Activity Round Column
+
+For existing Supabase projects created before the Activity Round field was added, open Supabase SQL Editor and run:
+
+```text
+supabase/005_add_work_program_activity_round.sql
+```
+
+This adds `activity_round`, defaults existing records to Round 1, and allows the input form and approval editor to store the declared activity round.
+
+## Step 7: Deploy And Validate Preview
 
 Push an approved development branch to GitHub and use its Vercel Preview deployment for acceptance testing.
 
@@ -84,7 +94,7 @@ The browser app will then call:
 
 The Next.js Route Handlers under `app/api/` will read and write PMV and Work Program records in Supabase.
 
-## Step 7: Deploy Production
+## Step 8: Deploy Production
 
 After Preview acceptance testing passes, merge or fast-forward the validated branch into `main`. Vercel will deploy the Production environment automatically.
 
@@ -95,7 +105,7 @@ Production modules:
 - [Program Tracker](https://digital-estate-app.vercel.app/input/work-program)
 - [PMV Tracker](https://digital-estate-app.vercel.app/input/pmv)
 
-## Step 8: Production Validation
+## Step 9: Production Validation
 
 After deployment:
 

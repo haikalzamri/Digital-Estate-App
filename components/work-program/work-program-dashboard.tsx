@@ -117,8 +117,8 @@ export function WorkProgramDashboard({ fieldMap, records, loading, source }: Das
     [fieldMap.features, programType, records, selectedYear],
   );
   const mapRoundContexts = useMemo(
-    () => buildMapRoundContexts(mapStatuses, dashboard.programmeRows, baseDashboard.completedRows, dashboardMonths),
-    [baseDashboard.completedRows, dashboard.programmeRows, dashboardMonths, mapStatuses],
+    () => buildMapRoundContexts(mapStatuses, dashboard.programmeRows, baseDashboard.completedRows, dashboardMonths, records),
+    [baseDashboard.completedRows, dashboard.programmeRows, dashboardMonths, mapStatuses, records],
   );
   const approved = useMemo(
     () =>
@@ -653,8 +653,8 @@ function DashboardTableRow({
   const programmeReference = row.actualBudget === "Programme" ? row : completionTarget;
   const metricsReference = roundCompletionRow || row;
   const plannedRounds = getProgrammeRoundDefinitions(programmeReference, months);
-  const rowRoundCompletions = row.actualBudget === "Completed" ? getRoundCompletionIndexes(row, programmeReference, months) : [];
-  const metricsRoundCompletions = metricsReference.actualBudget === "Completed" ? getRoundCompletionIndexes(metricsReference, programmeReference, months) : rowRoundCompletions;
+  const rowRoundCompletions = row.actualBudget === "Completed" ? getRoundCompletionIndexes(row, programmeReference, months, records) : [];
+  const metricsRoundCompletions = metricsReference.actualBudget === "Completed" ? getRoundCompletionIndexes(metricsReference, programmeReference, months, records) : rowRoundCompletions;
   const monthRoundStatuses = row.actualBudget === "Completed" ? getRoundMonthStatusMap(rowRoundCompletions) : new Map<string, string>();
   const frequencyDisplay = plannedRounds.length || metricsReference.frequencyMonths || row.frequencyMonths || "-";
   const completedRoundsDisplay = metricsReference.actualBudget === "Completed" && plannedRounds.length
@@ -749,7 +749,7 @@ function DashboardTableRow({
                 ) : null}
                 <div className={entries.length > 5 ? "month-entry-scroll" : ""}>
                   {entries.length ? entries.map((entry) => (
-                    <span key={entry.id}><b>{formatDate(entry.actualCompletionDate)}</b>{formatNumber(entry.hectares)} ha</span>
+                    <span key={entry.id}><b>{formatDate(entry.actualCompletionDate)}</b>R{normaliseActivityRound(entry.activityRound)} · {formatNumber(entry.hectares)} ha</span>
                   )) : <span>No daily entries</span>}
                 </div>
               </div>
@@ -757,7 +757,7 @@ function DashboardTableRow({
           </td>
         );
       })}
-      {showSharedCells ? <RoundCompletionOverview row={roundCompletionRow || row} programmeRow={completionTarget} rowSpan={rowSpan} months={months} /> : null}
+      {showSharedCells ? <RoundCompletionOverview row={roundCompletionRow || row} programmeRow={completionTarget} rowSpan={rowSpan} months={months} records={records} /> : null}
     </tr>
   );
 }
@@ -767,13 +767,15 @@ function RoundCompletionOverview({
   programmeRow,
   rowSpan,
   months,
+  records,
 }: {
   row: DashboardRow;
   programmeRow: DashboardRow | null;
   rowSpan: number;
   months: DashboardMonth[];
+  records: WorkProgramRecord[];
 }) {
-  const completions = getRoundCompletionIndexes(row, programmeRow, months);
+  const completions = getRoundCompletionIndexes(row, programmeRow, months, records);
 
   return (
     <td className="completion-index-cell round-completion-cell" rowSpan={rowSpan}>
@@ -916,7 +918,12 @@ function getProgrammeRoundDefinitions(programmeRow: DashboardRow | null, months:
   }));
 }
 
-function getRoundCompletionIndexes(row: DashboardRow, programmeRow: DashboardRow | null, months: DashboardMonth[]) {
+function getRoundCompletionIndexes(
+  row: DashboardRow,
+  programmeRow: DashboardRow | null,
+  months: DashboardMonth[],
+  records: WorkProgramRecord[] = [],
+) {
   const rounds = getProgrammeRoundDefinitions(programmeRow, months);
   const fallbackTargetHa = Number(programmeRow?.hect || row.hect || 0);
   const allocations = rounds.map((round) => ({
@@ -924,37 +931,36 @@ function getRoundCompletionIndexes(row: DashboardRow, programmeRow: DashboardRow
     completedHa: 0,
     allocations: [] as Array<{ month: string; monthKey: string; value: number }>,
   }));
-  let activeRoundIndex = 0;
 
-  months.forEach((month) => {
-    let remainingValue = Number(row.months[month.key]) || 0;
+  const monthByKey = new Map(months.map((month) => [month.key, month]));
+  const recordAllocations = records.filter(
+    (record) =>
+      record.approvalStatus === "Approved" &&
+      record.programType === row.programType &&
+      fieldKey(record.blockField) === fieldKey(row.field) &&
+      monthByKey.has((record.actualCompletionDate || record.deadline || "").slice(0, 7)),
+  );
 
-    while (remainingValue > 0 && allocations[activeRoundIndex]) {
-      const activeRound = allocations[activeRoundIndex];
-      const targetHa = activeRound.targetHa || fallbackTargetHa;
-      const remainingTarget = targetHa > 0 ? Math.max(targetHa - activeRound.completedHa, 0) : remainingValue;
-      const assignedValue = targetHa > 0 ? Math.min(remainingValue, remainingTarget) : remainingValue;
-
-      if (assignedValue <= 0) {
-        activeRoundIndex += 1;
-        continue;
-      }
-
-      activeRound.completedHa += assignedValue;
-      activeRound.allocations.push({ month: month.label, monthKey: month.key, value: assignedValue });
-      remainingValue -= assignedValue;
-
-      if (targetHa > 0 && activeRound.completedHa >= targetHa - 0.0001) {
-        activeRoundIndex += 1;
-      }
-    }
-
-    if (remainingValue > 0 && allocations.length) {
-      const finalRound = allocations[allocations.length - 1];
-      finalRound.completedHa += remainingValue;
-      finalRound.allocations.push({ month: month.label, monthKey: month.key, value: remainingValue });
-    }
-  });
+  if (recordAllocations.length) {
+    recordAllocations.forEach((record) => {
+      const monthKeyValue = (record.actualCompletionDate || record.deadline || "").slice(0, 7);
+      const month = monthByKey.get(monthKeyValue);
+      const roundIndex = Math.min(Math.max(normaliseActivityRound(record.activityRound) - 1, 0), Math.max(allocations.length - 1, 0));
+      const round = allocations[roundIndex];
+      if (!month || !round) return;
+      const value = Number(record.hectares) || 0;
+      round.completedHa += value;
+      round.allocations.push({ month: month.label, monthKey: month.key, value });
+    });
+  } else {
+    months.forEach((month) => {
+      const value = Number(row.months[month.key]) || 0;
+      const firstRound = allocations[0];
+      if (!firstRound || value <= 0) return;
+      firstRound.completedHa += value;
+      firstRound.allocations.push({ month: month.label, monthKey: month.key, value });
+    });
+  }
 
   return allocations.map((round) => {
     const targetHa = round.targetHa || fallbackTargetHa;
@@ -997,6 +1003,11 @@ function isRoundComplete(round: RoundCompletion) {
   return round.status === "complete" || round.status === "over";
 }
 
+function normaliseActivityRound(value: unknown) {
+  const round = Number(value);
+  return Number.isFinite(round) && round > 0 ? Math.floor(round) : 1;
+}
+
 function roundStatusLabel(status: string) {
   if (status === "complete") return "Completed";
   if (status === "over") return "Over target";
@@ -1009,6 +1020,7 @@ function buildMapRoundContexts(
   programmeRows: DashboardRow[],
   completedRows: DashboardRow[],
   months: DashboardMonth[],
+  records: WorkProgramRecord[],
 ) {
   const contexts = new Map<string, MapRoundContext>();
 
@@ -1024,7 +1036,7 @@ function buildMapRoundContexts(
           hect: programmeRow.hect,
         }
       : matchedCompletedRow;
-    const rounds = completedRow ? getRoundCompletionIndexes(completedRow, programmeRow, months) : [];
+    const rounds = completedRow ? getRoundCompletionIndexes(completedRow, programmeRow, months, records) : [];
     const activeRound = rounds.find((round) => !isRoundComplete(round)) || rounds.at(-1) || null;
     const completedRoundCount = rounds.filter(isRoundComplete).length;
     const totalRounds = rounds.length;

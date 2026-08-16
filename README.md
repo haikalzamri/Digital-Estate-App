@@ -23,7 +23,7 @@ The root route redirects to `/management/work-program`.
 
 ## Features
 
-- Work Program completion capture by field, programme type, hectares, date, remarks, batch review, confirmation, and round coverage preview.
+- Work Program completion capture by activity code, field, programme type, declared round, hectares, date, remarks, batch review, confirmation, and round coverage preview.
 - Work Program management views with approval workflow, daily tracking, monthly dashboard table/map monitoring, and CSV export.
 - PMV daily machine status reporting for working, breakdown, and idle machines.
 - PMV management dashboard for readiness, breakdown/idle visibility, repeat issue tracking, action queue, and export.
@@ -194,6 +194,7 @@ Database setup scripts are kept under `supabase/`.
 | `supabase/002_seed_pmv_historical_records.sql` | PMV historical seed records. |
 | `supabase/003_work_program_records.sql` | Work Program table setup. |
 | `supabase/004_seed_work_program_records.sql` | Work Program seed records. |
+| `supabase/005_add_work_program_activity_round.sql` | Work Program activity round migration for existing Supabase projects. |
 | `supabase/README.md` | Supabase setup guide. |
 
 Frontend code must call Next.js API routes under `app/api/`; Supabase service-role access must remain server-side only.

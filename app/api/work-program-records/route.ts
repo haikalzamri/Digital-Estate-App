@@ -65,6 +65,7 @@ function toDatabaseRecord(record: Partial<WorkProgramRecord>): WorkProgramDataba
     block_field: String(record.blockField ?? "").trim(),
     task_name: textOrNull(record.taskName ?? record.programType) ?? "Completion",
     scheduler_stage: textOrNull(record.schedulerStage) ?? "Completed",
+    activity_round: normalizeActivityRound(record.activityRound),
     hectares: numberOrNull(record.hectares) ?? 0,
     actual_completion_date: dateOrNull(record.actualCompletionDate ?? record.deadline) ?? "",
     deadline: dateOrNull(record.deadline ?? record.actualCompletionDate),
@@ -90,6 +91,7 @@ function fromDatabaseRecord(row: WorkProgramDatabaseRecord): WorkProgramRecord {
     blockField: row.block_field ?? "",
     taskName: row.task_name ?? "",
     schedulerStage: row.scheduler_stage ?? "Completed",
+    activityRound: normalizeActivityRound(row.activity_round),
     hectares: Number(row.hectares) || 0,
     actualCompletionDate: row.actual_completion_date ?? "",
     deadline: row.deadline ?? row.actual_completion_date ?? "",
@@ -111,6 +113,7 @@ function validateDatabaseRecord(record: WorkProgramDatabaseRecord) {
   if (!record.reporter_name) throw new Error("Reporter name is required.");
   if (!record.program_type) throw new Error("Program type is required.");
   if (!record.block_field) throw new Error("Block or field is required.");
+  if (!record.activity_round || record.activity_round <= 0) throw new Error("Activity round is required.");
   if (!record.hectares || record.hectares <= 0) throw new Error("Hectares must be above zero.");
   if (!record.actual_completion_date) throw new Error("Actual completion date is required.");
   if (!validApprovalStatuses.has(record.approval_status)) throw new Error("Invalid approval status.");
@@ -118,4 +121,9 @@ function validateDatabaseRecord(record: WorkProgramDatabaseRecord) {
 
 function normalizeApprovalStatus(status: unknown): "Pending Approval" | "Approved" {
   return status === "Approved" ? "Approved" : "Pending Approval";
+}
+
+function normalizeActivityRound(value: unknown) {
+  const round = Number(value);
+  return Number.isFinite(round) && round > 0 ? Math.floor(round) : 1;
 }

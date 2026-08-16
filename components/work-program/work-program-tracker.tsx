@@ -1,6 +1,6 @@
 "use client";
 
-import { CheckCircle2, Plus, RefreshCcw, Save, X } from "lucide-react";
+import { CheckCircle2, ChevronDown, Plus, RefreshCcw, Save, X } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 import { ModuleShell } from "@/components/module-shell";
 import { useFieldMap } from "@/components/work-program/use-field-map";
@@ -19,7 +19,9 @@ import type { WorkProgramRecord } from "@/lib/types/work-program";
 
 type TrackerDraft = {
   programType: string;
+  activityCode: string;
   blockField: string;
+  activityRound: string;
   hectares: string;
   actualCompletionDate: string;
   remarks: string;
@@ -27,10 +29,25 @@ type TrackerDraft = {
 
 type BatchEntry = TrackerDraft & { id: string };
 
+type TrackerHeader = Pick<TrackerDraft, "programType" | "activityCode">;
+
+type ActivityDraft = TrackerHeader & {
+  id: string;
+  entries: BatchEntry[];
+};
+
+type TrackerFormState = {
+  actualCompletionDate: string;
+  activities: ActivityDraft[];
+  activeActivityId: string;
+  expandedFieldId: string;
+};
+
 type CoverageEntry = {
   id: string;
   date: string;
   hectares: number;
+  activityRound: number;
   status: "Approved" | "Pending Approval" | "Pending Sync" | "Batch" | "Typing";
 };
 
@@ -60,26 +77,55 @@ type CoverageProjection = {
   totalRounds: number;
   totalApprovedHa: number;
   totalPendingHa: number;
+  overTargetRounds: RoundState[];
   entries: CoverageEntry[];
 };
 
-const emptyDraft = (overrides: Partial<TrackerDraft> = {}): TrackerDraft => ({
-  programType: PROGRAM_TYPES[0],
+const emptyHeader = (overrides: Partial<TrackerHeader> = {}): TrackerHeader => ({
+  programType: "",
+  activityCode: "",
+  ...overrides,
+});
+
+const emptyEntryRow = (header: TrackerHeader & Pick<TrackerDraft, "actualCompletionDate">, overrides: Partial<BatchEntry> = {}): BatchEntry => ({
+  id: createRecordId(),
+  programType: header.programType,
+  activityCode: header.activityCode,
   blockField: "",
+  activityRound: "1",
   hectares: "",
-  actualCompletionDate: localDateString(new Date()),
+  actualCompletionDate: header.actualCompletionDate,
   remarks: "",
   ...overrides,
 });
 
+const emptyActivity = (actualCompletionDate: string, overrides: Partial<TrackerHeader> = {}): ActivityDraft => {
+  const header = emptyHeader(overrides);
+  return {
+    id: createRecordId(),
+    ...header,
+    entries: [emptyEntryRow({ ...header, actualCompletionDate })],
+  };
+};
+
+const createTrackerFormState = (overrides: Partial<TrackerHeader> & Pick<Partial<TrackerDraft>, "actualCompletionDate"> = {}): TrackerFormState => {
+  const actualCompletionDate = overrides.actualCompletionDate || localDateString(new Date());
+  const activity = emptyActivity(actualCompletionDate, overrides);
+  return {
+    actualCompletionDate,
+    activities: [activity],
+    activeActivityId: "",
+    expandedFieldId: "",
+  };
+};
+
 export function WorkProgramTracker() {
   const fieldMap = useFieldMap();
   const data = useWorkProgramData();
-  const [draft, setDraft] = useState<TrackerDraft>(emptyDraft);
-  const [batchEntries, setBatchEntries] = useState<BatchEntry[]>([]);
+  const [tracker, setTracker] = useState<TrackerFormState>(() => createTrackerFormState());
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
-  const [confirmingSubmission, setConfirmingSubmission] = useState(false);
+  const [submissionEntries, setSubmissionEntries] = useState<BatchEntry[] | null>(null);
   const [lastSubmission, setLastSubmission] = useState<{ count: number; totalHa: number; syncStatus: string } | null>(null);
 
   const fields = useMemo(
@@ -89,86 +135,273 @@ export function WorkProgramTracker() {
       .sort((a, b) => a.localeCompare(b, undefined, { numeric: true })),
     [fieldMap.features],
   );
-  const currentCoverage = useMemo(
-    () =>
-      buildCoverageProjection({
-        batchEntries,
-        currentEntry: draft,
-        fields: fieldMap.features,
-        includeCurrentTyping: true,
-        records: data.records,
-      }),
-    [batchEntries, data.records, draft, fieldMap.features],
-  );
-  const batchTotalHa = batchEntries.reduce((total, entry) => total + Number(entry.hectares || 0), 0);
+  const activeActivity = tracker.activities.find((activity) => activity.id === tracker.activeActivityId) || null;
+  const activityForAdd = activeActivity || tracker.activities.at(-1) || null;
+  const activeEntriesReady = activityForAdd ? getEntriesForSubmission(activityForAdd.entries) : [];
+  const readyEntries = getEntriesForSubmission(tracker.activities.flatMap((activity) => activity.entries));
+  const readyTotalHa = readyEntries.reduce((total, entry) => total + Number(entry.hectares || 0), 0);
 
-  const update = (key: keyof TrackerDraft, value: string) => {
-    setDraft((current) => ({ ...current, [key]: value }));
-    setErrors((current) => ({ ...current, [key]: "", batch: "" }));
+  const updateCompletionDate = (value: string) => {
+    setTracker((current) => ({
+      ...current,
+      actualCompletionDate: value,
+      activities: current.activities.map((activity) => ({
+        ...activity,
+        entries: activity.entries.map((entry) => ({
+          ...entry,
+          actualCompletionDate: value,
+        })),
+      })),
+    }));
+    setErrors((current) => ({ ...current, [formErrorKey("actualCompletionDate")]: "", batch: "" }));
+    setSubmissionEntries(null);
   };
 
-  const updateBatchEntry = (id: string, key: keyof TrackerDraft, value: string) => {
-    setBatchEntries((current) => current.map((entry) => (entry.id === id ? { ...entry, [key]: value } : entry)));
-    setErrors((current) => ({ ...current, batch: "" }));
-    setConfirmingSubmission(false);
+  const updateActivityHeader = (activityId: string, key: keyof TrackerHeader, value: string) => {
+    setTracker((current) => ({
+      ...current,
+      activities: current.activities.map((activity) => (
+        activity.id === activityId
+          ? {
+              ...activity,
+              [key]: value,
+              entries: activity.entries.map((entry) => ({
+                ...entry,
+                [key]: value,
+                ...(key === "programType" ? { activityRound: "1" } : {}),
+              })),
+            }
+          : activity
+      )),
+    }));
+    setErrors((current) => ({ ...current, [activityErrorKey(activityId, key)]: "", batch: "" }));
+    setSubmissionEntries(null);
+  };
+
+  const updateFieldRow = (activityId: string, id: string, key: keyof TrackerDraft, value: string) => {
+    setTracker((current) => ({
+      ...current,
+      activities: current.activities.map((activity) => (
+        activity.id === activityId
+          ? {
+              ...activity,
+              entries: activity.entries.map((entry) => (
+                entry.id === id
+                  ? { ...entry, [key]: value, ...(key === "blockField" ? { activityRound: "1" } : {}) }
+                  : entry
+              )),
+            }
+          : activity
+      )),
+    }));
+    setErrors((current) => ({ ...current, [rowErrorKey(id, key)]: "", batch: "" }));
+    setSubmissionEntries(null);
   };
 
   const reset = () => {
-    setDraft(emptyDraft());
-    setBatchEntries([]);
+    setTracker(createTrackerFormState());
     setErrors({});
-    setConfirmingSubmission(false);
+    setSubmissionEntries(null);
     setLastSubmission(null);
   };
 
-  const addBatch = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const validation = validateEntry(draft, fields);
-    if (Object.keys(validation).length) {
-      setErrors(validation);
+  const addField = () => {
+    if (!activeActivity) return;
+    if (!tracker.actualCompletionDate) {
+      setErrors((current) => ({ ...current, [formErrorKey("actualCompletionDate")]: "Select the completion date.", batch: "Select the completion date before adding fields." }));
       return;
     }
-
-    setBatchEntries((current) => [...current, { ...draft, id: createRecordId() }]);
-    setDraft((current) =>
-      emptyDraft({
-        programType: current.programType,
-        actualCompletionDate: current.actualCompletionDate,
-      }),
-    );
-    setErrors({});
-    setLastSubmission(null);
-  };
-
-  const removeBatchEntry = (id: string) => {
-    setBatchEntries((current) => current.filter((entry) => entry.id !== id));
+    if (!canAddAnotherField(activeActivity)) {
+      setErrors((current) => ({ ...current, batch: getActivityFieldDuplicateError(activeActivity) || "Select the field and enter Ha Covered before adding another field." }));
+      return;
+    }
+    const duplicateActivityError = getDuplicateActivityError(activeActivity, tracker.activities);
+    if (duplicateActivityError) {
+      setErrors((current) => ({
+        ...current,
+        [activityErrorKey(activeActivity.id, "activityCode")]: duplicateActivityError,
+        batch: duplicateActivityError,
+      }));
+      return;
+    }
+    const nextEntry = emptyEntryRow({ ...activeActivity, actualCompletionDate: tracker.actualCompletionDate });
+    setTracker((current) => ({
+      ...current,
+      activeActivityId: activeActivity.id,
+      expandedFieldId: nextEntry.id,
+      activities: current.activities.map((activity) => (
+        activity.id === activeActivity.id
+          ? { ...activity, entries: [...activity.entries, nextEntry] }
+          : activity
+      )),
+    }));
     setErrors((current) => ({ ...current, batch: "" }));
-    setConfirmingSubmission(false);
+    setLastSubmission(null);
   };
 
-  const openSubmissionSummary = () => {
-    if (!batchEntries.length) {
-      setErrors((current) => ({ ...current, batch: "Add at least one batch entry before submitting." }));
+  const addActivity = () => {
+    const sourceActivity = activeActivity || tracker.activities.at(-1) || null;
+    if (!sourceActivity) return;
+    if (!tracker.actualCompletionDate) {
+      setErrors((current) => ({ ...current, [formErrorKey("actualCompletionDate")]: "Select the completion date.", batch: "Select the completion date before adding another activity." }));
+      return;
+    }
+    const currentEntries = getEntriesForSubmission(sourceActivity.entries);
+    if (!currentEntries.length) {
+      setErrors((current) => ({ ...current, batch: "Add at least one field before adding another activity." }));
       return;
     }
 
-    const invalidIndex = batchEntries.findIndex((entry) => Object.keys(validateEntry(entry, fields)).length > 0);
-    if (invalidIndex >= 0) {
-      setErrors((current) => ({ ...current, batch: `Entry ${invalidIndex + 1} has missing or invalid information.` }));
+    const rowErrors = buildActivityErrors(sourceActivity, fields, {
+      batchEntries: tracker.activities.flatMap((activity) => activity.entries),
+      fields: fieldMap.features,
+      records: data.records,
+    });
+    if (Object.keys(rowErrors).length) {
+      setErrors((current) => ({ ...current, ...rowErrors, batch: "Complete the current activity before adding another activity." }));
+      return;
+    }
+    const duplicateActivityError = getDuplicateActivityError(sourceActivity, tracker.activities);
+    if (duplicateActivityError) {
+      setErrors((current) => ({
+        ...current,
+        [activityErrorKey(sourceActivity.id, "activityCode")]: duplicateActivityError,
+        batch: duplicateActivityError,
+      }));
+      return;
+    }
+
+    const nextActivity = emptyActivity(tracker.actualCompletionDate);
+    setTracker((current) => ({
+      ...current,
+      activities: [...current.activities, nextActivity],
+      activeActivityId: nextActivity.id,
+      expandedFieldId: "",
+    }));
+    setErrors({});
+    setSubmissionEntries(null);
+    setLastSubmission(null);
+  };
+
+  const removeActivity = (activityId: string) => {
+    setTracker((current) => {
+      const activityToRemove = current.activities.find((activity) => activity.id === activityId);
+      const activities = current.activities.filter((activity) => activity.id !== activityId);
+      if (!activities.length) {
+        const blankActivity = emptyActivity(current.actualCompletionDate);
+        return {
+          ...current,
+          activities: [blankActivity],
+          activeActivityId: "",
+          expandedFieldId: "",
+        };
+      }
+
+      const removedExpandedField = Boolean(activityToRemove?.entries.some((entry) => entry.id === current.expandedFieldId));
+      return {
+        ...current,
+        activities,
+        activeActivityId: current.activeActivityId === activityId ? "" : current.activeActivityId,
+        expandedFieldId: removedExpandedField ? "" : current.expandedFieldId,
+      };
+    });
+    setErrors((current) => ({ ...current, batch: "" }));
+    setSubmissionEntries(null);
+    setLastSubmission(null);
+  };
+
+  const removeEntry = (activityId: string, id: string) => {
+    setTracker((current) => {
+      let nextExpandedFieldId = current.expandedFieldId;
+      const activities = current.activities.map((activity) => {
+        if (activity.id !== activityId) return activity;
+        if (activity.entries.length <= 1) {
+          const nextEntry = emptyEntryRow({ ...activity, actualCompletionDate: current.actualCompletionDate });
+          nextExpandedFieldId = "";
+          return { ...activity, entries: [nextEntry] };
+        }
+        const entries = activity.entries.filter((entry) => entry.id !== id);
+        if (current.expandedFieldId === id) nextExpandedFieldId = "";
+        return { ...activity, entries };
+      });
+      return {
+        ...current,
+        activities,
+        activeActivityId: activityId,
+        expandedFieldId: nextExpandedFieldId,
+      };
+    });
+    setErrors((current) => ({ ...current, batch: "" }));
+    setSubmissionEntries(null);
+  };
+
+  const toggleActivity = (activityId: string) => {
+    setTracker((current) => {
+      const nextOpen = current.activeActivityId !== activityId;
+      return {
+        ...current,
+        activeActivityId: nextOpen ? activityId : "",
+        expandedFieldId: "",
+      };
+    });
+    setSubmissionEntries(null);
+  };
+
+  const toggleField = (activityId: string, entryId: string) => {
+    setTracker((current) => ({
+      ...current,
+      activeActivityId: activityId,
+      expandedFieldId: current.activeActivityId === activityId && current.expandedFieldId === entryId ? "" : entryId,
+    }));
+    setSubmissionEntries(null);
+  };
+
+  const openSubmissionSummary = (event?: React.FormEvent<HTMLFormElement>) => {
+    event?.preventDefault();
+    if (!tracker.actualCompletionDate) {
+      setErrors((current) => ({ ...current, [formErrorKey("actualCompletionDate")]: "Select the completion date.", batch: "Select the completion date before submitting." }));
+      return;
+    }
+    const activitiesToSubmit = tracker.activities.filter((activity) => getEntriesForSubmission(activity.entries).length);
+    const entriesToSubmit = activitiesToSubmit.flatMap((activity) => getEntriesForSubmission(activity.entries));
+    if (!entriesToSubmit.length) {
+      setErrors((current) => ({ ...current, batch: "Add at least one field with hectares before submitting." }));
+      return;
+    }
+    const duplicateActivityErrors = buildDuplicateActivityErrors(activitiesToSubmit);
+    if (Object.keys(duplicateActivityErrors).length) {
+      setErrors((current) => ({
+        ...current,
+        ...duplicateActivityErrors,
+        batch: "Duplicate Activity Code found for the same Work Program and date. Add fields under the existing activity instead.",
+      }));
+      return;
+    }
+
+    const rowErrors = activitiesToSubmit.reduce<Record<string, string>>((nextErrors, activity) => ({
+      ...nextErrors,
+      ...buildActivityErrors(activity, fields, {
+        batchEntries: tracker.activities.flatMap((item) => item.entries),
+        fields: fieldMap.features,
+        records: data.records,
+      }),
+    }), {});
+    if (Object.keys(rowErrors).length) {
+      setErrors((current) => ({ ...current, ...rowErrors, batch: "One or more field rows need attention." }));
       return;
     }
 
     setErrors({});
-    setConfirmingSubmission(true);
+    setSubmissionEntries(entriesToSubmit);
   };
 
   const submitBatch = async () => {
-    if (!batchEntries.length) {
-      setErrors((current) => ({ ...current, batch: "Add at least one batch entry before submitting." }));
+    if (!submissionEntries?.length) {
+      setErrors((current) => ({ ...current, batch: "Confirm at least one entry before submitting." }));
       return;
     }
 
-    const invalidIndex = batchEntries.findIndex((entry) => Object.keys(validateEntry(entry, fields)).length > 0);
+    const invalidIndex = submissionEntries.findIndex((entry) => Object.keys(validateEntry(entry, fields)).length > 0);
     if (invalidIndex >= 0) {
       setErrors((current) => ({ ...current, batch: `Entry ${invalidIndex + 1} has missing or invalid information.` }));
       return;
@@ -177,21 +410,17 @@ export function WorkProgramTracker() {
     setSaving(true);
     setErrors({});
     try {
-      const records = batchEntries.map((entry) => entryToRecord(entry, fieldMap.features, fields));
+      const records = submissionEntries.map((entry) => entryToRecord(entry, fieldMap.features, fields));
       const saved = await data.saveRecords(records);
       setLastSubmission({
         count: saved.length,
         totalHa: saved.reduce((total, record) => total + Number(record.hectares || 0), 0),
         syncStatus: saved.some((record) => record.syncStatus === "Pending Sync") ? "Pending Sync" : "Synced",
       });
-      setBatchEntries([]);
-      setConfirmingSubmission(false);
-      setDraft((current) =>
-        emptyDraft({
-          programType: current.programType,
-          actualCompletionDate: current.actualCompletionDate,
-        }),
-      );
+      setSubmissionEntries(null);
+      setTracker(createTrackerFormState({
+        actualCompletionDate: tracker.actualCompletionDate,
+      }));
     } finally {
       setSaving(false);
     }
@@ -231,70 +460,204 @@ export function WorkProgramTracker() {
           </div>
         ) : null}
 
-        <form className="tracker-form" onSubmit={addBatch} noValidate>
+        <form className="tracker-form" onSubmit={openSubmissionSummary} noValidate>
           <section className="tracker-form-section" aria-labelledby="submission-details-heading">
             <div className="form-section-heading">
               <span>1</span>
               <div>
                 <h3 id="submission-details-heading">Completion details</h3>
-                <p>Add one or more completed work items before submitting for approval.</p>
+                <p>Select the completion date first. Activities added in this form will use the same date.</p>
               </div>
             </div>
-            <div className="form-grid tracker-grid">
-              <TrackerField label="Actual Completion Date" error={errors.actualCompletionDate} required>
-                <input type="date" value={draft.actualCompletionDate} onChange={(event) => update("actualCompletionDate", event.target.value)} />
-              </TrackerField>
-              <TrackerField label="Work Program" error={errors.programType} required>
-                <select value={draft.programType} onChange={(event) => update("programType", event.target.value)}>{PROGRAM_TYPES.map((program) => <option key={program}>{program}</option>)}</select>
-              </TrackerField>
-              <TrackerField label="Field" error={errors.blockField} required>
-                <select value={draft.blockField} onChange={(event) => update("blockField", event.target.value)} disabled={!fields.length}>
-                  <option value="">{fields.length ? "Select field" : "Loading field list"}</option>
-                  {fields.map((field) => <option key={field} value={field}>{field}</option>)}
-                </select>
-              </TrackerField>
-              <TrackerField label="Hectares Covered" error={errors.hectares} required>
-                <div className="hectare-input-wrap">
-                  <input inputMode="decimal" min="0.000001" step="any" type="number" value={draft.hectares} onChange={(event) => update("hectares", event.target.value)} placeholder="0.00" />
-                  <span>ha</span>
-                </div>
-              </TrackerField>
-              <TrackerField className="full-width" label="Remarks" error={errors.remarks}>
-                <textarea rows={3} value={draft.remarks} onChange={(event) => update("remarks", event.target.value)} placeholder="Observations, exceptions or follow-up notes" />
+            <div className="form-grid tracker-grid tracker-date-grid">
+              <TrackerField label="Actual Completion Date" error={errors[formErrorKey("actualCompletionDate")]} required>
+                <input type="date" value={tracker.actualCompletionDate} onChange={(event) => updateCompletionDate(event.target.value)} />
               </TrackerField>
             </div>
+            <div className="activity-entry-list" aria-label="Activity drafts">
+              {tracker.activities.map((activity, activityIndex) => {
+                const activityOpen = activity.id === tracker.activeActivityId;
+                const activityCodeReady = Boolean(activity.activityCode.trim());
+                const activityProgramReady = Boolean(activity.programType);
+                const activityDuplicateError = getDuplicateActivityError(activity, tracker.activities);
+                const activityDetailsReady = activityCodeReady && activityProgramReady && !activityDuplicateError;
+                const fieldReadyForNext = canAddAnotherField(activity);
+                const activityReadyEntries = getEntriesForSubmission(activity.entries);
+                const activityTotalHa = activityReadyEntries.reduce((total, entry) => total + Number(entry.hectares || 0), 0);
+                const activityTitle = getActivitySummaryTitle(activity);
+                const canRemoveActivity = tracker.activities.length > 1 || !isBlankActivity(activity);
+                if (!activityOpen && isBlankActivity(activity)) {
+                  return (
+                    <button className="activity-create-button" type="button" onClick={() => toggleActivity(activity.id)} key={activity.id}>
+                      <Plus aria-hidden="true" size={18} /> Add Activity
+                    </button>
+                  );
+                }
+                return (
+                  <article className={`activity-entry-card ${activityOpen ? "is-open" : ""}`} key={activity.id}>
+                    <div className="activity-entry-title">
+                      <button className="activity-entry-summary" type="button" onClick={() => toggleActivity(activity.id)} aria-expanded={activityOpen}>
+                        <span>{activityIndex + 1}</span>
+                        <div>
+                          <strong>{activityTitle}</strong>
+                          <small>{formatDate(tracker.actualCompletionDate)} · {activityReadyEntries.length} field{activityReadyEntries.length === 1 ? "" : "s"} · {formatNumber(activityTotalHa)} ha</small>
+                        </div>
+                        <ChevronDown aria-hidden="true" size={17} />
+                      </button>
+                      {canRemoveActivity ? (
+                        <button className="activity-row-remove" type="button" onClick={() => removeActivity(activity.id)} aria-label={`Delete activity ${activityIndex + 1}`}>
+                          <X aria-hidden="true" size={16} /> Delete
+                        </button>
+                      ) : null}
+                    </div>
 
-            <CoverageCard coverage={currentCoverage} />
+                    {activityOpen ? (
+                      <div className="activity-entry-details">
+                        <div className="form-grid tracker-grid activity-header-grid">
+                          <TrackerField label="Activity Code" error={errors[activityErrorKey(activity.id, "activityCode")] || activityDuplicateError} required>
+                            <input value={activity.activityCode} onChange={(event) => updateActivityHeader(activity.id, "activityCode", event.target.value.toUpperCase())} placeholder="e.g. MC-001" />
+                          </TrackerField>
+                          <TrackerField label="Work Program" error={errors[activityErrorKey(activity.id, "programType")]} required>
+                            <select value={activity.programType} onChange={(event) => updateActivityHeader(activity.id, "programType", event.target.value)}>
+                              <option value="">Select work program</option>
+                              {PROGRAM_TYPES.map((program) => <option key={program}>{program}</option>)}
+                            </select>
+                          </TrackerField>
+                        </div>
+
+                        <div className="field-entry-list" aria-label={`Field completion rows for activity ${activityIndex + 1}`}>
+                          {activity.entries.map((entry, index) => {
+                            const fieldOpen = tracker.expandedFieldId === entry.id;
+                            const fieldSelected = Boolean(entry.blockField);
+                            const duplicateFieldError = getDuplicateFieldError(entry, activity.entries);
+                            const fieldInputReady = Boolean(tracker.actualCompletionDate) && activityDetailsReady && fieldSelected && !duplicateFieldError;
+                            const otherDraftEntries = tracker.activities
+                              .flatMap((item) => item.entries)
+                              .filter((row) => row.id !== entry.id && hasDraftInput(row));
+                            const coverage = buildCoverageProjection({
+                              batchEntries: otherDraftEntries,
+                              currentEntry: entry,
+                              fields: fieldMap.features,
+                              includeCurrentTyping: true,
+                              records: data.records,
+                            });
+                            const roundLockCoverage = buildCoverageProjection({
+                              batchEntries: otherDraftEntries,
+                              currentEntry: entry,
+                              fields: fieldMap.features,
+                              includeCurrentTyping: false,
+                              records: data.records,
+                            });
+                            const roundOptions = getActivityRoundOptions(roundLockCoverage);
+                            const selectedRound = coverage.rounds.find((round) => round.index + 1 === normaliseActivityRound(entry.activityRound));
+                            const selectedRoundOverTarget = Boolean(selectedRound && isRoundOverTarget(selectedRound));
+                            const enteredHectares = Number(entry.hectares || 0);
+                            const showCollapsedRoundPreview = !fieldOpen && Boolean(selectedRound && entry.blockField && enteredHectares > 0);
+                            return (
+                              <article className={`field-entry-card ${fieldOpen ? "is-open" : ""} ${activityDetailsReady ? "" : "is-disabled"}`} key={entry.id}>
+                                <div className="field-entry-title">
+                                  <button className="field-entry-toggle" type="button" onClick={() => toggleField(activity.id, entry.id)} aria-expanded={fieldOpen}>
+                                    <div className={`field-entry-summary-copy ${showCollapsedRoundPreview ? "has-round-preview" : ""}`}>
+                                      <strong>{entry.blockField || "Select field"}</strong>
+                                      {showCollapsedRoundPreview && selectedRound ? (
+                                        <>
+                                          <span className="field-entry-input-pill">Input: {formatNumber(enteredHectares)} ha</span>
+                                          <CompactRoundPreview round={selectedRound} />
+                                        </>
+                                      ) : null}
+                                      {!fieldOpen && !showCollapsedRoundPreview && enteredHectares > 0 ? <small>R{normaliseActivityRound(entry.activityRound)} · {formatNumber(enteredHectares)} ha</small> : null}
+                                      {!fieldOpen && entry.remarks.trim() ? <small className="field-entry-remark">Remark: {entry.remarks.trim()}</small> : null}
+                                    </div>
+                                    <ChevronDown aria-hidden="true" size={17} />
+                                  </button>
+                                  <button className="field-row-remove" type="button" onClick={() => removeEntry(activity.id, entry.id)} aria-label={`Remove field ${index + 1}`}>
+                                    <X aria-hidden="true" size={16} /> Remove
+                                  </button>
+                                </div>
+
+                                {fieldOpen ? (
+                                  <div className="field-entry-body">
+                                    <div className="field-row-grid">
+                                      <TrackerField className={`field-dependent ${tracker.actualCompletionDate && activityDetailsReady ? "" : "is-disabled"}`} label="Field" error={errors[rowErrorKey(entry.id, "blockField")] || duplicateFieldError} required>
+                                        <select value={entry.blockField} onChange={(event) => updateFieldRow(activity.id, entry.id, "blockField", event.target.value)} disabled={!fields.length || !tracker.actualCompletionDate || !activityDetailsReady}>
+                                          <option value="">{fields.length ? "Select field" : "Loading field list"}</option>
+                                          {fields.map((field) => <option key={field} value={field} disabled={isFieldSelectedByOtherEntry(field, entry.id, activity.entries)}>{field}</option>)}
+                                        </select>
+                                      </TrackerField>
+                                      <TrackerField className={`field-dependent ${fieldInputReady ? "" : "is-disabled"}`} label="Round" error={errors[rowErrorKey(entry.id, "activityRound")]} required>
+                                        <select value={entry.activityRound} onChange={(event) => updateFieldRow(activity.id, entry.id, "activityRound", event.target.value)} disabled={!fieldInputReady}>
+                                          {roundOptions.map((round) => <option key={round.value} value={round.value} disabled={round.disabled}>{round.label}</option>)}
+                                        </select>
+                                      </TrackerField>
+                                      <TrackerField className={`field-dependent ${fieldInputReady ? "" : "is-disabled"}`} label="Ha Covered" error={errors[rowErrorKey(entry.id, "hectares")]} required>
+                                        <div className="hectare-input-wrap">
+                                          <input inputMode="decimal" min="0.000001" step="any" type="number" value={entry.hectares} onChange={(event) => updateFieldRow(activity.id, entry.id, "hectares", event.target.value)} placeholder="0.00" disabled={!fieldInputReady} />
+                                          <span>ha</span>
+                                        </div>
+                                      </TrackerField>
+                                      <TrackerField className={`field-row-remarks field-dependent ${fieldInputReady ? "" : "is-disabled"}`} label="Remarks" error={errors[rowErrorKey(entry.id, "remarks")]}>
+                                        <textarea rows={2} value={entry.remarks} onChange={(event) => updateFieldRow(activity.id, entry.id, "remarks", event.target.value)} placeholder="Optional notes" disabled={!fieldInputReady} />
+                                      </TrackerField>
+                                      {selectedRoundOverTarget ? (
+                                        <p className="field-row-warning" role="alert">
+                                          Program coverage exceeded. Please review the entered hectares.
+                                        </p>
+                                      ) : null}
+                                    </div>
+                                    <div className={`coverage-gate ${fieldInputReady ? "" : "is-disabled"}`}>
+                                      {fieldInputReady ? <BatchCoverageScale coverage={coverage} /> : (
+                                        <div className="batch-coverage-scale muted">
+                                          <strong>Program Coverage</strong>
+                                          <span>{getFieldGateMessage({ hasDate: Boolean(tracker.actualCompletionDate), activityCodeReady, activityProgramReady, activityDuplicateError })}</span>
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+                                ) : null}
+                              </article>
+                            );
+                          })}
+                          <button
+                            className="secondary-button add-field-button"
+                            type="button"
+                            onClick={addField}
+                            disabled={saving || !fields.length || !tracker.actualCompletionDate || !activityDetailsReady || !fieldReadyForNext}
+                            title={fieldReadyForNext ? undefined : "Select the field and enter Ha Covered before adding another field."}
+                          >
+                            <Plus aria-hidden="true" size={17} /> Add Field
+                          </button>
+                        </div>
+                      </div>
+                    ) : null}
+                  </article>
+                );
+              })}
+            </div>
           </section>
 
           <div className="tracker-submit-bar batch-add-bar">
             <div>
-              <strong>{batchEntries.length ? `${batchEntries.length} entr${batchEntries.length === 1 ? "y" : "ies"} ready` : "Add entries below, then submit all at once"}</strong>
-              <span>{batchEntries.length ? `${formatNumber(batchTotalHa)} ha in current batch` : "Coverage preview includes approved, pending and current batch values."}</span>
+              <strong>{readyEntries.length ? `${readyEntries.length} record${readyEntries.length === 1 ? "" : "s"} ready` : "Add field completion"}</strong>
+              <span>{readyEntries.length ? `${formatNumber(readyTotalHa)} ha ready to submit` : "Use Add Field for the same activity, or Add Activity for another activity on the same date."}</span>
+              {tracker.activities.length > 1 ? <small>{tracker.activities.length} activities in draft.</small> : null}
             </div>
-            <button className="primary-button tracker-submit" type="submit" disabled={saving || !fields.length}>
-              <Plus aria-hidden="true" size={18} /> Add Batch
-            </button>
+            <div className="tracker-submit-actions">
+              <button className="secondary-button optional-add-button" type="button" onClick={addActivity} disabled={saving || !fields.length || !tracker.actualCompletionDate || !activeEntriesReady.length}>
+                <Plus aria-hidden="true" size={17} /> Add Activity
+              </button>
+              <button className="primary-button tracker-submit" type="submit" disabled={saving || !fields.length || !tracker.actualCompletionDate || !readyEntries.length}>
+                <Save aria-hidden="true" size={18} /> Submit for Approval
+              </button>
+            </div>
           </div>
         </form>
 
-        <BatchReview
-          batchEntries={batchEntries}
-          errors={errors}
-          fields={fields}
-          fieldFeatures={fieldMap.features}
-          records={data.records}
-          saving={saving}
-          onRemove={removeBatchEntry}
-          onSubmit={openSubmissionSummary}
-          onUpdate={updateBatchEntry}
-        />
-        {confirmingSubmission ? (
+        {errors.batch ? <p className="form-error" role="alert">{errors.batch}</p> : null}
+        {submissionEntries ? (
           <BatchSubmitSummaryModal
-            entries={batchEntries}
+            entries={submissionEntries}
             saving={saving}
-            totalHa={batchTotalHa}
-            onCancel={() => setConfirmingSubmission(false)}
+            onCancel={() => setSubmissionEntries(null)}
             onConfirm={submitBatch}
           />
         ) : null}
@@ -303,77 +666,71 @@ export function WorkProgramTracker() {
   );
 }
 
-function CoverageCard({ coverage }: { coverage: CoverageProjection }) {
-  if (!coverage.ready) {
-    return (
-      <div className="coverage-card muted">
-        <div className="coverage-card-heading">
-          <strong>Program Coverage</strong>
-          <span>Select Work Program and Field</span>
-        </div>
-        <p>Select a work program and field to view round progress before adding the batch entry.</p>
-      </div>
-    );
-  }
-
-  if (!coverage.rounds.length) {
-    return (
-      <div className="coverage-card muted">
-        <div className="coverage-card-heading">
-          <strong>Program Coverage</strong>
-          <span>{coverage.fieldHa ? `${formatNumber(coverage.fieldHa)} ha field` : "No plan"}</span>
-        </div>
-        <p>No programme round plan is available for this work program and field yet. The entry can still be submitted for approval.</p>
-      </div>
-    );
-  }
-
-  return (
-    <div className="coverage-card">
-      <div className="coverage-card-heading">
-        <strong>Program Coverage</strong>
-        <span>{coverage.completedRounds}/{coverage.totalRounds} rounds completed</span>
-      </div>
-      <div className="coverage-breakdown">
-        <span><i className="approved" />Program Approved</span>
-        <span><i className="unapproved" />Pending Approval</span>
-      </div>
-      <div className="coverage-round-list">
-        {coverage.rounds.map((round) => (
-          <CoverageRound key={round.index} round={round} />
-        ))}
-      </div>
-      <div className="coverage-history">
-        {coverage.entries.length ? coverage.entries.slice(0, 5).map((entry) => (
-          <span key={entry.id}><b>{coverageStatusLabel(entry.status)}</b>{formatNumber(entry.hectares)} ha · {formatDate(entry.date)}</span>
-        )) : <em>No submissions recorded for this field yet</em>}
-      </div>
-    </div>
-  );
-}
-
 function CoverageRound({ round }: { round: RoundState }) {
   const targetHa = round.targetHa || 0;
   const approvedHa = round.approvedHa || 0;
   const pendingHa = round.unapprovedHa || 0;
-  const remainingHa = Math.max(targetHa - approvedHa - pendingHa, 0);
-  const approvedWidth = targetHa > 0 ? Math.min(100, (approvedHa / targetHa) * 100) : 0;
-  const pendingWidth = targetHa > 0 ? Math.min(100 - approvedWidth, (pendingHa / targetHa) * 100) : 0;
+  const percentage = targetHa > 0 ? (round.coveredHa / targetHa) * 100 : 0;
+  const isOverTarget = percentage > 100;
+  const excessHa = Math.max(round.coveredHa - targetHa, 0);
+  const scaleTotalHa = isOverTarget ? round.coveredHa : targetHa;
+  const approvedWidth = !isOverTarget && targetHa > 0 ? Math.min(100, (approvedHa / targetHa) * 100) : 0;
+  const pendingWidth = !isOverTarget && targetHa > 0 ? Math.min(100 - approvedWidth, (pendingHa / targetHa) * 100) : 0;
+  const targetWidth = isOverTarget && scaleTotalHa > 0 ? Math.min(100, (targetHa / scaleTotalHa) * 100) : 0;
+  const excessWidth = isOverTarget && scaleTotalHa > 0 ? Math.min(100 - targetWidth, (excessHa / scaleTotalHa) * 100) : 0;
 
   return (
-    <div className="coverage-round">
+    <div className={`coverage-round ${isOverTarget ? "is-over-target" : ""}`}>
       <div className="coverage-round-header">
-        <strong>{round.label}</strong>
-        <span>{formatNumber(round.coveredHa)} / {formatNumber(targetHa)} ha</span>
+        <strong>R{round.index + 1}</strong>
+        <strong>{formatNumber(percentage, 0)}%</strong>
       </div>
-      <div className="coverage-progress stacked" aria-label={`${round.label}: ${formatNumber(round.progress, 0)} percent covered`}>
-        <span className="approved" style={{ width: `${approvedWidth}%` }} />
-        <span className="unapproved" style={{ width: `${pendingWidth}%` }} />
+      <div className="coverage-progress stacked" aria-label={`R${round.index + 1}: ${formatNumber(percentage, 0)} percent covered`}>
+        {isOverTarget ? (
+          <>
+            <span className="approved" style={{ width: `${targetWidth}%` }} />
+            <span className="excess" style={{ width: `${excessWidth}%` }} />
+          </>
+        ) : (
+          <>
+            <span className="approved" style={{ width: `${approvedWidth}%` }} />
+            <span className="unapproved" style={{ width: `${pendingWidth}%` }} />
+          </>
+        )}
       </div>
-      <div className="coverage-round-meta">
-        <span>{round.monthLabel}</span>
-        <span>Remaining for the round: {formatNumber(remainingHa)} ha</span>
+      <span className="coverage-round-ha">{formatNumber(round.coveredHa)} / {formatNumber(targetHa)} ha</span>
+    </div>
+  );
+}
+
+function CompactRoundPreview({ round }: { round: RoundState }) {
+  const targetHa = round.targetHa || 0;
+  const approvedHa = round.approvedHa || 0;
+  const pendingHa = round.unapprovedHa || 0;
+  const percentage = targetHa > 0 ? (round.coveredHa / targetHa) * 100 : 0;
+  const isOverTarget = percentage > 100;
+  const scaleTotalHa = isOverTarget ? round.coveredHa : targetHa;
+  const approvedWidth = !isOverTarget && targetHa > 0 ? Math.min(100, (approvedHa / targetHa) * 100) : 0;
+  const pendingWidth = !isOverTarget && targetHa > 0 ? Math.min(100 - approvedWidth, (pendingHa / targetHa) * 100) : 0;
+  const targetWidth = isOverTarget && scaleTotalHa > 0 ? Math.min(100, (targetHa / scaleTotalHa) * 100) : 0;
+  const excessWidth = isOverTarget && scaleTotalHa > 0 ? Math.min(100 - targetWidth, ((round.coveredHa - targetHa) / scaleTotalHa) * 100) : 0;
+
+  return (
+    <div className={`compact-round-preview ${isOverTarget ? "is-over-target" : ""}`}>
+      <div className="compact-round-progress" aria-label={`R${round.index + 1}: ${formatNumber(percentage, 0)} percent covered`}>
+        {isOverTarget ? (
+          <>
+            <span className="approved" style={{ width: `${targetWidth}%` }} />
+            <span className="excess" style={{ width: `${excessWidth}%` }} />
+          </>
+        ) : (
+          <>
+            <span className="approved" style={{ width: `${approvedWidth}%` }} />
+            <span className="unapproved" style={{ width: `${pendingWidth}%` }} />
+          </>
+        )}
       </div>
+      <small>R{round.index + 1} · {formatNumber(round.coveredHa)} / {formatNumber(targetHa)} ha</small>
     </div>
   );
 }
@@ -391,7 +748,7 @@ function BatchCoverageScale({ coverage }: { coverage: CoverageProjection }) {
   }
 
   return (
-    <div className="batch-coverage-scale" aria-label="Batch entry program coverage">
+    <div className="batch-coverage-scale" aria-label="Entry program coverage">
       <div className="batch-coverage-heading">
         <strong>Program Coverage</strong>
         <span>{coverage.completedRounds}/{coverage.totalRounds} rounds completed</span>
@@ -409,134 +766,51 @@ function BatchCoverageScale({ coverage }: { coverage: CoverageProjection }) {
   );
 }
 
-function coverageStatusLabel(status: CoverageEntry["status"]) {
-  return status === "Approved" ? "Program Approved" : "Pending Approval";
-}
-
-function BatchReview({
-  batchEntries,
-  errors,
-  fields,
-  fieldFeatures,
-  records,
-  saving,
-  onRemove,
-  onSubmit,
-  onUpdate,
-}: {
-  batchEntries: BatchEntry[];
-  errors: Record<string, string>;
-  fields: string[];
-  fieldFeatures: FieldFeature[];
-  records: WorkProgramRecord[];
-  saving: boolean;
-  onRemove: (id: string) => void;
-  onSubmit: () => void;
-  onUpdate: (id: string, key: keyof TrackerDraft, value: string) => void;
-}) {
-  const totalHa = batchEntries.reduce((total, entry) => total + Number(entry.hectares || 0), 0);
-
-  return (
-    <section className="batch-review-section" aria-labelledby="batch-review-heading">
-      <div className="batch-review-heading">
-        <div>
-          <h3 id="batch-review-heading">Review & edit before submitting <span>{batchEntries.length}</span></h3>
-          <p>{batchEntries.length ? `${formatNumber(totalHa)} ha total` : "No batch entries added yet."}</p>
-        </div>
-        <button className="primary-button" type="button" onClick={onSubmit} disabled={saving || !batchEntries.length}>
-          <Save aria-hidden="true" size={17} /> {saving ? "Submitting" : "Submit records"}
-        </button>
-      </div>
-      {errors.batch ? <p className="form-error" role="alert">{errors.batch}</p> : null}
-      <div className="batch-entry-list">
-        {batchEntries.map((entry, index) => {
-          const coverage = buildCoverageProjection({
-            batchEntries,
-            currentEntry: entry,
-            fields: fieldFeatures,
-            includeCurrentTyping: false,
-            records,
-          });
-          return (
-            <article className="batch-entry-card" key={entry.id}>
-              <div className="batch-entry-title">
-                <span>{index + 1}</span>
-                <div>
-                  <strong>Entry {index + 1}</strong>
-                  <small>{entry.blockField || "No field"} · {formatNumber(Number(entry.hectares || 0))} ha</small>
-                </div>
-                <button type="button" onClick={() => onRemove(entry.id)} aria-label={`Remove entry ${index + 1}`}>
-                  <X aria-hidden="true" size={17} />
-                </button>
-              </div>
-              <div className="form-grid tracker-grid batch-entry-grid">
-                <TrackerField label="Work Program" required>
-                  <select value={entry.programType} onChange={(event) => onUpdate(entry.id, "programType", event.target.value)}>{PROGRAM_TYPES.map((program) => <option key={program}>{program}</option>)}</select>
-                </TrackerField>
-                <TrackerField label="Field" required>
-                  <select value={entry.blockField} onChange={(event) => onUpdate(entry.id, "blockField", event.target.value)}>
-                    <option value="">Select field</option>
-                    {fields.map((field) => <option key={field} value={field}>{field}</option>)}
-                  </select>
-                </TrackerField>
-                <TrackerField label="Hectares Covered" required>
-                  <div className="hectare-input-wrap">
-                    <input inputMode="decimal" min="0.000001" step="any" type="number" value={entry.hectares} onChange={(event) => onUpdate(entry.id, "hectares", event.target.value)} />
-                    <span>ha</span>
-                  </div>
-                </TrackerField>
-                <TrackerField label="Actual Completion Date" required>
-                  <input type="date" value={entry.actualCompletionDate} onChange={(event) => onUpdate(entry.id, "actualCompletionDate", event.target.value)} />
-                </TrackerField>
-                <TrackerField className="full-width" label="Remarks">
-                  <textarea rows={2} value={entry.remarks} onChange={(event) => onUpdate(entry.id, "remarks", event.target.value)} placeholder="Observations, exceptions or follow-up notes" />
-                </TrackerField>
-              </div>
-              <BatchCoverageScale coverage={coverage} />
-            </article>
-          );
-        })}
-      </div>
-    </section>
-  );
-}
-
 function BatchSubmitSummaryModal({
   entries,
   saving,
-  totalHa,
   onCancel,
   onConfirm,
 }: {
   entries: BatchEntry[];
   saving: boolean;
-  totalHa: number;
   onCancel: () => void;
   onConfirm: () => void;
 }) {
+  const groupedActivities = groupSubmissionEntries(entries);
+  const submissionDate = entries[0]?.actualCompletionDate ? formatDate(entries[0].actualCompletionDate) : "";
+
   return (
     <div className="modal-backdrop" role="presentation">
       <section className="modal-card batch-submit-modal" role="dialog" aria-modal="true" aria-labelledby="batch-submit-title">
         <div className="modal-heading batch-submit-heading">
           <p className="eyebrow">Final Review</p>
-          <h2 id="batch-submit-title">Confirm batch submission</h2>
-          <p>Review the batch summary below before sending these records for approval.</p>
+          <h2 id="batch-submit-title">Confirm submission</h2>
+          <p>Review the entries below before sending these records for approval.</p>
         </div>
         <div className="batch-submit-summary">
-          <span><strong>{entries.length}</strong> {entries.length === 1 ? "entry" : "entries"}</span>
-          <span><strong>{formatNumber(totalHa)}</strong> ha total</span>
+          <span><strong>{groupedActivities.length}</strong> Total Activities Today</span>
         </div>
-        <div className="batch-submit-list">
-          {entries.map((entry, index) => (
-            <article className="batch-submit-row" key={entry.id}>
-              <span>{index + 1}</span>
-              <div>
-                <strong>{entry.programType}</strong>
-                <small>{entry.blockField} · {formatNumber(Number(entry.hectares || 0))} ha · {formatDate(entry.actualCompletionDate)}</small>
-                {entry.remarks ? <em>{entry.remarks}</em> : null}
-              </div>
-            </article>
-          ))}
+        <div className="batch-submit-grouped">
+          {submissionDate ? <strong className="batch-submit-date">{submissionDate}</strong> : null}
+          <div className="batch-submit-grid">
+            {groupedActivities.map((activity) => (
+              <article className="batch-submit-card" key={activity.id}>
+                <div className="batch-submit-card-heading">
+                  <strong>{activity.programType}</strong>
+                  <span>{activity.activityCode} · {formatNumber(activity.totalHa)} ha</span>
+                </div>
+                <div className="batch-submit-card-list">
+                  {activity.entries.map((entry) => (
+                    <div key={entry.id}>
+                      <span>{entry.blockField} - {formatNumber(Number(entry.hectares || 0))} ha</span>
+                      {entry.remarks.trim() ? <small>{entry.remarks.trim()}</small> : null}
+                    </div>
+                  ))}
+                </div>
+              </article>
+            ))}
+          </div>
         </div>
         <div className="modal-actions batch-submit-actions">
           <button className="secondary-button" type="button" onClick={onCancel} disabled={saving}>Back to edit</button>
@@ -553,12 +827,171 @@ function TrackerField({ label, error, required, className = "", children }: { la
   return <label className={className}><span>{label}{required ? " *" : ""}</span>{children}{error ? <small className="field-error" role="alert">{error}</small> : null}</label>;
 }
 
+function groupSubmissionEntries(entries: BatchEntry[]) {
+  const groups = new Map<string, { id: string; activityCode: string; programType: string; totalHa: number; entries: BatchEntry[] }>();
+  entries.forEach((entry) => {
+    const key = [
+      entry.actualCompletionDate,
+      normaliseActivityCode(entry.activityCode),
+      entry.programType,
+    ].join("|");
+    const group = groups.get(key) || {
+      id: key,
+      activityCode: normaliseActivityCode(entry.activityCode),
+      programType: entry.programType,
+      totalHa: 0,
+      entries: [],
+    };
+    group.totalHa += Number(entry.hectares || 0);
+    group.entries.push(entry);
+    groups.set(key, group);
+  });
+  return Array.from(groups.values());
+}
+
+function getEntriesForSubmission(entries: BatchEntry[]) {
+  return entries.filter(hasDraftInput);
+}
+
+function canAddAnotherField(activity: ActivityDraft) {
+  if (!activity.activityCode.trim()) return false;
+  if (!activity.programType) return false;
+  if (!activity.entries.length) return false;
+  if (getActivityFieldDuplicateError(activity)) return false;
+  return activity.entries.every((entry) => Boolean(entry.blockField) && Number(entry.hectares) > 0);
+}
+
+function isBlankActivity(activity: ActivityDraft) {
+  return !activity.activityCode.trim() && !activity.programType && activity.entries.every((entry) => !hasDraftInput(entry));
+}
+
+function buildDuplicateActivityErrors(activities: ActivityDraft[]) {
+  return activities.reduce<Record<string, string>>((nextErrors, activity) => {
+    const error = getDuplicateActivityError(activity, activities);
+    if (error) nextErrors[activityErrorKey(activity.id, "activityCode")] = error;
+    return nextErrors;
+  }, {});
+}
+
+function getDuplicateActivityError(activity: ActivityDraft, activities: ActivityDraft[]) {
+  const activityCode = normaliseActivityCode(activity.activityCode);
+  if (!activityCode || !activity.programType) return "";
+  const duplicate = activities.some((item) => (
+    item.id !== activity.id &&
+    normaliseActivityCode(item.activityCode) === activityCode &&
+    item.programType === activity.programType
+  ));
+  return duplicate ? "This Activity Code is already used for this Work Program on the selected date. Add fields under the existing activity instead." : "";
+}
+
+function getActivityFieldDuplicateError(activity: ActivityDraft) {
+  const duplicate = activity.entries.find((entry) => getDuplicateFieldError(entry, activity.entries));
+  return duplicate ? getDuplicateFieldError(duplicate, activity.entries) : "";
+}
+
+function getDuplicateFieldError(entry: BatchEntry, entries: BatchEntry[]) {
+  if (!entry.blockField) return "";
+  return isFieldSelectedByOtherEntry(entry.blockField, entry.id, entries)
+    ? "This field is already selected in this activity. Edit the existing field row instead."
+    : "";
+}
+
+function isFieldSelectedByOtherEntry(field: string, entryId: string, entries: BatchEntry[]) {
+  const selectedField = fieldKey(field);
+  if (!selectedField) return false;
+  return entries.some((entry) => entry.id !== entryId && fieldKey(entry.blockField) === selectedField);
+}
+
+function getFieldGateMessage({
+  hasDate,
+  activityCodeReady,
+  activityProgramReady,
+  activityDuplicateError,
+}: {
+  hasDate: boolean;
+  activityCodeReady: boolean;
+  activityProgramReady: boolean;
+  activityDuplicateError: string;
+}) {
+  if (!hasDate) return "Select the completion date before adding field details.";
+  if (activityDuplicateError) return "Use Add Field under the existing activity, or enter a different Activity Code.";
+  if (!activityCodeReady || !activityProgramReady) return "Enter the Activity Code and select Work Program before adding field details.";
+  return "Select a field to view round progress.";
+}
+
+function normaliseActivityCode(value: string) {
+  return value.trim().toUpperCase();
+}
+
+function getActivitySummaryTitle(activity: ActivityDraft) {
+  const activityCode = normaliseActivityCode(activity.activityCode);
+  if (!activityCode && !activity.programType) return "Activity details";
+  if (!activityCode) return `Activity details · ${activity.programType}`;
+  return `${activityCode} · ${activity.programType || "Select work program"}`;
+}
+
+function hasDraftInput(draft: TrackerDraft) {
+  return Boolean(draft.blockField || draft.hectares || draft.remarks.trim());
+}
+
+function buildActivityErrors(
+  activity: ActivityDraft,
+  fieldList: string[],
+  coverageContext?: { batchEntries: BatchEntry[]; fields: FieldFeature[]; records: WorkProgramRecord[] },
+) {
+  return getEntriesForSubmission(activity.entries).reduce<Record<string, string>>((nextErrors, entry) => {
+    const validation = validateEntry(entry, fieldList);
+    Object.entries(validation).forEach(([key, message]) => {
+      if (key === "actualCompletionDate") {
+        nextErrors[formErrorKey(key)] = message;
+        return;
+      }
+      if (key === "programType" || key === "activityCode") {
+        nextErrors[activityErrorKey(activity.id, key)] = message;
+        return;
+      }
+      nextErrors[rowErrorKey(entry.id, key)] = message;
+    });
+    const duplicateFieldError = getDuplicateFieldError(entry, activity.entries);
+    if (duplicateFieldError) {
+      nextErrors[rowErrorKey(entry.id, "blockField")] = duplicateFieldError;
+    }
+    if (coverageContext && !validation.programType && !validation.blockField && !validation.actualCompletionDate && !validation.activityRound) {
+      const coverage = buildCoverageProjection({
+        batchEntries: coverageContext.batchEntries.filter((row) => row.id !== entry.id && hasDraftInput(row)),
+        currentEntry: entry,
+        fields: coverageContext.fields,
+        includeCurrentTyping: false,
+        records: coverageContext.records,
+      });
+      if (!isActivityRoundSelectable(coverage, normaliseActivityRound(entry.activityRound))) {
+        nextErrors[rowErrorKey(entry.id, "activityRound")] = "Complete the previous round before selecting this round.";
+      }
+    }
+    return nextErrors;
+  }, {});
+}
+
+function formErrorKey(key: string) {
+  return `form.${key}`;
+}
+
+function activityErrorKey(id: string, key: string) {
+  return `activity.${id}.${key}`;
+}
+
+function rowErrorKey(id: string, key: string) {
+  return `row.${id}.${key}`;
+}
+
 function validateEntry(entry: TrackerDraft, fields: string[]) {
   const nextErrors: Record<string, string> = {};
   const listedField = fields.find((field) => fieldKey(field) === fieldKey(entry.blockField));
   if (!PROGRAM_TYPES.includes(entry.programType as (typeof PROGRAM_TYPES)[number])) nextErrors.programType = "Select a listed Work Program.";
+  if (!entry.activityCode.trim()) nextErrors.activityCode = "Enter the activity code.";
   if (!entry.blockField) nextErrors.blockField = "Select a field.";
   else if (!listedField) nextErrors.blockField = "Select a field from the approved list.";
+  if (normaliseActivityRound(entry.activityRound) <= 0) nextErrors.activityRound = "Select an activity round.";
   if (!Number(entry.hectares) || Number(entry.hectares) <= 0) nextErrors.hectares = "Enter hectares above zero.";
   if (!entry.actualCompletionDate) nextErrors.actualCompletionDate = "Select the completion date.";
   return nextErrors;
@@ -576,8 +1009,9 @@ function entryToRecord(entry: BatchEntry, fields: FieldFeature[], fieldList: str
     reporterName: "Field Officer",
     programType: entry.programType,
     blockField: listedField,
-    taskName: entry.programType,
+    taskName: entry.activityCode.trim(),
     schedulerStage: "Completed",
+    activityRound: normaliseActivityRound(entry.activityRound),
     hectares: Number(entry.hectares),
     actualCompletionDate: entry.actualCompletionDate,
     deadline: entry.actualCompletionDate,
@@ -639,6 +1073,7 @@ function buildCoverageProjection({
     totalRounds: afterRounds.length,
     totalApprovedHa,
     totalPendingHa,
+    overTargetRounds: afterRounds.filter(isRoundOverTarget),
     entries: baseEntries.sort((a, b) => b.date.localeCompare(a.date)),
   };
 }
@@ -667,6 +1102,7 @@ function getCoverageEntries({
       id: record.id,
       date: record.actualCompletionDate || record.deadline || "",
       hectares: Number(record.hectares || 0),
+      activityRound: normaliseActivityRound(record.activityRound),
       status: record.syncStatus === "Pending Sync" ? "Pending Sync" : record.approvalStatus === "Approved" ? "Approved" : "Pending Approval",
     }) satisfies CoverageEntry);
   const queuedEntries = batchEntries
@@ -675,6 +1111,7 @@ function getCoverageEntries({
       id: entry.id,
       date: entry.actualCompletionDate,
       hectares: Number(entry.hectares || 0),
+      activityRound: normaliseActivityRound(entry.activityRound),
       status: "Batch" as const,
     }));
   const typingEntry = includeCurrentTyping && Number(currentEntry.hectares) > 0 && currentEntry.blockField
@@ -682,6 +1119,7 @@ function getCoverageEntries({
         id: "typing-entry",
         date: currentEntry.actualCompletionDate,
         hectares: Number(currentEntry.hectares),
+        activityRound: normaliseActivityRound(currentEntry.activityRound),
         status: "Typing" as const,
       }]
     : [];
@@ -714,38 +1152,59 @@ function allocateRounds(rounds: PlannedRound[], entries: CoverageEntry[]): Round
     unapprovedHa: 0,
     progress: 0,
   }));
-  let activeRoundIndex = 0;
-
   entries
     .filter((entry) => entry.hectares > 0)
     .sort((a, b) => a.date.localeCompare(b.date))
     .forEach((entry) => {
-      let remaining = entry.hectares;
-      while (remaining > 0 && states[activeRoundIndex]) {
-        const round = states[activeRoundIndex];
-        const balance = Math.max(round.targetHa - round.coveredHa, 0);
-        if (balance <= 0.0001) {
-          activeRoundIndex += 1;
-          continue;
-        }
-        const assigned = Math.min(remaining, balance);
-        round.coveredHa += assigned;
-        addStatusCoverage(round, entry.status, assigned);
-        remaining -= assigned;
-        if (round.coveredHa >= round.targetHa - 0.0001) activeRoundIndex += 1;
-      }
-
-      if (remaining > 0 && states.length) {
-        const lastRound = states[states.length - 1];
-        lastRound.coveredHa += remaining;
-        addStatusCoverage(lastRound, entry.status, remaining);
-      }
+      const roundIndex = Math.min(Math.max(normaliseActivityRound(entry.activityRound) - 1, 0), Math.max(states.length - 1, 0));
+      const round = states[roundIndex];
+      if (!round) return;
+      round.coveredHa += entry.hectares;
+      addStatusCoverage(round, entry.status, entry.hectares);
     });
 
   return states.map((round) => ({
     ...round,
     progress: round.targetHa > 0 ? Math.min(100, (round.coveredHa / round.targetHa) * 100) : 0,
   }));
+}
+
+function getActivityRoundOptions(coverage: CoverageProjection) {
+  const rounds = coverage.rounds.length ? coverage.rounds : [{ index: 0, label: "Round 1" }];
+  const maxSelectableRound = getMaxSelectableRound(coverage);
+  return rounds.map((round) => ({
+    label: String(round.index + 1),
+    value: String(round.index + 1),
+    disabled: round.index + 1 > maxSelectableRound,
+  }));
+}
+
+function isActivityRoundSelectable(coverage: CoverageProjection, activityRound: number) {
+  if (activityRound <= 0) return false;
+  const options = getActivityRoundOptions(coverage);
+  const option = options.find((item) => item.value === String(activityRound));
+  return Boolean(option && !option.disabled);
+}
+
+function getMaxSelectableRound(coverage: CoverageProjection) {
+  if (!coverage.rounds.length) return 1;
+  const firstIncompleteIndex = coverage.rounds.findIndex((round) => !isRoundComplete(round));
+  return firstIncompleteIndex === -1 ? coverage.rounds.length : firstIncompleteIndex + 1;
+}
+
+function isRoundComplete(round: RoundState) {
+  const tolerance = Math.max(0.01, round.targetHa * 0.0001);
+  return round.targetHa > 0 && round.coveredHa >= round.targetHa - tolerance;
+}
+
+function normaliseActivityRound(value: unknown) {
+  const round = Number(value);
+  return Number.isFinite(round) && round > 0 ? Math.floor(round) : 1;
+}
+
+function isRoundOverTarget(round: RoundState) {
+  const tolerance = Math.max(0.01, round.targetHa * 0.0001);
+  return round.targetHa > 0 && round.coveredHa > round.targetHa + tolerance;
 }
 
 function addStatusCoverage(round: RoundState, status: CoverageEntry["status"], hectares: number) {

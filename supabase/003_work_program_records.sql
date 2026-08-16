@@ -9,6 +9,7 @@ create table if not exists public.work_program_records (
   block_field text not null,
   task_name text not null default 'Completion',
   scheduler_stage text not null default 'Completed',
+  activity_round integer not null default 1 check (activity_round > 0),
   hectares numeric not null check (hectares > 0),
   actual_completion_date date not null,
   deadline date,
@@ -27,6 +28,7 @@ create table if not exists public.work_program_records (
 
 create index if not exists work_program_records_program_type_idx on public.work_program_records (program_type);
 create index if not exists work_program_records_block_field_idx on public.work_program_records (block_field);
+create index if not exists work_program_records_activity_round_idx on public.work_program_records (activity_round);
 create index if not exists work_program_records_actual_completion_date_idx on public.work_program_records (actual_completion_date desc);
 create index if not exists work_program_records_approval_status_idx on public.work_program_records (approval_status);
 

@@ -1,8 +1,8 @@
 "use client";
 
 import { Save, X } from "lucide-react";
-import { useState } from "react";
-import type { FieldFeatureCollection } from "@/lib/work-program/analytics";
+import { useMemo, useState } from "react";
+import { fieldKey, getProgrammeRows, type FieldFeatureCollection } from "@/lib/work-program/analytics";
 import { PROGRAM_TYPES } from "@/lib/work-program/config";
 import type { WorkProgramRecord } from "@/lib/types/work-program";
 
@@ -22,6 +22,10 @@ export function RecordEditor({ record, fieldMap, onClose, onSave }: RecordEditor
     .map((feature) => feature.properties.field_no || feature.properties.field_gis)
     .filter(Boolean)
     .sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+  const roundOptions = useMemo(
+    () => getActivityRoundOptions(draft.programType, draft.blockField, fieldMap, draft.activityRound),
+    [draft.activityRound, draft.blockField, draft.programType, fieldMap],
+  );
 
   const update = (key: keyof WorkProgramRecord, value: string | number) => {
     setDraft((current) => ({ ...current, [key]: value }));
@@ -36,7 +40,12 @@ export function RecordEditor({ record, fieldMap, onClose, onSave }: RecordEditor
     setSaving(true);
     setError("");
     try {
-      await onSave({ ...draft, taskName: draft.programType, deadline: draft.actualCompletionDate });
+      await onSave({
+        ...draft,
+        activityRound: normaliseActivityRound(draft.activityRound),
+        taskName: draft.programType,
+        deadline: draft.actualCompletionDate,
+      });
       onClose();
     } catch (saveError) {
       setError(saveError instanceof Error ? saveError.message : "Unable to save this record.");
@@ -59,8 +68,9 @@ export function RecordEditor({ record, fieldMap, onClose, onSave }: RecordEditor
         </div>
         <div className="form-grid">
           <label><span>Reporter</span><input value={draft.reporterName} onChange={(event) => update("reporterName", event.target.value)} required /></label>
-          <label><span>Work Program</span><select value={draft.programType} onChange={(event) => update("programType", event.target.value)}>{PROGRAM_TYPES.map((program) => <option key={program}>{program}</option>)}</select></label>
-          <label><span>Field</span><select value={draft.blockField} onChange={(event) => update("blockField", event.target.value)} required>{fields.map((field) => <option key={field}>{field}</option>)}</select></label>
+          <label><span>Work Program</span><select value={draft.programType} onChange={(event) => setDraft((current) => ({ ...current, programType: event.target.value, activityRound: 1 }))}>{PROGRAM_TYPES.map((program) => <option key={program}>{program}</option>)}</select></label>
+          <label><span>Field</span><select value={draft.blockField} onChange={(event) => setDraft((current) => ({ ...current, blockField: event.target.value, activityRound: 1 }))} required>{fields.map((field) => <option key={field}>{field}</option>)}</select></label>
+          <label><span>Activity Round</span><select value={normaliseActivityRound(draft.activityRound)} onChange={(event) => update("activityRound", Number(event.target.value))}>{roundOptions.map((round) => <option key={round.value} value={round.value}>{round.label}</option>)}</select></label>
           <label><span>Hectares</span><input min="0.000001" step="any" type="number" value={draft.hectares} onChange={(event) => update("hectares", Number(event.target.value))} required /></label>
           <label><span>Completion date</span><input type="date" value={draft.actualCompletionDate} onChange={(event) => update("actualCompletionDate", event.target.value)} required /></label>
           <label><span>Approval</span><select value={draft.approvalStatus || "Pending Approval"} onChange={(event) => update("approvalStatus", event.target.value)}><option>Pending Approval</option><option>Approved</option></select></label>
@@ -78,4 +88,21 @@ export function RecordEditor({ record, fieldMap, onClose, onSave }: RecordEditor
       </form>
     </div>
   );
+}
+
+function getActivityRoundOptions(programType: string, blockField: string, fieldMap: FieldFeatureCollection, currentRound: unknown) {
+  const programmeRow = getProgrammeRows(programType, fieldMap.features).find((row) => fieldKey(row.field) === fieldKey(blockField));
+  const plannedRounds = programmeRow
+    ? Object.values(programmeRow.months).filter((value) => Number(value) > 0).length
+    : 0;
+  const roundCount = Math.max(1, plannedRounds, normaliseActivityRound(currentRound));
+  return Array.from({ length: roundCount }, (_, index) => ({
+    label: `Round ${index + 1}`,
+    value: index + 1,
+  }));
+}
+
+function normaliseActivityRound(value: unknown) {
+  const round = Number(value);
+  return Number.isFinite(round) && round > 0 ? Math.floor(round) : 1;
 }
