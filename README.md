@@ -24,7 +24,7 @@ The root route redirects to `/management/work-program`.
 ## Features
 
 - Work Program completion capture by activity code, field, programme type, declared round, hectares, date, remarks, batch review, confirmation, and round coverage preview.
-- Work Program management views with approval workflow, daily tracking, monthly dashboard table/map monitoring, and CSV export.
+- Work Program management views with approval workflow, grouped Daily View records, monthly field tracking, monthly dashboard table/map monitoring, and CSV export.
 - PMV daily machine status reporting for working, breakdown, and idle machines.
 - PMV management dashboard for readiness, breakdown/idle visibility, repeat issue tracking, action queue, and export.
 - Harvesting Interval prototype with Harvesting Report and Field Status views, monthly grid, daily forecast/prod-vs-dispatch filters, metric toggles, dispatch comparison, activity overlays, field interval summary, map view, and CSV export.

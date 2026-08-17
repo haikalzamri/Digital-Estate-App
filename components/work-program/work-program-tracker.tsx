@@ -1,6 +1,7 @@
 "use client";
 
-import { CheckCircle2, ChevronDown, Plus, RefreshCcw, Save, X } from "lucide-react";
+import { CheckCircle2, ChevronDown, ListChecks, Plus, RefreshCcw, Save, X } from "lucide-react";
+import Link from "next/link";
 import { useCallback, useMemo, useState } from "react";
 import { ModuleShell } from "@/components/module-shell";
 import { useFieldMap } from "@/components/work-program/use-field-map";
@@ -454,9 +455,14 @@ export function WorkProgramTracker() {
             <p>Work Program input</p>
             <h2 id="tracker-heading">Submit field completion</h2>
           </div>
-          <button className="secondary-button" type="button" onClick={reset}>
-            <RefreshCcw aria-hidden="true" size={16} /> Clear
-          </button>
+          <div className="toolbar-actions">
+            <Link className="secondary-button" href="/management/work-program?view=records">
+              <ListChecks aria-hidden="true" size={16} /> View Daily Records
+            </Link>
+            <button className="secondary-button" type="button" onClick={reset}>
+              <RefreshCcw aria-hidden="true" size={16} /> Clear
+            </button>
+          </div>
         </div>
 
         {lastSubmission ? (
