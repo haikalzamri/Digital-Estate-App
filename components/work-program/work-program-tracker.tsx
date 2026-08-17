@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useCallback, useMemo, useState } from "react";
 import { ModuleShell } from "@/components/module-shell";
 import { useFieldMap } from "@/components/work-program/use-field-map";
+import { useApprovedProgrammeNames } from "@/components/work-program/use-programme-plans";
 import { useWorkProgramData } from "@/components/work-program/use-work-program-data";
 import {
   fieldKey,
@@ -15,7 +16,7 @@ import {
   type DashboardRow,
   type FieldFeature,
 } from "@/lib/work-program/analytics";
-import { DASHBOARD_YEAR, MONTHS_2026, PROGRAM_TYPES, monthsForYear } from "@/lib/work-program/config";
+import { DASHBOARD_YEAR, MONTHS_2026, monthsForYear } from "@/lib/work-program/config";
 import type { WorkProgramRecord } from "@/lib/types/work-program";
 
 type TrackerDraft = {
@@ -123,6 +124,7 @@ const createTrackerFormState = (overrides: Partial<TrackerHeader> & Pick<Partial
 export function WorkProgramTracker() {
   const fieldMap = useFieldMap();
   const data = useWorkProgramData();
+  const approvedProgramOptions = useApprovedProgrammeNames();
   const [tracker, setTracker] = useState<TrackerFormState>(() => createTrackerFormState());
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
@@ -258,6 +260,7 @@ export function WorkProgramTracker() {
     const rowErrors = buildActivityErrors(sourceActivity, fields, {
       batchEntries: tracker.activities.flatMap((activity) => activity.entries),
       fields: fieldMap.features,
+      programOptions: approvedProgramOptions,
       records: data.records,
     });
     if (Object.keys(rowErrors).length) {
@@ -394,6 +397,7 @@ export function WorkProgramTracker() {
       ...buildActivityErrors(activity, fields, {
         batchEntries: tracker.activities.flatMap((item) => item.entries),
         fields: fieldMap.features,
+        programOptions: approvedProgramOptions,
         records: data.records,
       }),
     }), {});
@@ -412,7 +416,7 @@ export function WorkProgramTracker() {
       return;
     }
 
-    const invalidIndex = submissionEntries.findIndex((entry) => Object.keys(validateEntry(entry, fields)).length > 0);
+    const invalidIndex = submissionEntries.findIndex((entry) => Object.keys(validateEntry(entry, fields, approvedProgramOptions)).length > 0);
     if (invalidIndex >= 0) {
       setErrors((current) => ({ ...current, batch: `Entry ${invalidIndex + 1} has missing or invalid information.` }));
       return;
@@ -532,7 +536,7 @@ export function WorkProgramTracker() {
                           <TrackerField label="Work Program" error={errors[activityErrorKey(activity.id, "programType")]} required>
                             <select value={activity.programType} onChange={(event) => updateActivityHeader(activity.id, "programType", event.target.value)}>
                               <option value="">Select work program</option>
-                              {PROGRAM_TYPES.map((program) => <option key={program}>{program}</option>)}
+                              {approvedProgramOptions.map((program) => <option key={program}>{program}</option>)}
                             </select>
                           </TrackerField>
                         </div>
@@ -949,10 +953,10 @@ function hasDraftInput(draft: TrackerDraft) {
 function buildActivityErrors(
   activity: ActivityDraft,
   fieldList: string[],
-  coverageContext?: { batchEntries: BatchEntry[]; fields: FieldFeature[]; records: WorkProgramRecord[] },
+  coverageContext?: { batchEntries: BatchEntry[]; fields: FieldFeature[]; programOptions: string[]; records: WorkProgramRecord[] },
 ) {
   return getEntriesForSubmission(activity.entries).reduce<Record<string, string>>((nextErrors, entry) => {
-    const validation = validateEntry(entry, fieldList);
+    const validation = validateEntry(entry, fieldList, coverageContext?.programOptions || []);
     Object.entries(validation).forEach(([key, message]) => {
       if (key === "actualCompletionDate") {
         nextErrors[formErrorKey(key)] = message;
@@ -996,10 +1000,10 @@ function rowErrorKey(id: string, key: string) {
   return `row.${id}.${key}`;
 }
 
-function validateEntry(entry: TrackerDraft, fields: string[]) {
+function validateEntry(entry: TrackerDraft, fields: string[], programOptions: string[]) {
   const nextErrors: Record<string, string> = {};
   const listedField = fields.find((field) => fieldKey(field) === fieldKey(entry.blockField));
-  if (!PROGRAM_TYPES.includes(entry.programType as (typeof PROGRAM_TYPES)[number])) nextErrors.programType = "Select a listed Work Program.";
+  if (!programOptions.some((program) => fieldKey(program) === fieldKey(entry.programType))) nextErrors.programType = "Select an approved Work Program.";
   if (!entry.activityCode.trim()) nextErrors.activityCode = "Enter the activity code.";
   if (!entry.blockField) nextErrors.blockField = "Select a field.";
   else if (!listedField) nextErrors.blockField = "Select a field from the approved list.";

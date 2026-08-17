@@ -1,8 +1,9 @@
 "use client";
 
-import { CalendarDays, Database, Download, Eye, EyeOff, Info, MapPinned, Pencil, Plus, RotateCcw, Save, Table2, Trash2, X } from "lucide-react";
+import { CalendarDays, Database, Download, Eye, EyeOff, Info, MapPinned, Plus, RotateCcw, Save, Table2, Trash2, X } from "lucide-react";
 import { useCallback, useMemo, useState, useSyncExternalStore } from "react";
 import { DashboardFieldMap } from "@/components/maps/work-program-map";
+import { useApprovedProgrammeNames } from "@/components/work-program/use-programme-plans";
 import {
   dashboardYearLabel,
   fieldKey,
@@ -71,7 +72,7 @@ function serverMonthSnapshot() {
 }
 
 export function WorkProgramDashboard({ fieldMap, records, loading, source }: DashboardProps) {
-  const [programOptions, setProgramOptions] = useState<string[]>(() => [...PROGRAM_TYPES]);
+  const approvedProgramOptions = useApprovedProgrammeNames();
   const [programmeRowsByProgram, setProgrammeRowsByProgram] = useState<ProgrammeRowsByName>({});
   const [draftProgramOptions, setDraftProgramOptions] = useState<string[]>([]);
   const [draftRowsByProgram, setDraftRowsByProgram] = useState<ProgrammeRowsByName>({});
@@ -94,7 +95,7 @@ export function WorkProgramDashboard({ fieldMap, records, loading, source }: Das
     () => getDashboardRows(programType, records, fieldMap.features, selectedYear),
     [fieldMap.features, programType, records, selectedYear],
   );
-  const activeProgramOptions = editMode ? draftProgramOptions : programOptions;
+  const activeProgramOptions = editMode ? draftProgramOptions : approvedProgramOptions;
   const currentProgrammeRows = useMemo(() => {
     const rows = editMode ? draftRowsByProgram[programType] : programmeRowsByProgram[programType];
     return cloneRows(rows || baseDashboard.programmeRows);
@@ -179,24 +180,6 @@ export function WorkProgramDashboard({ fieldMap, records, loading, source }: Das
     return cloneRows(programmeRowsByProgram[programme] || (programme === programType ? baseDashboard.programmeRows : templateRowsFromFields(programme, fieldMap.features)));
   }, [baseDashboard.programmeRows, fieldMap.features, programType, programmeRowsByProgram]);
 
-  const startEditMode = () => {
-    const baselineRows = buildEditableRowsByProgram(programOptions, {
-      activeProgramme: programType,
-      activeRows: currentProgrammeRows,
-      fieldMap,
-      records,
-      rowsByProgram: programmeRowsByProgram,
-      year: selectedYear,
-    });
-    setView("table");
-    setExpandedProgrammeFields(new Set(programmeFieldKeys));
-    setDraftProgramOptions(programOptions);
-    setDraftRowsByProgram(cloneRowsByProgram(baselineRows));
-    setEditBaselineProgramOptions([...programOptions]);
-    setEditBaselineRowsByProgram(cloneRowsByProgram(baselineRows));
-    setEditMode(true);
-  };
-
   const saveTemplateChanges = () => {
     const nextRows = {
       ...programmeRowsByProgram,
@@ -205,7 +188,6 @@ export function WorkProgramDashboard({ fieldMap, records, loading, source }: Das
     Object.keys(nextRows).forEach((programme) => {
       if (!draftProgramOptions.includes(programme)) delete nextRows[programme];
     });
-    setProgramOptions(draftProgramOptions);
     setProgrammeRowsByProgram(nextRows);
     setEditMode(false);
     setNewProgramName("");
@@ -399,11 +381,7 @@ export function WorkProgramDashboard({ fieldMap, records, loading, source }: Das
                 <X aria-hidden="true" size={16} /> Cancel
               </button>
             </>
-          ) : (
-            <button className="command-button" type="button" onClick={startEditMode}>
-              <Pencil aria-hidden="true" size={16} /> Edit
-            </button>
-          )}
+          ) : null}
         </div>
       </div>
 
@@ -841,31 +819,40 @@ function MapRoundDetails({ context }: { context: MapRoundContext | null }) {
 }
 
 function ProgrammeChangeLog({ logs, programType }: { logs: ChangeLogEntry[]; programType: string }) {
-  const groupedLogs = groupLogsByDay(logs);
+  const latestLog = logs[0] || null;
 
   return (
     <aside className="data-panel programme-log-panel">
       <div className="panel-heading">
         <div>
-          <h3>Change logs</h3>
-          <p>Showing prototype edit activity for {programType}.</p>
+          <h3>Programme Edit Flow</h3>
+          <p>Showing saved changes for {programType}.</p>
         </div>
       </div>
-      <div className="programme-log-list">
-        {groupedLogs.length ? groupedLogs.map(([day, entries]) => (
-          <section className="programme-log-day" key={day}>
-            <h4>{day}</h4>
-            {entries.map((log) => (
-              <article key={log.id}>
-                <span>{log.time}</span>
-                <strong>{log.action}</strong>
-                <small>{log.programme}</small>
-                <p>{log.detail}</p>
+      {latestLog ? (
+        <>
+          <div className="programme-edit-current">
+            <span>Latest Saved Change</span>
+            <strong>{latestLog.action}</strong>
+            <p>{latestLog.detail}</p>
+            <small>{latestLog.day} · {latestLog.time}</small>
+          </div>
+          <div className="programme-edit-flow" aria-label="Programme edit process flow">
+            {logs.map((log, index) => (
+              <article className={`programme-edit-step ${index === 0 ? "current" : ""}`} key={log.id}>
+                <div className="programme-edit-marker">{index === 0 ? "Now" : index + 1}</div>
+                <div className="programme-edit-card">
+                  <div>
+                    <strong>{log.action}</strong>
+                    <span>{log.day} · {log.time}</span>
+                  </div>
+                  <p>{log.detail}</p>
+                </div>
               </article>
             ))}
-          </section>
-        )) : <p className="empty-state">No edit activity for this work program yet.</p>}
-      </div>
+          </div>
+        </>
+      ) : <p className="empty-state">No edit activity for this work program yet.</p>}
     </aside>
   );
 }
@@ -1060,30 +1047,6 @@ function mapStatusFieldKey(status: MapFieldStatus) {
   return fieldKey(status.field.properties.field_no || status.field.properties.field_gis);
 }
 
-function buildEditableRowsByProgram(
-  options: string[],
-  {
-    activeProgramme,
-    activeRows,
-    fieldMap,
-    records,
-    rowsByProgram,
-    year,
-  }: {
-    activeProgramme: string;
-    activeRows: DashboardRow[];
-    fieldMap: FieldFeatureCollection;
-    records: WorkProgramRecord[];
-    rowsByProgram: ProgrammeRowsByName;
-    year: number;
-  },
-) {
-  return Object.fromEntries(options.map((programme) => {
-    const rows = rowsByProgram[programme] || (programme === activeProgramme ? activeRows : getDashboardRows(programme, records, fieldMap.features, year).programmeRows);
-    return [programme, cloneRows(rows)];
-  }));
-}
-
 function buildSavedEditLogDetail({
   afterOptions,
   afterRowsByProgram,
@@ -1200,12 +1163,6 @@ function cloneRowsByProgram(rowsByProgram: ProgrammeRowsByName) {
 
 function fieldCategoryLabel(field: FieldFeature) {
   return String(field.properties.field_type || "").includes("IMMATURE") ? "Immature" : "Mature";
-}
-
-function groupLogsByDay(logs: ChangeLogEntry[]) {
-  const groups = new Map<string, ChangeLogEntry[]>();
-  logs.forEach((log) => groups.set(log.day, [...(groups.get(log.day) || []), log]));
-  return [...groups.entries()];
 }
 
 function formatLogDay(date: Date) {

@@ -13,6 +13,7 @@ The current production modules are:
 | Module | Audience | Route |
 | --- | --- | --- |
 | Work Program Monthly View and Daily View | Management | [`/management/work-program`](https://digital-estate-app.vercel.app/management/work-program) |
+| Work Program Programme Plan | Management | [`/management/work-program/programmes`](https://digital-estate-app.vercel.app/management/work-program/programmes) |
 | PMV Dashboard | Management | [`/management/pmv`](https://digital-estate-app.vercel.app/management/pmv) |
 | Harvesting Interval | Management | [`/management/harvesting-interval`](https://digital-estate-app.vercel.app/management/harvesting-interval) |
 | Costbook prototype | Management | [`/management/costbook`](https://digital-estate-app.vercel.app/management/costbook) |
@@ -24,7 +25,7 @@ The root route redirects to `/management/work-program`.
 ## Features
 
 - Work Program completion capture by activity code, field, programme type, declared round, hectares, date, remarks, batch review, confirmation, and round coverage preview.
-- Work Program management views with approval workflow, grouped Daily View records, monthly field tracking, monthly dashboard table/map monitoring, and CSV export.
+- Work Program management views with approval workflow, grouped Daily View records, monthly field tracking, monthly dashboard table/map monitoring, programme plan control, and CSV export.
 - PMV daily machine status reporting for working, breakdown, and idle machines.
 - PMV management dashboard for readiness, breakdown/idle visibility, repeat issue tracking, action queue, and export.
 - Harvesting Interval prototype with Harvesting Report and Field Status views, monthly grid, daily forecast/prod-vs-dispatch filters, metric toggles, dispatch comparison, activity overlays, field interval summary, map view, and CSV export.
@@ -91,6 +92,7 @@ supabase/
 | Dataset | Source |
 | --- | --- |
 | Work Program records | Supabase table `public.work_program_records` |
+| Work Program programme plans | Prototype browser-local plan state seeded from approved static defaults |
 | PMV records | Supabase table `public.pmv_records` |
 | Field boundaries | `public/data/field-map-data.geojson` |
 | Harvesting Interval prototype | Static fallback data in `lib/data/harvesting-interval-source.json` |
@@ -215,6 +217,7 @@ Recommended release flow:
 
 - PMV and Work Program APIs use server-side Supabase service-role credentials.
 - User authentication and role-based permissions are not yet implemented for API endpoints.
+- Work Program Programme Plan governance is currently a prototype UI/local-state control and is not yet backed by a production approval table.
 - Harvesting Interval is currently a static-data prototype and is not yet integrated with Supabase.
 - Costbook is currently a management-only static dummy-data prototype and is not yet connected to an approved source file.
 - Rainfall data is shown as a placeholder until an approved rainfall source is integrated.

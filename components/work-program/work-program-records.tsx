@@ -4,6 +4,7 @@ import { Check, Edit3, Plus, Search, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { RecordEditor } from "@/components/work-program/record-editor";
+import { useApprovedProgrammeNames } from "@/components/work-program/use-programme-plans";
 import { dashboardSourceRows, fieldKey, formatDate, formatNumber, type FieldFeatureCollection } from "@/lib/work-program/analytics";
 import { PROGRAM_TYPES } from "@/lib/work-program/config";
 import type { WorkProgramRecord } from "@/lib/types/work-program";
@@ -22,6 +23,7 @@ type ApprovalTab = "Pending Approval" | "Approved";
 
 export function WorkProgramRecords({ fieldMap, records, loading, source, onSave, onApprove, onDelete }: RecordsProps) {
   const currentMonth = new Date().toISOString().slice(0, 7);
+  const approvedProgramOptions = useApprovedProgrammeNames();
   const [search, setSearch] = useState("");
   const [programFilter, setProgramFilter] = useState("All");
   const [fieldFilter, setFieldFilter] = useState("All");
@@ -34,6 +36,8 @@ export function WorkProgramRecords({ fieldMap, records, loading, source, onSave,
   const [openTrackingCell, setOpenTrackingCell] = useState("");
   const [editingRecord, setEditingRecord] = useState<WorkProgramRecord | null>(null);
   const trackingPanelRef = useRef<HTMLDivElement>(null);
+  const activeProgramFilter = programFilter === "All" || approvedProgramOptions.includes(programFilter) ? programFilter : "All";
+  const activeTrackingProgram = approvedProgramOptions.includes(trackingProgram) ? trackingProgram : (approvedProgramOptions[0] || PROGRAM_TYPES[0]);
 
   const fieldNames = useMemo(
     () => fieldMap.features
@@ -67,7 +71,7 @@ export function WorkProgramRecords({ fieldMap, records, loading, source, onSave,
   const broadlyFiltered = useMemo(() => {
     const term = search.trim().toLowerCase();
     return records.filter((record) => {
-      if (programFilter !== "All" && record.programType !== programFilter) return false;
+      if (activeProgramFilter !== "All" && record.programType !== activeProgramFilter) return false;
       if (fieldFilter !== "All" && fieldKey(record.blockField) !== fieldKey(fieldFilter)) return false;
       if (dateFilter && (record.actualCompletionDate || record.deadline || "") !== dateFilter) return false;
       if (roundFilter !== "All" && String(normaliseActivityRound(record.activityRound)) !== roundFilter) return false;
@@ -75,7 +79,7 @@ export function WorkProgramRecords({ fieldMap, records, loading, source, onSave,
       return [record.blockField, record.programType, record.taskName, record.reporterName, record.remarks, record.actualCompletionDate]
         .some((value) => String(value || "").toLowerCase().includes(term));
     });
-  }, [dateFilter, fieldFilter, programFilter, records, roundFilter, search]);
+  }, [activeProgramFilter, dateFilter, fieldFilter, records, roundFilter, search]);
 
   const listRecords = broadlyFiltered.filter((record) => record.approvalStatus === approvalTab);
   const pendingGroups = useMemo(() => groupPendingApprovalRecords(listRecords), [listRecords]);
@@ -101,7 +105,7 @@ export function WorkProgramRecords({ fieldMap, records, loading, source, onSave,
     const date = `${trackingMonth}-${String(day).padStart(2, "0")}`;
     const isCurrentCellFilter = (
       openTrackingCell === cellKey &&
-      programFilter === trackingProgram &&
+      activeProgramFilter === activeTrackingProgram &&
       fieldKey(fieldFilter) === fieldKey(field) &&
       dateFilter === date &&
       roundFilter === "All"
@@ -120,14 +124,14 @@ export function WorkProgramRecords({ fieldMap, records, loading, source, onSave,
     setSelectedRecordId(entries[0]?.id || "");
     setOpenTrackingCell(cellKey);
     setDateFilter(date);
-    setProgramFilter(trackingProgram);
+    setProgramFilter(activeTrackingProgram);
     setFieldFilter(field);
     setRoundFilter("All");
-  }, [dateFilter, fieldFilter, openTrackingCell, programFilter, roundFilter, trackingMonth, trackingProgram]);
+  }, [activeProgramFilter, activeTrackingProgram, dateFilter, fieldFilter, openTrackingCell, roundFilter, trackingMonth]);
 
   const monthRecords = useMemo(
-    () => records.filter((record) => record.programType === trackingProgram && record.actualCompletionDate.slice(0, 7) === trackingMonth),
-    [records, trackingMonth, trackingProgram],
+    () => records.filter((record) => record.programType === activeTrackingProgram && record.actualCompletionDate.slice(0, 7) === trackingMonth),
+    [activeTrackingProgram, records, trackingMonth],
   );
   const days = daysInMonth(trackingMonth);
   const trackingFields = fieldNames.length
@@ -135,18 +139,18 @@ export function WorkProgramRecords({ fieldMap, records, loading, source, onSave,
     : [...new Set(monthRecords.map((record) => record.blockField))].sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
   const totalTrackingHa = trackingFields.reduce((sum, field) => sum + (fieldHaByKey.get(fieldKey(field)) || 0), 0);
   const monthTotalHa = monthRecords.reduce((sum, record) => sum + Number(record.hectares || 0), 0);
-  const selectedDay = selectedRecord?.programType === trackingProgram && selectedRecord.actualCompletionDate.slice(0, 7) === trackingMonth
+  const selectedDay = selectedRecord?.programType === activeTrackingProgram && selectedRecord.actualCompletionDate.slice(0, 7) === trackingMonth
     ? Number(selectedRecord.actualCompletionDate.slice(8, 10))
     : 0;
 
   useEffect(() => {
     if (!selectedRecord) return;
-    if (selectedRecord.programType !== trackingProgram) return;
+    if (selectedRecord.programType !== activeTrackingProgram) return;
     if (selectedRecord.actualCompletionDate.slice(0, 7) !== trackingMonth) return;
 
     const target = trackingPanelRef.current?.querySelector<HTMLElement>("[data-selected-tracking-cell='true']");
     target?.scrollIntoView({ behavior: "smooth", block: "center", inline: "center" });
-  }, [selectedRecord, trackingMonth, trackingProgram]);
+  }, [activeTrackingProgram, selectedRecord, trackingMonth]);
 
   return (
     <section className="workspace-section" aria-labelledby="work-program-records-title">
@@ -166,7 +170,7 @@ export function WorkProgramRecords({ fieldMap, records, loading, source, onSave,
       <div className="data-panel records-panel">
         <div className="records-filter-bar">
           <label className="compact-select"><span>Date</span><input type="date" value={dateFilter} onChange={(event) => setDateFilter(event.target.value)} /></label>
-          <label className="compact-select"><span>Activity</span><select value={programFilter} onChange={(event) => setProgramFilter(event.target.value)}><option>All</option>{PROGRAM_TYPES.map((program) => <option key={program}>{program}</option>)}</select></label>
+          <label className="compact-select"><span>Activity</span><select value={activeProgramFilter} onChange={(event) => setProgramFilter(event.target.value)}><option>All</option>{approvedProgramOptions.map((program) => <option key={program}>{program}</option>)}</select></label>
           <label className="compact-select"><span>Field</span><select value={fieldFilter} onChange={(event) => setFieldFilter(event.target.value)}><option>All</option>{fieldNames.map((field) => <option key={field}>{field}</option>)}</select></label>
           <label className="compact-select"><span>Round</span><select value={roundFilter} onChange={(event) => setRoundFilter(event.target.value)}><option>All</option>{roundOptions.map((round) => <option key={round} value={round}>R{round}</option>)}</select></label>
           <label className="search-control"><Search aria-hidden="true" size={16} /><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search records" /></label>
@@ -244,7 +248,7 @@ export function WorkProgramRecords({ fieldMap, records, loading, source, onSave,
         <div className="panel-heading">
           <div><h3>Monthly Field Tracking</h3><p>Approved values are green; not-approved values are orange.</p></div>
           <div className="toolbar-actions">
-            <label className="compact-select"><span>Program</span><select value={trackingProgram} onChange={(event) => setTrackingProgram(event.target.value)}>{PROGRAM_TYPES.map((program) => <option key={program}>{program}</option>)}</select></label>
+            <label className="compact-select"><span>Program</span><select value={activeTrackingProgram} onChange={(event) => setTrackingProgram(event.target.value)}>{approvedProgramOptions.map((program) => <option key={program}>{program}</option>)}</select></label>
             <label className="compact-select"><span>Month</span><input type="month" value={trackingMonth} onChange={(event) => setTrackingMonth(event.target.value)} /></label>
           </div>
         </div>
@@ -258,7 +262,7 @@ export function WorkProgramRecords({ fieldMap, records, loading, source, onSave,
                 const monthTotal = fieldRecords.reduce((sum, record) => sum + Number(record.hectares || 0), 0);
                 const selectedRow = Boolean(
                   selectedRecord &&
-                  selectedRecord.programType === trackingProgram &&
+                  selectedRecord.programType === activeTrackingProgram &&
                   selectedRecord.actualCompletionDate.slice(0, 7) === trackingMonth &&
                   fieldKey(selectedRecord.blockField) === fieldKey(field),
                 );

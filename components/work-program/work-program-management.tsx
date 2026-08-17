@@ -1,6 +1,7 @@
 "use client";
 
-import { LayoutDashboard, ListChecks } from "lucide-react";
+import { ClipboardList, LayoutDashboard, ListChecks } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
 import { ModuleShell } from "@/components/module-shell";
@@ -51,6 +52,10 @@ export function WorkProgramManagement({ initialView }: { initialView: Management
           <ListChecks aria-hidden="true" size={16} />
           Daily View
         </button>
+        <Link href="/management/work-program/programmes">
+          <ClipboardList aria-hidden="true" size={16} />
+          Programme Plan
+        </Link>
       </nav>
 
       {data.message ? (
