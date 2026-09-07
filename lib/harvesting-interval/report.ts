@@ -27,7 +27,6 @@ export function getHarvestingIntervalReport(source: HarvestingIntervalSource, se
   const monthStart = new Date(Date.UTC(year, monthNumber - 1, 1));
   const monthEnd = new Date(Date.UTC(year, monthNumber, 0));
   const calculationStart = addDays(baseDate, 1);
-  const dataMaskingAdjustment = getDataMaskingAdjustment(source);
 
   const templateFields = source.fields.filter((field) => field.hasReferenceBaseline);
   const fields = templateFields.map((field) =>
@@ -41,7 +40,6 @@ export function getHarvestingIntervalReport(source: HarvestingIntervalSource, se
       calculationStart,
       monthStart,
       monthEnd,
-      dataMaskingAdjustment,
     ),
   );
   const days = fields[0]?.cells.map((cell) => ({ ...cell })) || buildMonthDays(monthStart, monthEnd);
@@ -59,7 +57,7 @@ export function getHarvestingIntervalReport(source: HarvestingIntervalSource, se
     days.map((day) => [day.date, source.dailyTotals?.[day.date] || emptyMetrics()]),
   );
   const dispatchDailyTotals = Object.fromEntries(
-    days.map((day) => [day.date, normalizeDispatchMetrics(source.dispatchDailyTotals?.[day.date], dataMaskingAdjustment)]),
+    days.map((day) => [day.date, normalizeDispatchMetrics(source.dispatchDailyTotals?.[day.date])]),
   );
   const dailyBalances = Object.fromEntries(
     days.map((day) => [day.date, calculateBalance(dailyTotals[day.date], dispatchDailyTotals[day.date])]),
@@ -130,7 +128,6 @@ function buildFieldReport(
   calculationStart: Date,
   monthStart: Date,
   monthEnd: Date,
-  dataMaskingAdjustment: number,
 ) {
   let currentInterval = field.baseInterval;
   let lastHarvestIndex: number | null = currentInterval >= 1 && currentInterval <= 5 ? 0 : null;
@@ -141,7 +138,7 @@ function buildFieldReport(
     const isoDate = toIsoDate(day);
     const dayIndex = diffDays(day, baseDate);
     const activity = activityByDate[isoDate] || null;
-    const dispatch = dispatchByDate[isoDate] ? normalizeDispatchMetrics(dispatchByDate[isoDate], dataMaskingAdjustment) : null;
+    const dispatch = dispatchByDate[isoDate] ? normalizeDispatchMetrics(dispatchByDate[isoDate]) : null;
     const overlays = overlayByDate[isoDate] || [];
     const overlayValues = overlayValuesByDate[isoDate] || {};
     const harvest = Boolean(activity);
@@ -242,26 +239,18 @@ function sumDispatchMetrics(metrics: HarvestingIntervalDispatchMetrics[]): Harve
 
 function normalizeDispatchMetrics(
   metrics: HarvestingIntervalDispatchMetrics | undefined,
-  dataMaskingAdjustment: number,
 ): HarvestingIntervalDispatchMetrics {
   if (!metrics) return emptyDispatchMetrics();
 
   return {
     ...metrics,
-    tonnage: calculateDispatchTonnage(metrics.kg, dataMaskingAdjustment),
+    tonnage: calculateDispatchTonnage(metrics.kg),
   };
 }
 
-function calculateDispatchTonnage(maskedKg: number, dataMaskingAdjustment: number) {
-  if (!maskedKg) return 0;
-
-  const sourceKg = dataMaskingAdjustment ? maskedKg - dataMaskingAdjustment : maskedKg;
-  return roundMetric(sourceKg / 1000 + dataMaskingAdjustment, 3);
-}
-
-function getDataMaskingAdjustment(source: HarvestingIntervalSource) {
-  const adjustment = source.metadata.dataMasking?.adjustment;
-  return typeof adjustment === "number" && Number.isFinite(adjustment) ? adjustment : 0;
+function calculateDispatchTonnage(kg: number) {
+  if (!kg) return 0;
+  return roundMetric(kg / 1000, 3);
 }
 
 function roundMetric(value: number, decimals: number) {

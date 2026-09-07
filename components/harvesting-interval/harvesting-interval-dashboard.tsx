@@ -32,24 +32,16 @@ const METRIC_OPTIONS: Array<{ key: HarvestingIntervalMetricKey; label: string; l
 ];
 
 const OVERLAY_COLORS: Record<string, string> = {
-  HM: "#2563eb",
-  QF: "#0891b2",
-  QG: "#dc2626",
-  R1: "#9333ea",
   LF: "#16a34a",
-  C1: "#475569",
-  QC: "#dc2626",
+  Cutter: "#dc2626",
 };
 
-const VALUE_OVERLAY_CODES = ["C1", "QC", "LF"] as const;
-const HARVESTING_REPORT_MODES = [
-  { key: "daily-forecast", label: "Daily Harvesting Forecast" },
-  { key: "production-dispatch", label: "Production vs Dispatch" },
-] as const;
-const FIELD_STATUS_MODES = [
-  { key: "daily-forecast", label: "Daily Forecast" },
-  { key: "production", label: "Production" },
-] as const;
+const CUTTER_SOURCE_CODES = ["C1", "QC"] as const;
+const OVERLAY_CODES_BY_METRIC: Record<HarvestingIntervalMetricKey, string[]> = {
+  hectare: ["LF"],
+  bunches: ["LF", "Cutter"],
+  tonnage: ["LF"],
+};
 
 const RAINFALL_DATA_LABEL = "Rainfall Data";
 const RAINFALL_PLACEHOLDER = "-";
@@ -78,8 +70,6 @@ const INTERVAL_STATUS_COLOURS = {
 
 type TotalColumnKind = "production" | "dispatch" | "balance";
 type HarvestingDashboardTab = "harvesting-report" | "field-status";
-type HarvestingReportMode = typeof HARVESTING_REPORT_MODES[number]["key"];
-type FieldStatusMode = typeof FIELD_STATUS_MODES[number]["key"];
 
 type TotalColumn = {
   id: string;
@@ -117,8 +107,6 @@ export function HarvestingIntervalDashboard() {
   const [selectedMonth, setSelectedMonth] = useState(getDefaultHarvestingMonth(source));
   const [summaryAsOfDate, setSummaryAsOfDate] = useState(source.metadata.lastActivityDate);
   const [selectedSummaryField, setSelectedSummaryField] = useState("");
-  const [reportMode, setReportMode] = useState<HarvestingReportMode>("production-dispatch");
-  const [fieldStatusMode, setFieldStatusMode] = useState<FieldStatusMode>("production");
   const [selectedMetric, setSelectedMetric] = useState<HarvestingIntervalMetricKey>("hectare");
   const [expandedDates, setExpandedDates] = useState<Set<string>>(new Set());
   const [expandedTotalGroups, setExpandedTotalGroups] = useState<Set<HarvestingIntervalMetricKey>>(new Set());
@@ -127,16 +115,19 @@ export function HarvestingIntervalDashboard() {
   const report = useMemo(() => getHarvestingIntervalReport(source, selectedMonth), [selectedMonth]);
   const summaryReport = useMemo(() => getHarvestingIntervalReport(source, summaryAsOfDate.slice(0, 7)), [summaryAsOfDate]);
   const dayGroups = useMemo(() => getHarvestingDayGroups(report.fields), [report.fields]);
-  const isProductionDispatch = reportMode === "production-dispatch";
   const totalColumns = useMemo(
-    () => isProductionDispatch ? getTotalColumns(report, expandedTotalGroups) : [],
-    [expandedTotalGroups, isProductionDispatch, report],
+    () => getTotalColumns(report, expandedTotalGroups),
+    [expandedTotalGroups, report],
   );
   const fieldIntervalSummary = useMemo(() => getFieldIntervalSummary(summaryReport, source, summaryAsOfDate), [summaryReport, summaryAsOfDate]);
   const selectedSummaryRow = fieldIntervalSummary.find((row) => row.field === selectedSummaryField) || null;
-  const overlayCodes = useMemo(() => getOverlayCodes(source), []);
+  const overlayCodes = useMemo(() => getOverlayCodes(selectedMetric), [selectedMetric]);
+  const selectedVisibleOverlays = useMemo(
+    () => new Set([...selectedOverlays].filter((code) => overlayCodes.includes(code))),
+    [overlayCodes, selectedOverlays],
+  );
   const metricLabel = METRIC_OPTIONS.find((option) => option.key === selectedMetric)?.longLabel || "Actual Covered Ha";
-  const reportModeLabel = HARVESTING_REPORT_MODES.find((option) => option.key === reportMode)?.label || "Production vs Dispatch";
+  const reportModeLabel = "Production vs Dispatch";
 
   const toggleDate = (date: string) => {
     setExpandedDates((current) => {
@@ -175,17 +166,22 @@ export function HarvestingIntervalDashboard() {
   };
 
   const toggleAllOverlays = () => {
-    setSelectedOverlays((current) => current.size === overlayCodes.length ? new Set() : new Set(overlayCodes));
+    setSelectedOverlays((current) => {
+      const selectedAvailableCount = overlayCodes.filter((code) => current.has(code)).length;
+      if (selectedAvailableCount === overlayCodes.length) {
+        return new Set([...current].filter((code) => !overlayCodes.includes(code)));
+      }
+      return new Set([...current, ...overlayCodes]);
+    });
   };
 
   const exportCsv = () => {
-    const includeProductionComparison = reportMode === "production-dispatch";
     const headers = [
       "Date",
       "Day",
       ...report.fields.map((field) => `${field.block} ${field.field}`),
-      ...(includeProductionComparison ? totalColumns.map((column) => column.label) : []),
-      ...(includeProductionComparison ? [RAINFALL_DATA_LABEL] : []),
+      ...totalColumns.map((column) => column.label),
+      RAINFALL_DATA_LABEL,
     ];
     const rows = report.days.flatMap((day, rowIndex) => {
       const productionRow = [
@@ -193,13 +189,12 @@ export function HarvestingIntervalDashboard() {
         day.dayName,
         ...report.fields.map((field) => {
           const cell = field.cells[rowIndex];
-          if (!includeProductionComparison) return "";
           return cell.harvest && cell.activity ? formatMetricValue(cell.activity[selectedMetric], selectedMetric) : String(cell.interval);
         }),
-        ...(includeProductionComparison ? totalColumns.map((column) => column.getDailyValue(day.date)) : []),
-        ...(includeProductionComparison ? [RAINFALL_PLACEHOLDER] : []),
+        ...totalColumns.map((column) => column.getDailyValue(day.date)),
+        RAINFALL_PLACEHOLDER,
       ];
-      if (!includeProductionComparison || !expandedDates.has(day.date)) return [productionRow];
+      if (!expandedDates.has(day.date)) return [productionRow];
 
       return [
         productionRow,
@@ -216,15 +211,15 @@ export function HarvestingIntervalDashboard() {
       "Total Ha",
       report.monthLabel,
       ...report.fields.map((field) => report.hasMonthlyProductionData ? formatMetricValue(field.monthlyHectareTotal, "hectare") : "-"),
-      ...(includeProductionComparison ? totalColumns.map((column) => column.getMonthlyValue()) : []),
-      ...(includeProductionComparison ? [RAINFALL_PLACEHOLDER] : []),
+      ...totalColumns.map((column) => column.getMonthlyValue()),
+      RAINFALL_PLACEHOLDER,
     ];
-    const csvRows = includeProductionComparison ? [headers, ...rows, monthlyTotalRow] : [headers, ...rows];
+    const csvRows = [headers, ...rows, monthlyTotalRow];
     const csv = csvRows.map((row) => row.map(csvValue).join(",")).join("\n");
     const url = URL.createObjectURL(new Blob([`\uFEFF${csv}`], { type: "text/csv;charset=utf-8" }));
     const link = document.createElement("a");
     link.href = url;
-    link.download = `harvesting-interval-${selectedMonth}-${reportMode}.csv`;
+    link.download = `harvesting-interval-${selectedMonth}-${selectedMetric}.csv`;
     link.click();
     URL.revokeObjectURL(url);
   };
@@ -276,16 +271,9 @@ export function HarvestingIntervalDashboard() {
                     ))}
                   </select>
                 </label>
-                <label className="select-control report-filter-control">
-                  <span>Report Filter</span>
-                  <select value={reportMode} onChange={(event) => setReportMode(event.target.value as HarvestingReportMode)}>
-                    {HARVESTING_REPORT_MODES.map((mode) => (
-                      <option key={mode.key} value={mode.key}>{mode.label}</option>
-                    ))}
-                  </select>
-                </label>
-                {isProductionDispatch ? (
-                  <div className="segmented-control harvesting-metric-toggle" aria-label="Activity metric">
+                <div className="metric-filter-control">
+                  <span>Metric</span>
+                  <div className="segmented-control harvesting-metric-toggle" aria-label="Activity metric filter">
                     {METRIC_OPTIONS.map((option) => (
                       <button
                         className={selectedMetric === option.key ? "active" : ""}
@@ -298,28 +286,12 @@ export function HarvestingIntervalDashboard() {
                       </button>
                     ))}
                   </div>
-                ) : null}
+                </div>
                 <button className="command-button" type="button" onClick={exportCsv}>
                   <Download aria-hidden="true" size={16} /> Export
                 </button>
               </>
-            ) : (
-              <label className="select-control report-filter-control">
-                <span>Report Filter</span>
-                <select
-                  value={fieldStatusMode}
-                  onChange={(event) => {
-                    const nextMode = event.target.value as FieldStatusMode;
-                    setFieldStatusMode(nextMode);
-                    setSelectedSummaryField("");
-                  }}
-                >
-                  {FIELD_STATUS_MODES.map((mode) => (
-                    <option key={mode.key} value={mode.key}>{mode.label}</option>
-                  ))}
-                </select>
-              </label>
-            )}
+            ) : null}
           </div>
         </div>
 
@@ -330,13 +302,13 @@ export function HarvestingIntervalDashboard() {
           <Kpi
             label="QC + C1 activities"
             value={report.sourceActivityCount.toString()}
-            helper={isProductionDispatch ? `${report.sourceActiveFields} production active fields` : `${reportModeLabel} selected`}
+            helper={`${report.sourceActiveFields} production active fields`}
             icon={<Sprout size={18} />}
           />
           <Kpi
-            label={isProductionDispatch ? "Display metric" : "Forecast layer"}
-            value={isProductionDispatch ? metricLabel : "No interval count"}
-            helper={isProductionDispatch ? "Orange activity cells" : "Activity overlays remain available"}
+            label="Display metric"
+            value={metricLabel}
+            helper="Green production cells"
             icon={<BarChart3 size={18} />}
           />
           <Kpi label="Display fields" value={report.fields.length.toString()} helper="Screenshot template fields" icon={<Grid2X2 size={18} />} />
@@ -348,22 +320,24 @@ export function HarvestingIntervalDashboard() {
           </div>
         </div>
 
-        <div className="activity-overlay-bar" aria-label="Activity overlay legend">
+        <div className="activity-overlay-bar" aria-label="Activity overlay controls">
           <div className="activity-overlay-actions">
-            <span>Activity overlay</span>
-            <button
-              className={selectedOverlays.size === overlayCodes.length ? "active" : ""}
-              type="button"
-              aria-pressed={selectedOverlays.size === overlayCodes.length}
-              onClick={toggleAllOverlays}
-            >
-              All
-            </button>
+            <span>Activity Overlay (from SEMUA)</span>
+            {overlayCodes.length > 1 ? (
+              <button
+                className={selectedVisibleOverlays.size === overlayCodes.length ? "active" : ""}
+                type="button"
+                aria-pressed={selectedVisibleOverlays.size === overlayCodes.length}
+                onClick={toggleAllOverlays}
+              >
+                All
+              </button>
+            ) : null}
             {overlayCodes.map((code) => (
               <button
-                className={selectedOverlays.has(code) ? "active" : ""}
+                className={selectedVisibleOverlays.has(code) ? "active" : ""}
                 type="button"
-                aria-pressed={selectedOverlays.has(code)}
+                aria-pressed={selectedVisibleOverlays.has(code)}
                 key={code}
                 onClick={() => toggleOverlay(code)}
               >
@@ -372,13 +346,9 @@ export function HarvestingIntervalDashboard() {
               </button>
             ))}
           </div>
-          <div className="activity-overlay-legend">
-            {overlayCodes.map((code) => (
-              <span key={`${code}-legend`}>
-                <span className="overlay-swatch" style={{ backgroundColor: getOverlayColor(code) }} />
-                {code}
-              </span>
-            ))}
+          <div className="activity-overlay-remark">
+            <span className="muster-chit-swatch" />
+            Orange Cell = Daily Estimation Hectarage (From Muster Chit)
           </div>
         </div>
 
@@ -392,11 +362,11 @@ export function HarvestingIntervalDashboard() {
           <div className="wide-table-scroll harvesting-table-scroll">
             <table
               className="harvesting-table"
-              style={{ minWidth: `${135 + report.fields.length * 58 + totalColumns.length * 96 + (isProductionDispatch ? RAINFALL_COLUMN_WIDTH : 0)}px` }}
+              style={{ minWidth: `${135 + report.fields.length * 58 + totalColumns.length * 96 + RAINFALL_COLUMN_WIDTH}px` }}
             >
               <thead>
                 <tr className="harvesting-report-title">
-                  <th colSpan={report.fields.length + totalColumns.length + (isProductionDispatch ? 2 : 1)}>
+                  <th colSpan={report.fields.length + totalColumns.length + 2}>
                     DIGITAL ESTATE HARVESTING INTERVAL | {report.monthLabel.toUpperCase()} | {reportModeLabel.toUpperCase()}
                   </th>
                 </tr>
@@ -407,14 +377,10 @@ export function HarvestingIntervalDashboard() {
                       {group.label}
                     </th>
                   ))}
-                  {isProductionDispatch ? (
-                    <>
-                      <th className="harvesting-total-heading" colSpan={totalColumns.length}>
-                        DAILY TOTAL
-                      </th>
-                      <th className="rainfall-data-col rainfall-data-heading" rowSpan={3}>{RAINFALL_DATA_LABEL}</th>
-                    </>
-                  ) : null}
+                  <th className="harvesting-total-heading" colSpan={totalColumns.length}>
+                    DAILY TOTAL
+                  </th>
+                  <th className="rainfall-data-col rainfall-data-heading" rowSpan={3}>{RAINFALL_DATA_LABEL}</th>
                 </tr>
                 <tr>
                   {dayGroups.map((group, index) => (
@@ -422,31 +388,29 @@ export function HarvestingIntervalDashboard() {
                       {group.totalHectares == null ? "-" : group.totalHectares.toFixed(2)}
                     </th>
                   ))}
-                  {isProductionDispatch ? (
-                    <th className="harvesting-total-heading" colSpan={totalColumns.length}>
-                      TOTAL
-                    </th>
-                  ) : null}
+                  <th className="harvesting-total-heading" colSpan={totalColumns.length}>
+                    TOTAL
+                  </th>
                 </tr>
                 <tr>
                   {report.fields.map((field) => (
                     <th key={`${field.id}-field`}>{field.field}</th>
                   ))}
-                  {isProductionDispatch ? totalColumns.map((column, index) => (
+                  {totalColumns.map((column, index) => (
                     <th className={getTotalColumnClass(column, index, expandedTotalGroups)} key={column.id}>
                       {renderTotalColumnHeader(column, expandedTotalGroups, toggleTotalGroup)}
                     </th>
-                  )) : null}
+                  ))}
                 </tr>
                 <tr>
                   <th className="harvesting-sticky-col">HA</th>
                   {report.fields.map((field) => (
                     <th key={`${field.id}-ha`}>{field.hectares == null ? "-" : field.hectares.toFixed(2)}</th>
                   ))}
-                  {isProductionDispatch ? totalColumns.map((column, index) => (
+                  {totalColumns.map((column, index) => (
                     <th className={`${getTotalColumnClass(column, index, expandedTotalGroups)} harvesting-total-muted`} key={`${column.id}-ha`}>-</th>
-                  )) : null}
-                  {isProductionDispatch ? <th className="rainfall-data-col harvesting-total-muted">{RAINFALL_PLACEHOLDER}</th> : null}
+                  ))}
+                  <th className="rainfall-data-col harvesting-total-muted">{RAINFALL_PLACEHOLDER}</th>
                 </tr>
                 <tr>
                   <th className="harvesting-sticky-col">B/F</th>
@@ -455,10 +419,10 @@ export function HarvestingIntervalDashboard() {
                       {field.bfDisplay || field.baseInterval}
                     </th>
                   ))}
-                  {isProductionDispatch ? totalColumns.map((column, index) => (
+                  {totalColumns.map((column, index) => (
                     <th className={`${getTotalColumnClass(column, index, expandedTotalGroups)} harvesting-total-muted`} key={`${column.id}-bf`}>-</th>
-                  )) : null}
-                  {isProductionDispatch ? <th className="rainfall-data-col harvesting-total-muted">{RAINFALL_PLACEHOLDER}</th> : null}
+                  ))}
+                  <th className="rainfall-data-col harvesting-total-muted">{RAINFALL_PLACEHOLDER}</th>
                 </tr>
               </thead>
               <tbody>
@@ -468,18 +432,16 @@ export function HarvestingIntervalDashboard() {
                     <Fragment key={day.date}>
                       <tr className={day.isSunday ? "sunday-row" : ""}>
                         <th className="harvesting-sticky-col">
-                          <span className={isProductionDispatch ? "harvesting-date-cell" : "harvesting-date-cell forecast-date-cell"}>
-                            {isProductionDispatch ? (
-                              <button
-                                className="date-expand-button"
-                                type="button"
-                                aria-expanded={isExpanded}
-                                onClick={() => toggleDate(day.date)}
-                                title={isExpanded ? `Hide dispatch for ${day.date}` : `Show dispatch for ${day.date}`}
-                              >
-                                {isExpanded ? <ChevronDown aria-hidden="true" size={13} /> : <ChevronRight aria-hidden="true" size={13} />}
-                              </button>
-                            ) : null}
+                          <span className="harvesting-date-cell">
+                            <button
+                              className="date-expand-button"
+                              type="button"
+                              aria-expanded={isExpanded}
+                              onClick={() => toggleDate(day.date)}
+                              title={isExpanded ? `Hide dispatch for ${day.date}` : `Show dispatch for ${day.date}`}
+                            >
+                              {isExpanded ? <ChevronDown aria-hidden="true" size={13} /> : <ChevronRight aria-hidden="true" size={13} />}
+                            </button>
                             <span>
                               <span>{day.day}</span>
                               <small>{day.dayName}</small>
@@ -490,19 +452,18 @@ export function HarvestingIntervalDashboard() {
                           day,
                           rowIndex,
                           selectedMetric,
-                          selectedOverlays,
+                          selectedOverlays: selectedVisibleOverlays,
                           setSelectedActivity,
                           fields: report.fields,
-                          forecastMode: !isProductionDispatch,
                         })}
-                        {isProductionDispatch ? totalColumns.map((column, index) => (
+                        {totalColumns.map((column, index) => (
                           <td className={`${getTotalColumnClass(column, index, expandedTotalGroups)} daily-total-cell`} key={`${day.date}-${column.id}`}>
                             {column.getDailyValue(day.date)}
                           </td>
-                        )) : null}
-                        {isProductionDispatch ? <td className="rainfall-data-col rainfall-data-cell">{RAINFALL_PLACEHOLDER}</td> : null}
+                        ))}
+                        <td className="rainfall-data-col rainfall-data-cell">{RAINFALL_PLACEHOLDER}</td>
                       </tr>
-                      {isProductionDispatch && isExpanded ? (
+                      {isExpanded ? (
                         <tr className="dispatch-layer-row">
                           <th className="harvesting-sticky-col">
                             <span>Dispatch</span>
@@ -520,8 +481,7 @@ export function HarvestingIntervalDashboard() {
                     </Fragment>
                   );
                 })}
-                {isProductionDispatch ? (
-                  <tr className="harvesting-month-total-row">
+                <tr className="harvesting-month-total-row">
                   <th className="harvesting-sticky-col">
                     <span>Total Ha</span>
                     <small>Month</small>
@@ -533,8 +493,7 @@ export function HarvestingIntervalDashboard() {
                     </td>
                   ))}
                   <td className="rainfall-data-col rainfall-data-cell month-total-cell">{RAINFALL_PLACEHOLDER}</td>
-                  </tr>
-                ) : null}
+                </tr>
               </tbody>
             </table>
           </div>
@@ -546,11 +505,10 @@ export function HarvestingIntervalDashboard() {
             asOfDate={summaryAsOfDate}
             maxDate={source.metadata.lastActivityDate}
             minDate={source.metadata.startDate}
-            mode={fieldStatusMode}
             onAsOfDateChange={setSummaryAsOfDate}
             onSelectField={setSelectedSummaryField}
-            selectedField={fieldStatusMode === "production" ? selectedSummaryField : ""}
-            selectedRow={fieldStatusMode === "production" ? selectedSummaryRow : null}
+            selectedField={selectedSummaryField}
+            selectedRow={selectedSummaryRow}
             fieldMap={fieldMap}
             rows={fieldIntervalSummary}
           />
@@ -571,7 +529,6 @@ function renderFieldCells({
   selectedOverlays,
   setSelectedActivity,
   fields,
-  forecastMode,
 }: {
   day: HarvestingIntervalCell;
   rowIndex: number;
@@ -579,7 +536,6 @@ function renderFieldCells({
   selectedOverlays: Set<string>;
   setSelectedActivity: (activity: SelectedActivity) => void;
   fields: Array<{ id: string; field: string; cells: HarvestingIntervalCell[] }>;
-  forecastMode: boolean;
 }) {
   const cells: React.ReactNode[] = [];
 
@@ -594,13 +550,13 @@ function renderFieldCells({
 
     if (valueOverlay && displayValue != null) {
       const span = getValueOverlayMergeSpan(fields, rowIndex, index, selectedOverlays);
-      const title = `${field.field} | ${cell.date} | ${valueOverlay.label} ${displayValue}${forecastMode ? "" : ` | interval ${cell.interval}`}`;
+      const title = `${field.field} | ${cell.date} | ${valueOverlay.label} ${displayValue} | interval ${cell.interval}`;
       const valueOverlayStyle = getOverlayStyle(activeOverlays, {
         filledCodes: valueOverlay.codes,
         productionHarvest: valueOverlay.codes.includes("LF") && hasHarvestInOverlaySpan(fields, rowIndex, index, span),
       });
 
-      if (!forecastMode && cell.harvest && cell.activity) {
+      if (cell.harvest && cell.activity) {
         cells.push(
           <td className={`harvest-cell${overlayClass}`} colSpan={span} key={`${field.id}-${cell.date}-${valueOverlay.key}`} style={valueOverlayStyle}>
             <button
@@ -624,7 +580,7 @@ function renderFieldCells({
             </button>
           </td>,
         );
-      } else if (!forecastMode && cell.dispatch) {
+      } else if (cell.dispatch) {
         cells.push(
           <td className={`comparison-cell${overlayClass}`} colSpan={span} key={`${field.id}-${cell.date}-${valueOverlay.key}`} style={valueOverlayStyle}>
             <button
@@ -657,15 +613,6 @@ function renderFieldCells({
       }
 
       index += span - 1;
-      continue;
-    }
-
-    if (forecastMode) {
-      cells.push(
-        <td className={activeOverlays.length ? "overlay-layer-cell forecast-empty-cell" : "forecast-empty-cell"} key={`${field.id}-${cell.date}`} title={`${field.field} | ${cell.date}`} style={overlayStyle}>
-          {" "}
-        </td>,
-      );
       continue;
     }
 
@@ -784,15 +731,23 @@ function renderDispatchCells({
   return cells;
 }
 
-function getOverlayCodes(sourceData: HarvestingIntervalSource) {
-  return sourceData.metadata.overlayActivities?.length
-    ? sourceData.metadata.overlayActivities
-    : ["HM", "QF", "QG", "R1", "LF"];
+function getOverlayCodes(metric: HarvestingIntervalMetricKey) {
+  return OVERLAY_CODES_BY_METRIC[metric];
 }
 
 function getActiveOverlays(cell: HarvestingIntervalCell, selectedOverlays: Set<string>) {
   if (!selectedOverlays.size) return [];
-  return cell.overlays.filter((code) => selectedOverlays.has(code));
+  const activeOverlays: string[] = [];
+
+  if (selectedOverlays.has("LF") && cell.overlays.includes("LF")) {
+    activeOverlays.push("LF");
+  }
+
+  if (selectedOverlays.has("Cutter") && CUTTER_SOURCE_CODES.some((code) => cell.overlays.includes(code))) {
+    activeOverlays.push("Cutter");
+  }
+
+  return activeOverlays;
 }
 
 function getOverlayColor(code: string) {
@@ -803,9 +758,7 @@ function getOverlayStyle(codes: string[], options: { productionHarvest?: boolean
   if (!codes.length) return undefined;
 
   const filledCodes = new Set(options.filledCodes || []);
-  const hasC1Fill = filledCodes.has("C1");
-  const hasQcFill = filledCodes.has("QC");
-  const hasHarvestQuantityFill = hasC1Fill || hasQcFill;
+  const hasCutterFill = filledCodes.has("Cutter");
   const hasLfFill = filledCodes.has("LF");
   const borderCodes = codes.filter((code) => !filledCodes.has(code));
   const showProductionRing = options.productionHarvest && codes.includes("LF");
@@ -816,31 +769,23 @@ function getOverlayStyle(codes: string[], options: { productionHarvest?: boolean
       .map((code, index) => `inset 0 0 0 ${3 + (index + (showProductionRing ? 1 : 0)) * 3}px ${getOverlayColor(code)}`),
   ];
   const boxShadow = shadowLayers.concat(shadowLayers.length ? ["0 4px 12px rgba(15, 61, 44, 0.18)"] : []).join(", ");
-  const harvestQuantityFill = hasC1Fill && hasQcFill
-    ? { background: "linear-gradient(135deg, #e2e8f0 0 50%, #fecaca 50% 100%)", color: "#111827" }
-    : hasC1Fill
-      ? { backgroundColor: "#e2e8f0", color: "#111827" }
-      : hasQcFill
-        ? { backgroundColor: "#fecaca", color: "#7f1d1d" }
-        : {};
 
   return {
-    ...harvestQuantityFill,
-    ...(!hasHarvestQuantityFill && hasLfFill ? { backgroundColor: "#bbf7d0", color: "#064e3b" } : {}),
+    ...(hasCutterFill ? { backgroundColor: "#dc2626", color: "#ffffff" } : {}),
+    ...(!hasCutterFill && hasLfFill ? { backgroundColor: "#bbf7d0", color: "#064e3b" } : {}),
     ...(boxShadow ? { boxShadow } : {}),
   };
 }
 
 function getValueOverlay(cell: HarvestingIntervalCell, activeOverlays: string[]) {
-  const harvestQuantityCodes = VALUE_OVERLAY_CODES.filter((code) => code !== "LF").filter((code) =>
-    activeOverlays.includes(code) && typeof cell.overlayValues?.[code] === "number",
-  );
-  if (harvestQuantityCodes.length) {
+  const hasCutterValue = CUTTER_SOURCE_CODES.some((code) => typeof cell.overlayValues?.[code] === "number");
+
+  if (activeOverlays.includes("Cutter") && hasCutterValue) {
     return {
-      key: harvestQuantityCodes.join("-").toLowerCase(),
-      label: harvestQuantityCodes.join(" + "),
-      codes: harvestQuantityCodes,
-      value: harvestQuantityCodes.reduce((total, code) => total + (cell.overlayValues?.[code] || 0), 0),
+      key: "cutter",
+      label: "Cutter",
+      codes: ["Cutter"],
+      value: CUTTER_SOURCE_CODES.reduce((total, code) => total + (cell.overlayValues?.[code] || 0), 0),
     };
   }
 
@@ -1063,7 +1008,6 @@ function FieldIntervalSummaryPanel({
   fieldMap,
   maxDate,
   minDate,
-  mode,
   selectedField,
   selectedRow,
   onAsOfDateChange,
@@ -1074,17 +1018,13 @@ function FieldIntervalSummaryPanel({
   fieldMap: FieldFeatureCollection;
   maxDate: string;
   minDate: string;
-  mode: FieldStatusMode;
   selectedField: string;
   selectedRow: FieldIntervalSummary | null;
   onAsOfDateChange: (date: string) => void;
   onSelectField: (field: string) => void;
 }) {
-  const isForecastMode = mode === "daily-forecast";
-  const visibleRows = isForecastMode ? [] : rows;
-  const totalRow = getFieldIntervalTotalRow(visibleRows);
+  const totalRow = getFieldIntervalTotalRow(rows);
   const toggleFieldSelection = (field: string) => {
-    if (isForecastMode) return;
     onSelectField(field === selectedField ? "" : field);
   };
 
@@ -1093,38 +1033,28 @@ function FieldIntervalSummaryPanel({
       <div className="panel-heading interval-summary-heading">
         <div>
           <h3>Field Interval Status Summary</h3>
-          <p>{isForecastMode ? "Daily forecast status map | Status logic pending" : `Independent as-at view | ${formatSummaryDateLabel(asOfDate)}`}</p>
+          <p>Independent as-at view | {formatSummaryDateLabel(asOfDate)}</p>
         </div>
-        {isForecastMode ? null : (
-          <>
-            <label className="select-control interval-summary-date-control">
-              <span>As at date</span>
-              <input
-                max={maxDate}
-                min={minDate}
-                type="date"
-                value={asOfDate}
-                onChange={(event) => {
-                  if (event.target.value) onAsOfDateChange(event.target.value);
-                }}
-              />
-            </label>
-            <div className="interval-status-legend" aria-label="Interval status legend">
-              <span><span className="interval-status-dot status-on-track" />On Track: 0-12 days</span>
-              <span><span className="interval-status-dot status-watch" />Watch: 13-15 days</span>
-              <span><span className="interval-status-dot status-caution" />Caution: 16-20 days</span>
-              <span><span className="interval-status-dot status-overdue" />Overdue: 21+ days</span>
-            </div>
-          </>
-        )}
+        <label className="select-control interval-summary-date-control">
+          <span>As at date</span>
+          <input
+            max={maxDate}
+            min={minDate}
+            type="date"
+            value={asOfDate}
+            onChange={(event) => {
+              if (event.target.value) onAsOfDateChange(event.target.value);
+            }}
+          />
+        </label>
+        <div className="interval-status-legend" aria-label="Interval status legend">
+          <span><span className="interval-status-dot status-on-track" />On Track: 0-12 days</span>
+          <span><span className="interval-status-dot status-watch" />Watch: 13-15 days</span>
+          <span><span className="interval-status-dot status-caution" />Caution: 16-20 days</span>
+          <span><span className="interval-status-dot status-overdue" />Overdue: 21+ days</span>
+        </div>
       </div>
-      {isForecastMode ? (
-        <div className="forecast-empty-note">
-          Daily Forecast field status is prepared as a map view only for now. Boundaries are visible, but interval status will remain neutral until forecast data is connected.
-        </div>
-      ) : (
-        <FieldIntervalTotalCards totalRow={totalRow} />
-      )}
+      <FieldIntervalTotalCards totalRow={totalRow} />
       <div className="interval-summary-content">
         <div className="wide-table-scroll interval-summary-scroll">
           <table className="field-interval-summary-table">
@@ -1139,21 +1069,15 @@ function FieldIntervalSummaryPanel({
               </tr>
             </thead>
             <tbody>
-              {visibleRows.length ? visibleRows.map((row) => (
+              {rows.map((row) => (
                 <FieldIntervalSummaryRow
                   key={row.field}
                   row={row}
                   selected={row.field === selectedField}
                   onSelectField={toggleFieldSelection}
                 />
-              )) : (
-                <tr>
-                  <td className="forecast-empty-table-cell" colSpan={6}>
-                    Forecast field status data is not available yet.
-                  </td>
-                </tr>
-              )}
-              {isForecastMode ? null : <FieldIntervalSummaryRow isTotal row={totalRow} />}
+              ))}
+              <FieldIntervalSummaryRow isTotal row={totalRow} />
             </tbody>
           </table>
         </div>
@@ -1161,7 +1085,7 @@ function FieldIntervalSummaryPanel({
           <div className="map-panel interval-summary-map-panel">
             <HarvestingIntervalSummaryMap
               fieldMap={fieldMap}
-              rows={visibleRows}
+              rows={rows}
               selectedField={selectedField}
               onSelectField={toggleFieldSelection}
             />
@@ -1181,7 +1105,7 @@ function FieldIntervalSummaryPanel({
               </>
             ) : (
               <p className="empty-state">
-                {isForecastMode ? "Forecast status is not available yet, so the map is shown without interval colouring." : "Select a field row to highlight it on the map."}
+                Select a field row to highlight it on the map.
               </p>
             )}
           </aside>
@@ -1609,7 +1533,7 @@ function formatPercentValue(value: number) {
 }
 
 function formatOverlayValue(value: number, codes: string[] = []) {
-  if (codes.includes("C1") || codes.includes("QC")) {
+  if (codes.includes("Cutter")) {
     return Math.round(value).toLocaleString("en-MY");
   }
 

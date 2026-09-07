@@ -55,12 +55,6 @@ export type HarvestingIntervalSource = {
     overlaySourceSheet?: string;
     overlayRows?: number;
     overlayActivities?: string[];
-    dataMasking?: {
-      adjustment?: number;
-      method?: string;
-      appliesTo?: string[];
-      doesNotChange?: string[];
-    };
   };
   fields: HarvestingIntervalField[];
   activityByField: Record<string, Record<string, HarvestingIntervalActivityMetrics>>;
