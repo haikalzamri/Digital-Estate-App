@@ -16,6 +16,7 @@ The current production modules are:
 | Work Program Programme Plan | Management | [`/management/work-program/programmes`](https://digital-estate-app.vercel.app/management/work-program/programmes) |
 | PMV Dashboard | Management | [`/management/pmv`](https://digital-estate-app.vercel.app/management/pmv) |
 | Harvesting Interval | Management | [`/management/harvesting-interval`](https://digital-estate-app.vercel.app/management/harvesting-interval) |
+| Minamas Harvesting Interval prototype | Management | [`/management/minamas-harvesting-interval`](https://digital-estate-app.vercel.app/management/minamas-harvesting-interval) |
 | Costbook prototype | Management | [`/management/costbook`](https://digital-estate-app.vercel.app/management/costbook) |
 | Work Program Input | Field users | [`/input/work-program`](https://digital-estate-app.vercel.app/input/work-program) |
 | PMV Input | Field users | [`/input/pmv`](https://digital-estate-app.vercel.app/input/pmv) |
@@ -29,6 +30,7 @@ The root route redirects to `/management/work-program`.
 - PMV daily machine status reporting for working, breakdown, and idle machines.
 - PMV management dashboard for readiness, breakdown/idle visibility, repeat issue tracking, action queue, and export.
 - Harvesting Interval prototype with Harvesting Report and Field Status views, monthly production-vs-dispatch grid, metric filter, dispatch comparison, SEMUA activity overlays, field interval summary, map view, and CSV export.
+- Separate Minamas Harvesting Interval prototype with a map-first dashboard, division filtering, fields-by-day report, expandable dispatch comparisons, estate/mill weight insights, daily trends, and CSV export.
 - Costbook management prototype with required activity/month filters, multi-select EVIT filtering, collapsed daily summary rows, independent inline Labour/Supervision, Material and EVIT expansion rows, reconciled daily totals, month-to-date calculations, and CSV export.
 - Leaflet/OpenStreetMap field boundary map using KMZ-derived GeoJSON.
 - Browser localStorage offline queue for pending Work Program and PMV uploads/deletes.
@@ -43,7 +45,7 @@ The root route redirects to `/management/work-program`.
 | Maps | Leaflet, OpenStreetMap |
 | Data API | Next.js Route Handlers |
 | Database | Supabase |
-| Styling | Global CSS under `app/globals.css` |
+| Styling | Global CSS and module-scoped CSS |
 | Deployment | Vercel |
 | Runtime | Node.js `>=24 <25`, npm 11.x |
 
@@ -60,12 +62,14 @@ app/
 components/
   costbook/
   harvesting-interval/
+  minamas-harvesting-interval/
   maps/
   pmv/
   work-program/
 lib/
   data/
   harvesting-interval/
+  minamas-harvesting-interval/
   pmv/
   server/
   types/
@@ -96,6 +100,7 @@ supabase/
 | PMV records | Supabase table `public.pmv_records` |
 | Field boundaries | `public/data/field-map-data.geojson` |
 | Harvesting Interval prototype | Static fallback data in `lib/data/harvesting-interval-source.json` |
+| Minamas Harvesting Interval prototype | Independent static dataset in `lib/minamas-harvesting-interval/source.json` |
 | Costbook prototype | Static dummy data in `lib/data/costbook-source.json` |
 
 ### Static Fallback Data
@@ -105,6 +110,7 @@ supabase/
 | `lib/data/work-program-source.json` | Work Program historical fallback data. |
 | `lib/data/pmv-source.json` | PMV historical fallback data. |
 | `lib/data/harvesting-interval-source.json` | Harvesting Interval prototype dataset. |
+| `lib/minamas-harvesting-interval/source.json` | Aggregated Minamas production, dispatch, and weight data. |
 | `lib/data/costbook-source.json` | Costbook prototype dummy activity, worker-level labour, supervision, material, and EVIT data. |
 
 ### Demo Data Handling
@@ -219,6 +225,7 @@ Recommended release flow:
 - User authentication and role-based permissions are not yet implemented for API endpoints.
 - Work Program Programme Plan governance is currently a prototype UI/local-state control and is not yet backed by a production approval table.
 - Harvesting Interval is currently a static-data prototype and is not yet integrated with Supabase.
+- Minamas Harvesting Interval is a separate static-data prototype with an illustrative map and no database integration.
 - Costbook is currently a management-only static dummy-data prototype and is not yet connected to an approved source file.
 - Rainfall data is shown as a placeholder until an approved rainfall source is integrated.
 
