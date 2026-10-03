@@ -2,6 +2,7 @@ const baseUrl = (process.env.APP_BASE_URL || "http://127.0.0.1:3000").replace(/\
 
 const routeChecks = [
   ["/management/minamas-harvesting-interval", ["MINAMAS", "Harvesting Interval", "Field Status", "Estate field map", "Presentation prototype", "E450"]],
+  ["/management/pre-plan", ["Pre-Plan", "Prototype", "Demo data", "Planning date", "Select unassigned workers", "Programme board", "Activity code or programme", "Allocation summary", "Finalise Demo"]],
   ["/management/work-program", ["Work Program Monthly View"]],
   ["/management/work-program?view=records", ["Work Program Daily View", "Monthly Field Tracking", "Ha"]],
   ["/management/pmv", ["Machines Reported", "Manager Action Queue", "Daily Reports"]],

@@ -15,6 +15,7 @@ The current production modules are:
 | Work Program Monthly View and Daily View | Management | [`/management/work-program`](https://digital-estate-app.vercel.app/management/work-program) |
 | Work Program Programme Plan | Management | [`/management/work-program/programmes`](https://digital-estate-app.vercel.app/management/work-program/programmes) |
 | PMV Dashboard | Management | [`/management/pmv`](https://digital-estate-app.vercel.app/management/pmv) |
+| Pre-Plan prototype | Management | [`/management/pre-plan`](https://digital-estate-app.vercel.app/management/pre-plan) |
 | Harvesting Interval | Management | [`/management/harvesting-interval`](https://digital-estate-app.vercel.app/management/harvesting-interval) |
 | Minamas Harvesting Interval prototype | Management | [`/management/minamas-harvesting-interval`](https://digital-estate-app.vercel.app/management/minamas-harvesting-interval) |
 | Costbook prototype | Management | [`/management/costbook`](https://digital-estate-app.vercel.app/management/costbook) |
@@ -29,6 +30,7 @@ The root route redirects to `/management/work-program`.
 - Work Program management views with approval workflow, grouped Daily View records, monthly field tracking, monthly dashboard table/map monitoring, programme plan control, and CSV export.
 - PMV daily machine status reporting for working, breakdown, and idle machines.
 - PMV management dashboard for readiness, breakdown/idle visibility, repeat issue tracking, action queue, and export.
+- Pre-Plan desktop prototype for next-day worker allocation: programme cards, field selection beside each worker, individual/group drag-and-drop, bulk field assignment, and browser-local draft saving and finalisation using fictional workers and activity codes.
 - Harvesting Interval prototype with Harvesting Report and Field Status views, monthly production-vs-dispatch grid, metric filter, dispatch comparison, SEMUA activity overlays, field interval summary, map view, and CSV export.
 - Separate Minamas Harvesting Interval prototype with a map-first dashboard, division filtering, fields-by-day report, expandable dispatch comparisons, estate/mill weight insights, daily trends, and CSV export.
 - Costbook management prototype with required activity/month filters, multi-select EVIT filtering, collapsed daily summary rows, independent inline Labour/Supervision, Material and EVIT expansion rows, reconciled daily totals, month-to-date calculations, and CSV export.
@@ -65,12 +67,14 @@ components/
   minamas-harvesting-interval/
   maps/
   pmv/
+  pre-plan/
   work-program/
 lib/
   data/
   harvesting-interval/
   minamas-harvesting-interval/
   pmv/
+  pre-plan/
   server/
   types/
   work-program/
@@ -86,7 +90,7 @@ supabase/
 | `components/` | Module UI, dashboards, trackers, maps, and shared shells. |
 | `lib/` | Domain logic, static fallback data, shared types, and server utilities. |
 | `public/data/` | Browser-served field boundary GeoJSON. |
-| `scripts/` | Route smoke-test script. |
+| `scripts/` | Route smoke tests and targeted domain checks. |
 | `supabase/` | Database setup and seed SQL scripts. |
 
 ## Data Model
@@ -98,6 +102,7 @@ supabase/
 | Work Program records | Supabase table `public.work_program_records` |
 | Work Program programme plans | Prototype browser-local plan state seeded from approved static defaults |
 | PMV records | Supabase table `public.pmv_records` |
+| Pre-Plan prototype | Fictional workers and activity codes with browser-local demo plans |
 | Field boundaries | `public/data/field-map-data.geojson` |
 | Harvesting Interval prototype | Static fallback data in `lib/data/harvesting-interval-source.json` |
 | Minamas Harvesting Interval prototype | Independent static dataset in `lib/minamas-harvesting-interval/source.json` |
@@ -109,6 +114,7 @@ supabase/
 | --- | --- |
 | `lib/data/work-program-source.json` | Work Program historical fallback data. |
 | `lib/data/pmv-source.json` | PMV historical fallback data. |
+| `lib/pre-plan/dummy-workers.ts` | Fictional workers for the Pre-Plan prototype. |
 | `lib/data/harvesting-interval-source.json` | Harvesting Interval prototype dataset. |
 | `lib/minamas-harvesting-interval/source.json` | Aggregated Minamas production, dispatch, and weight data. |
 | `lib/data/costbook-source.json` | Costbook prototype dummy activity, worker-level labour, supervision, material, and EVIT data. |
@@ -116,6 +122,8 @@ supabase/
 ### Demo Data Handling
 
 Static demo datasets and browser-served field map data may be masked or transformed before external hosting. Hosted demo values and map boundaries should not be treated as official operational records or actual company boundary data.
+
+Pre-Plan is a workflow-review prototype with no SAP or Supabase integration. Its demo plans are saved only in the current browser; they are not shared between users or devices and can be lost if browser site data is cleared.
 
 ### Offline Behaviour
 
@@ -191,6 +199,7 @@ Do not commit passwords, tokens, API keys, service-role keys, or `.env` files.
 | `npm run typecheck` | Run TypeScript checks. |
 | `npm run smoke` | Run route smoke checks against `APP_BASE_URL` or `http://127.0.0.1:3000`. |
 | `npm run check` | Run typecheck, lint, and build. |
+| `node scripts/check-pre-plan.mjs` | Check Pre-Plan allocation rules, finalisation, and saved-plan migration. |
 
 ## Supabase Setup
 
@@ -224,6 +233,7 @@ Recommended release flow:
 - PMV and Work Program APIs use server-side Supabase service-role credentials.
 - User authentication and role-based permissions are not yet implemented for API endpoints.
 - Work Program Programme Plan governance is currently a prototype UI/local-state control and is not yet backed by a production approval table.
+- Pre-Plan uses fictional workers/activity codes and browser-local plans for desktop workflow review. It does not issue operational work assignments.
 - Harvesting Interval is currently a static-data prototype and is not yet integrated with Supabase.
 - Minamas Harvesting Interval is a separate static-data prototype with an illustrative map and no database integration.
 - Costbook is currently a management-only static dummy-data prototype and is not yet connected to an approved source file.
