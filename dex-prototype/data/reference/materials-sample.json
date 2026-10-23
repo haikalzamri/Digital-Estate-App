@@ -1,0 +1,582 @@
+{
+  "schemaVersion": 1,
+  "dataset": "materials-sample",
+  "dataKind": "reference",
+  "preparedOn": "2026-10-18",
+  "recordCount": 64,
+  "scope": "curated_sample",
+  "source": {
+    "file": "E063_DATA.xlsx",
+    "sha256": "427b21a7d16ceb53c6e793d1bb7f76e2a3d86f39007b2a7088ebd6ca3f33c188",
+    "sheet": " Material Master List",
+    "fullDataRowCount": 296312,
+    "columnMapping": [
+      {
+        "column": "A",
+        "sourceHeader": "Material",
+        "jsonField": "materialCode"
+      },
+      {
+        "column": "B",
+        "sourceHeader": "Language Key",
+        "jsonField": "languageKey"
+      },
+      {
+        "column": "C",
+        "sourceHeader": "Material Description",
+        "jsonField": "description"
+      },
+      {
+        "column": "D",
+        "sourceHeader": "Material description",
+        "jsonField": "alternateDescription"
+      }
+    ]
+  },
+  "normalization": {
+    "surroundingWhitespace": "trimmed",
+    "identifiers": "strings",
+    "emptyCells": "null",
+    "sourceRows": "retained",
+    "otherSourceValues": "preserved as strings"
+  },
+  "records": [
+    {
+      "sourceRow": 3157,
+      "materialCode": "1300000147",
+      "languageKey": "EN",
+      "description": "Ferts, Borate",
+      "alternateDescription": "FERTS, BORATE",
+      "category": "Fertiliser"
+    },
+    {
+      "sourceRow": 3158,
+      "materialCode": "1300000148",
+      "languageKey": "EN",
+      "description": "Ferts, Muriate of Potash",
+      "alternateDescription": "FERTS, MURIATE OF POTASH",
+      "category": "Fertiliser"
+    },
+    {
+      "sourceRow": 3159,
+      "materialCode": "1300000149",
+      "languageKey": "EN",
+      "description": "Ferts, Sulphite of Ammonia",
+      "alternateDescription": "FERTS, SULPHITE OF AMMONIA",
+      "category": "Fertiliser"
+    },
+    {
+      "sourceRow": 3286,
+      "materialCode": "1300000279",
+      "languageKey": "EN",
+      "description": "ROCK PHOSPHATE FERTILIZER",
+      "alternateDescription": "ROCK PHOSPHATE FERTILIZER",
+      "category": "Fertiliser"
+    },
+    {
+      "sourceRow": 3288,
+      "materialCode": "1300000281",
+      "languageKey": "EN",
+      "description": "Kieserite",
+      "alternateDescription": "KIESERITE",
+      "category": "Fertiliser"
+    },
+    {
+      "sourceRow": 3295,
+      "materialCode": "1300000288",
+      "languageKey": "EN",
+      "description": "NPK - Green",
+      "alternateDescription": "NPK - GREEN",
+      "category": "Fertiliser"
+    },
+    {
+      "sourceRow": 3785,
+      "materialCode": "1300000824",
+      "languageKey": "EN",
+      "description": "Urea",
+      "alternateDescription": "UREA",
+      "category": "Fertiliser"
+    },
+    {
+      "sourceRow": 3810,
+      "materialCode": "1300000854",
+      "languageKey": "EN",
+      "description": "Organic Fertilizer - SM700",
+      "alternateDescription": "ORGANIC FERTILIZER - SM700",
+      "category": "Fertiliser"
+    },
+    {
+      "sourceRow": 3044,
+      "materialCode": "1300000008",
+      "languageKey": "EN",
+      "description": "Chem,Glufosinate-Ammonium",
+      "alternateDescription": "CHEM,GLUFOSINATE-AMMONIUM",
+      "category": "Spraying chemicals"
+    },
+    {
+      "sourceRow": 3045,
+      "materialCode": "1300000009",
+      "languageKey": "EN",
+      "description": "Chem,Glyphosate-Isopropylamine,41.0%",
+      "alternateDescription": "CHEM,GLYPHOSATE-ISOPROPYLAMINE,41.0%",
+      "category": "Spraying chemicals"
+    },
+    {
+      "sourceRow": 3048,
+      "materialCode": "1300000012",
+      "languageKey": "EN",
+      "description": "Chem,Metsulfuron-Methyl,20%",
+      "alternateDescription": "CHEM,METSULFURON-METHYL,20%",
+      "category": "Spraying chemicals"
+    },
+    {
+      "sourceRow": 3053,
+      "materialCode": "1300000017",
+      "languageKey": "EN",
+      "description": "Chem,Triclopyr-butoxy ethylester,32.1%",
+      "alternateDescription": "CHEM,TRICLOPYR-BUTOXY ETHYLESTER,32.1%",
+      "category": "Spraying chemicals"
+    },
+    {
+      "sourceRow": 3042,
+      "materialCode": "1300000006",
+      "languageKey": "EN",
+      "description": "Chem,Dupont-Surfactant",
+      "alternateDescription": "CHEM,DUPONT-SURFACTANT",
+      "category": "Spraying chemicals"
+    },
+    {
+      "sourceRow": 4096,
+      "materialCode": "1300001163",
+      "languageKey": "EN",
+      "description": "Videx-Spray adjuvant",
+      "alternateDescription": "VIDEX-SPRAY ADJUVANT",
+      "category": "Spraying chemicals"
+    },
+    {
+      "sourceRow": 4545,
+      "materialCode": "1300001684",
+      "languageKey": "EN",
+      "description": "Insecticide, Permicide 5DP",
+      "alternateDescription": "INSECTICIDE, PERMICIDE 5DP",
+      "category": "Spraying chemicals"
+    },
+    {
+      "sourceRow": 4709,
+      "materialCode": "1300001867",
+      "languageKey": "EN",
+      "description": "Fungicide - Benex",
+      "alternateDescription": "FUNGICIDE - BENEX",
+      "category": "Spraying chemicals"
+    },
+    {
+      "sourceRow": 3396,
+      "materialCode": "1300000391",
+      "languageKey": "EN",
+      "description": "Safety boots",
+      "alternateDescription": "SAFETY BOOTS",
+      "category": "PPE"
+    },
+    {
+      "sourceRow": 3750,
+      "materialCode": "1300000776",
+      "languageKey": "EN",
+      "description": "Safety Helmet",
+      "alternateDescription": "SAFETY HELMET",
+      "category": "PPE"
+    },
+    {
+      "sourceRow": 3549,
+      "materialCode": "1300000544",
+      "languageKey": "EN",
+      "description": "Half face double respirator (S)",
+      "alternateDescription": "HALF FACE DOUBLE RESPIRATOR (S)",
+      "category": "PPE"
+    },
+    {
+      "sourceRow": 4139,
+      "materialCode": "1300001216",
+      "languageKey": "EN",
+      "description": "Face shield",
+      "alternateDescription": "FACE SHIELD",
+      "category": "PPE"
+    },
+    {
+      "sourceRow": 4849,
+      "materialCode": "1300002038",
+      "languageKey": "EN",
+      "description": "Safety Goggle",
+      "alternateDescription": "SAFETY GOGGLE",
+      "category": "PPE"
+    },
+    {
+      "sourceRow": 4870,
+      "materialCode": "1300002062",
+      "languageKey": "EN",
+      "description": "Nitrile Glove",
+      "alternateDescription": "NITRILE GLOVE",
+      "category": "PPE"
+    },
+    {
+      "sourceRow": 4889,
+      "materialCode": "1300002082",
+      "languageKey": "EN",
+      "description": "Safety Vest",
+      "alternateDescription": "SAFETY VEST",
+      "category": "PPE"
+    },
+    {
+      "sourceRow": 3551,
+      "materialCode": "1300000546",
+      "languageKey": "EN",
+      "description": "Dupont tyvek barrierman coverall size L&",
+      "alternateDescription": "DUPONT TYVEK BARRIERMAN COVERALL SIZE L&",
+      "category": "PPE"
+    },
+    {
+      "sourceRow": 3666,
+      "materialCode": "1300000671",
+      "languageKey": "EN",
+      "description": "Oil Filter",
+      "alternateDescription": "OIL FILTER",
+      "category": "Machinery parts"
+    },
+    {
+      "sourceRow": 7845,
+      "materialCode": "1300005507",
+      "languageKey": "EN",
+      "description": "Fuel Filter",
+      "alternateDescription": "FUEL FILTER",
+      "category": "Machinery parts"
+    },
+    {
+      "sourceRow": 5049,
+      "materialCode": "1300002266",
+      "languageKey": "EN",
+      "description": "Air filter",
+      "alternateDescription": "AIR FILTER",
+      "category": "Machinery parts"
+    },
+    {
+      "sourceRow": 4564,
+      "materialCode": "1300001708",
+      "languageKey": "EN",
+      "description": "FAN BELT",
+      "alternateDescription": "FAN BELT",
+      "category": "Machinery parts"
+    },
+    {
+      "sourceRow": 4225,
+      "materialCode": "1300001308",
+      "languageKey": "EN",
+      "description": "Wheel bearing, front LHS",
+      "alternateDescription": "WHEEL BEARING, FRONT LHS",
+      "category": "Machinery parts"
+    },
+    {
+      "sourceRow": 4128,
+      "materialCode": "1300001203",
+      "languageKey": "EN",
+      "description": "SPARK PLUG",
+      "alternateDescription": "SPARK PLUG",
+      "category": "Machinery parts"
+    },
+    {
+      "sourceRow": 7521,
+      "materialCode": "1300005160",
+      "languageKey": "EN",
+      "description": "Brake Pad",
+      "alternateDescription": "BRAKE PAD",
+      "category": "Machinery parts"
+    },
+    {
+      "sourceRow": 34756,
+      "materialCode": "1600020646",
+      "languageKey": "EN",
+      "description": "HYDRAULIC HOSE",
+      "alternateDescription": "HYDRAULIC HOSE",
+      "category": "Machinery parts"
+    },
+    {
+      "sourceRow": 1375,
+      "materialCode": "1000000301",
+      "languageKey": "EN",
+      "description": "INDUSTRIAL DIESEL",
+      "alternateDescription": "INDUSTRIAL DIESEL",
+      "category": "Fuel and lubricants"
+    },
+    {
+      "sourceRow": 1604,
+      "materialCode": "1000000712",
+      "languageKey": "EN",
+      "description": "Engine Oil SAE15W40-7LTR",
+      "alternateDescription": "ENGINE OIL SAE15W40-7LTR",
+      "category": "Fuel and lubricants"
+    },
+    {
+      "sourceRow": 3576,
+      "materialCode": "1300000571",
+      "languageKey": "EN",
+      "description": "Gear Oil Castrol EP90",
+      "alternateDescription": "GEAR OIL CASTROL EP90",
+      "category": "Fuel and lubricants"
+    },
+    {
+      "sourceRow": 3105,
+      "materialCode": "1300000069",
+      "languageKey": "EN",
+      "description": "Lubes,SUPER HEAVY GREASE 3",
+      "alternateDescription": "LUBES,SUPER HEAVY GREASE 3",
+      "category": "Fuel and lubricants"
+    },
+    {
+      "sourceRow": 6825,
+      "materialCode": "1300004357",
+      "languageKey": "EN",
+      "description": "Hydraulic Oil",
+      "alternateDescription": "HYDRAULIC OIL",
+      "category": "Fuel and lubricants"
+    },
+    {
+      "sourceRow": 4851,
+      "materialCode": "1300002040",
+      "languageKey": "EN",
+      "description": "2T Oil",
+      "alternateDescription": "2T OIL",
+      "category": "Fuel and lubricants"
+    },
+    {
+      "sourceRow": 3082,
+      "materialCode": "1300000046",
+      "languageKey": "EN",
+      "description": "Lubes,DONAX  TD 5W-30",
+      "alternateDescription": "LUBES,DONAX  TD 5W-30",
+      "category": "Fuel and lubricants"
+    },
+    {
+      "sourceRow": 3083,
+      "materialCode": "1300000047",
+      "languageKey": "EN",
+      "description": "Lubes,HARVELLA   S 20W-40",
+      "alternateDescription": "LUBES,HARVELLA   S 20W-40",
+      "category": "Fuel and lubricants"
+    },
+    {
+      "sourceRow": 3711,
+      "materialCode": "1300000726",
+      "languageKey": "EN",
+      "description": "Harvesting Sickle",
+      "alternateDescription": "HARVESTING SICKLE",
+      "category": "Harvesting tools"
+    },
+    {
+      "sourceRow": 3722,
+      "materialCode": "1300000737",
+      "languageKey": "EN",
+      "description": "Chisel",
+      "alternateDescription": "CHISEL",
+      "category": "Harvesting tools"
+    },
+    {
+      "sourceRow": 3832,
+      "materialCode": "1300000879",
+      "languageKey": "EN",
+      "description": "Harvesting Pole",
+      "alternateDescription": "HARVESTING POLE",
+      "category": "Harvesting tools"
+    },
+    {
+      "sourceRow": 3699,
+      "materialCode": "1300000713",
+      "languageKey": "EN",
+      "description": "Sickle Cover",
+      "alternateDescription": "SICKLE COVER",
+      "category": "Harvesting tools"
+    },
+    {
+      "sourceRow": 3921,
+      "materialCode": "1300000974",
+      "languageKey": "EN",
+      "description": "Chisel Cover",
+      "alternateDescription": "CHISEL COVER",
+      "category": "Harvesting tools"
+    },
+    {
+      "sourceRow": 5656,
+      "materialCode": "1300002974",
+      "languageKey": "EN",
+      "description": "Chisel Handle 6'",
+      "alternateDescription": "CHISEL HANDLE 6'",
+      "category": "Harvesting tools"
+    },
+    {
+      "sourceRow": 5664,
+      "materialCode": "1300002984",
+      "languageKey": "EN",
+      "description": "Wheelbarrow*",
+      "alternateDescription": "WHEELBARROW*",
+      "category": "Harvesting tools"
+    },
+    {
+      "sourceRow": 6540,
+      "materialCode": "1300004034",
+      "languageKey": "EN",
+      "description": "Harvesting Pole  40' c/w Sickle",
+      "alternateDescription": "HARVESTING POLE  40' C/W SICKLE",
+      "category": "Harvesting tools"
+    },
+    {
+      "sourceRow": 3395,
+      "materialCode": "1300000390",
+      "languageKey": "EN",
+      "description": "Sprayer pump",
+      "alternateDescription": "SPRAYER PUMP",
+      "category": "Spraying equipment"
+    },
+    {
+      "sourceRow": 3423,
+      "materialCode": "1300000418",
+      "languageKey": "EN",
+      "description": "Knapsack sprayer 4 gal (plastic)",
+      "alternateDescription": "KNAPSACK SPRAYER 4 GAL (PLASTIC)",
+      "category": "Spraying equipment"
+    },
+    {
+      "sourceRow": 4900,
+      "materialCode": "1300002095",
+      "languageKey": "EN",
+      "description": "Brass Spray Lance",
+      "alternateDescription": "BRASS SPRAY LANCE",
+      "category": "Spraying equipment"
+    },
+    {
+      "sourceRow": 16411,
+      "materialCode": "1600000327",
+      "languageKey": "EN",
+      "description": "LIQUID SPRAY ADJUSTABLE NOZZLE",
+      "alternateDescription": "LIQUID SPRAY ADJUSTABLE NOZZLE",
+      "category": "Spraying equipment"
+    },
+    {
+      "sourceRow": 19243,
+      "materialCode": "1600003447",
+      "languageKey": "EN",
+      "description": "SPRAY,CP-15,NOZZLE POLIJET VLV 200",
+      "alternateDescription": "SPRAY,CP-15,NOZZLE POLIJET VLV 200",
+      "category": "Spraying equipment"
+    },
+    {
+      "sourceRow": 19262,
+      "materialCode": "1600003466",
+      "languageKey": "EN",
+      "description": "SPRAY,CP-15,HOSE 00-64-234",
+      "alternateDescription": "SPRAY,CP-15,HOSE 00-64-234",
+      "category": "Spraying equipment"
+    },
+    {
+      "sourceRow": 19263,
+      "materialCode": "1600003467",
+      "languageKey": "EN",
+      "description": "SPRAY,CP-15,JET FILTER 47-00-103",
+      "alternateDescription": "SPRAY,CP-15,JET FILTER 47-00-103",
+      "category": "Spraying equipment"
+    },
+    {
+      "sourceRow": 19268,
+      "materialCode": "1600003472",
+      "languageKey": "EN",
+      "description": "SPRAY,CP-15,SEALING 4074350",
+      "alternateDescription": "SPRAY,CP-15,SEALING 4074350",
+      "category": "Spraying equipment"
+    },
+    {
+      "sourceRow": 3166,
+      "materialCode": "1300000156",
+      "languageKey": "EN",
+      "description": "Paint Brush",
+      "alternateDescription": "PAINT BRUSH",
+      "category": "General supplies"
+    },
+    {
+      "sourceRow": 3345,
+      "materialCode": "1300000338",
+      "languageKey": "EN",
+      "description": "Plastic Pail",
+      "alternateDescription": "PLASTIC PAIL",
+      "category": "General supplies"
+    },
+    {
+      "sourceRow": 3404,
+      "materialCode": "1300000399",
+      "languageKey": "EN",
+      "description": "Hammer",
+      "alternateDescription": "HAMMER",
+      "category": "General supplies"
+    },
+    {
+      "sourceRow": 3714,
+      "materialCode": "1300000729",
+      "languageKey": "EN",
+      "description": "Broom",
+      "alternateDescription": "BROOM",
+      "category": "General supplies"
+    },
+    {
+      "sourceRow": 4289,
+      "materialCode": "1300001395",
+      "languageKey": "EN",
+      "description": "Shovel",
+      "alternateDescription": "SHOVEL",
+      "category": "General supplies"
+    },
+    {
+      "sourceRow": 6276,
+      "materialCode": "1300003705",
+      "languageKey": "EN",
+      "description": "Spade c/w Handle",
+      "alternateDescription": "SPADE C/W HANDLE",
+      "category": "General supplies"
+    },
+    {
+      "sourceRow": 7084,
+      "materialCode": "1300004657",
+      "languageKey": "EN",
+      "description": "PVC Pipe",
+      "alternateDescription": "PVC PIPE",
+      "category": "General supplies"
+    },
+    {
+      "sourceRow": 1440,
+      "materialCode": "1000000533",
+      "languageKey": "EN",
+      "description": "CABLE TIE 150MMX4.8MM 6\"",
+      "alternateDescription": "CABLE TIE 150MMX4.8MM 6\"",
+      "category": "General supplies"
+    }
+  ],
+  "selection": {
+    "method": "Manual selection from supplied English catalogue descriptions; not random or first-N sampling.",
+    "categoryCounts": {
+      "Fertiliser": 8,
+      "Spraying chemicals": 8,
+      "PPE": 8,
+      "Machinery parts": 8,
+      "Fuel and lubricants": 8,
+      "Harvesting tools": 8,
+      "Spraying equipment": 8,
+      "General supplies": 8
+    },
+    "excludedDescriptionPatterns": [
+      "deleted",
+      "do not use",
+      "obsolete",
+      "inactive",
+      "cancelled",
+      "scrap"
+    ],
+    "notes": "Selected identities/descriptions are supplied master data. Category is a workshop classification. Current SAP active status, E063 stock, units, suitability and machine compatibility are not supplied."
+  },
+  "derivedFields": {
+    "category": "Workshop grouping, not a supplied SAP material group."
+  }
+}

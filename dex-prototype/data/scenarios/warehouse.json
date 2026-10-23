@@ -1,0 +1,367 @@
+{
+  "schemaVersion": 1,
+  "dataKind": "simulated",
+  "description": "Workshop suppliers, prices, consumption rates, account mapping and transactions. Material/store/estate identities come from the prepared references.",
+  "suppliers": [
+    {
+      "id": "SUP-DEMO-01",
+      "name": "Digital Agro Supplies (Demo)"
+    },
+    {
+      "id": "SUP-DEMO-02",
+      "name": "Estate Equipment Supply (Demo)"
+    },
+    {
+      "id": "SUP-DEMO-03",
+      "name": "Plantation Safety Supply (Demo)"
+    }
+  ],
+  "rules": [
+    {
+      "activityCode": "PF3001",
+      "materialCode": "1300000147",
+      "perHa": 10,
+      "accountCode": "DEMO-5101"
+    },
+    {
+      "activityCode": "PF3001",
+      "materialCode": "1300000148",
+      "perHa": 50,
+      "accountCode": "DEMO-5101"
+    },
+    {
+      "activityCode": "PM1501",
+      "materialCode": "1300000147",
+      "perHa": 5,
+      "accountCode": "DEMO-5102"
+    }
+  ],
+  "nextId": 20,
+  "requests": [
+    {
+      "id": "PR-DEMO-001",
+      "creator": "Field Officer",
+      "createdAt": "2026-10-18T07:00:00+08:00",
+      "estate": "E063",
+      "store": "SR01",
+      "neededDate": "2026-10-25",
+      "remark": "Fertiliser replenishment",
+      "status": "Pending AM",
+      "approvals": [],
+      "lines": [
+        {
+          "materialCode": "1300000147",
+          "quantity": 500,
+          "unitPrice": 4.5,
+          "activityCode": "PF3001",
+          "accountCode": "DEMO-5101",
+          "programmeId": "",
+          "period": "manual",
+          "periodValue": "",
+          "excessReason": ""
+        }
+      ]
+    },
+    {
+      "id": "PR-DEMO-002",
+      "creator": "Assistant Manager",
+      "createdAt": "2026-10-18T07:00:00+08:00",
+      "estate": "E063",
+      "store": "SR04",
+      "neededDate": "2026-10-25",
+      "remark": "Division A stock",
+      "status": "Approved",
+      "approvals": [
+        {
+          "role": "Assistant Manager",
+          "at": "2026-10-18T07:05:00+08:00",
+          "remark": ""
+        },
+        {
+          "role": "Manager",
+          "at": "2026-10-18T07:10:00+08:00",
+          "remark": ""
+        }
+      ],
+      "lines": [
+        {
+          "materialCode": "1300000148",
+          "quantity": 600,
+          "unitPrice": 3.2,
+          "activityCode": "PF3001",
+          "accountCode": "DEMO-5101",
+          "programmeId": "",
+          "period": "manual",
+          "periodValue": "",
+          "excessReason": ""
+        }
+      ]
+    },
+    {
+      "id": "PR-DEMO-003",
+      "creator": "Store Clerk",
+      "createdAt": "2026-10-18T07:00:00+08:00",
+      "estate": "E063",
+      "store": "SR01",
+      "neededDate": "2026-10-23",
+      "remark": "Normal delivery",
+      "status": "Approved",
+      "approvals": [
+        {
+          "role": "Assistant Manager",
+          "at": "2026-10-18T07:05:00+08:00",
+          "remark": ""
+        },
+        {
+          "role": "Manager",
+          "at": "2026-10-18T07:10:00+08:00",
+          "remark": ""
+        }
+      ],
+      "lines": [
+        {
+          "materialCode": "1300000147",
+          "quantity": 100,
+          "unitPrice": 4.5,
+          "activityCode": "PF3001",
+          "accountCode": "DEMO-5101",
+          "programmeId": "",
+          "period": "manual",
+          "periodValue": "",
+          "excessReason": ""
+        }
+      ]
+    },
+    {
+      "id": "PR-DEMO-004",
+      "creator": "Store Clerk",
+      "createdAt": "2026-10-18T07:00:00+08:00",
+      "estate": "E063",
+      "store": "SR01",
+      "neededDate": "2026-10-23",
+      "remark": "Short delivery example",
+      "status": "Approved",
+      "approvals": [
+        {
+          "role": "Assistant Manager",
+          "at": "2026-10-18T07:05:00+08:00",
+          "remark": ""
+        },
+        {
+          "role": "Manager",
+          "at": "2026-10-18T07:10:00+08:00",
+          "remark": ""
+        }
+      ],
+      "lines": [
+        {
+          "materialCode": "1300000147",
+          "quantity": 200,
+          "unitPrice": 4.5,
+          "activityCode": "PF3001",
+          "accountCode": "DEMO-5101",
+          "programmeId": "",
+          "period": "manual",
+          "periodValue": "",
+          "excessReason": ""
+        }
+      ]
+    },
+    {
+      "id": "PR-DEMO-005",
+      "creator": "Store Clerk",
+      "createdAt": "2026-10-18T07:00:00+08:00",
+      "estate": "E063",
+      "store": "SR01",
+      "neededDate": "2026-10-23",
+      "remark": "Damaged delivery example",
+      "status": "Approved",
+      "approvals": [
+        {
+          "role": "Assistant Manager",
+          "at": "2026-10-18T07:05:00+08:00",
+          "remark": ""
+        },
+        {
+          "role": "Manager",
+          "at": "2026-10-18T07:10:00+08:00",
+          "remark": ""
+        }
+      ],
+      "lines": [
+        {
+          "materialCode": "1300000147",
+          "quantity": 100,
+          "unitPrice": 4.5,
+          "activityCode": "PF3001",
+          "accountCode": "DEMO-5101",
+          "programmeId": "",
+          "period": "manual",
+          "periodValue": "",
+          "excessReason": ""
+        }
+      ]
+    }
+  ],
+  "orders": [
+    {
+      "id": "PO-DEMO-003",
+      "prId": "PR-DEMO-003",
+      "creator": "Store Clerk",
+      "createdAt": "2026-10-18T07:00:00+08:00",
+      "estate": "E063",
+      "store": "SR01",
+      "neededDate": "2026-10-23",
+      "supplierId": "SUP-DEMO-01",
+      "remark": "Normal delivery",
+      "status": "Approved",
+      "approvals": [
+        {
+          "role": "Assistant Manager",
+          "at": "2026-10-18T07:05:00+08:00",
+          "remark": ""
+        },
+        {
+          "role": "Manager",
+          "at": "2026-10-18T07:10:00+08:00",
+          "remark": ""
+        }
+      ],
+      "lines": [
+        {
+          "materialCode": "1300000147",
+          "quantity": 100,
+          "unitPrice": 4.5,
+          "activityCode": "PF3001",
+          "accountCode": "DEMO-5101",
+          "programmeId": "",
+          "period": "manual",
+          "periodValue": "",
+          "excessReason": ""
+        }
+      ]
+    },
+    {
+      "id": "PO-DEMO-004",
+      "prId": "PR-DEMO-004",
+      "creator": "Store Clerk",
+      "createdAt": "2026-10-18T07:00:00+08:00",
+      "estate": "E063",
+      "store": "SR01",
+      "neededDate": "2026-10-23",
+      "supplierId": "SUP-DEMO-01",
+      "remark": "Short delivery example",
+      "status": "Approved",
+      "approvals": [
+        {
+          "role": "Assistant Manager",
+          "at": "2026-10-18T07:05:00+08:00",
+          "remark": ""
+        },
+        {
+          "role": "Manager",
+          "at": "2026-10-18T07:10:00+08:00",
+          "remark": ""
+        }
+      ],
+      "lines": [
+        {
+          "materialCode": "1300000147",
+          "quantity": 200,
+          "unitPrice": 4.5,
+          "activityCode": "PF3001",
+          "accountCode": "DEMO-5101",
+          "programmeId": "",
+          "period": "manual",
+          "periodValue": "",
+          "excessReason": ""
+        }
+      ]
+    },
+    {
+      "id": "PO-DEMO-005",
+      "prId": "PR-DEMO-005",
+      "creator": "Store Clerk",
+      "createdAt": "2026-10-18T07:00:00+08:00",
+      "estate": "E063",
+      "store": "SR01",
+      "neededDate": "2026-10-23",
+      "supplierId": "SUP-DEMO-01",
+      "remark": "Damaged delivery example",
+      "status": "Approved",
+      "approvals": [
+        {
+          "role": "Assistant Manager",
+          "at": "2026-10-18T07:05:00+08:00",
+          "remark": ""
+        },
+        {
+          "role": "Manager",
+          "at": "2026-10-18T07:10:00+08:00",
+          "remark": ""
+        }
+      ],
+      "lines": [
+        {
+          "materialCode": "1300000147",
+          "quantity": 100,
+          "unitPrice": 4.5,
+          "activityCode": "PF3001",
+          "accountCode": "DEMO-5101",
+          "programmeId": "",
+          "period": "manual",
+          "periodValue": "",
+          "excessReason": ""
+        }
+      ]
+    }
+  ],
+  "deliveries": [
+    {
+      "id": "DO-DEMO-003",
+      "poId": "PO-DEMO-003",
+      "createdAt": "2026-10-18T08:00:00+08:00",
+      "status": "Pending",
+      "remark": "Normal delivery",
+      "lines": [
+        {
+          "poLine": 0,
+          "declaredQuantity": 100,
+          "deliveredQuantity": 100,
+          "acceptedQuantity": 0
+        }
+      ]
+    },
+    {
+      "id": "DO-DEMO-004",
+      "poId": "PO-DEMO-004",
+      "createdAt": "2026-10-18T08:00:00+08:00",
+      "status": "Pending",
+      "remark": "Supplier delivers 150 of 200",
+      "lines": [
+        {
+          "poLine": 0,
+          "declaredQuantity": 150,
+          "deliveredQuantity": 150,
+          "acceptedQuantity": 0
+        }
+      ]
+    },
+    {
+      "id": "DO-DEMO-005",
+      "poId": "PO-DEMO-005",
+      "createdAt": "2026-10-18T08:00:00+08:00",
+      "status": "Pending",
+      "remark": "Inspect damage before receiving",
+      "lines": [
+        {
+          "poLine": 0,
+          "declaredQuantity": 100,
+          "deliveredQuantity": 100,
+          "acceptedQuantity": 0
+        }
+      ]
+    }
+  ],
+  "movements": []
+}

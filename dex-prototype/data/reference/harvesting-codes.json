@@ -1,0 +1,105 @@
+{
+  "schemaVersion": 1,
+  "dataset": "harvesting-codes",
+  "dataKind": "reference",
+  "preparedOn": "2026-10-18",
+  "recordCount": 14,
+  "scope": "full_master_extract",
+  "source": {
+    "file": "E063_DATA.xlsx",
+    "sha256": "427b21a7d16ceb53c6e793d1bb7f76e2a3d86f39007b2a7088ebd6ca3f33c188",
+    "sheet": "Harvesting Master List",
+    "fullDataRowCount": 14,
+    "columnMapping": [
+      {
+        "column": "A",
+        "sourceHeader": "HRVACTCD",
+        "jsonField": "harvestingCode"
+      },
+      {
+        "column": "B",
+        "sourceHeader": "HRVACTDESC",
+        "jsonField": "description"
+      }
+    ]
+  },
+  "normalization": {
+    "surroundingWhitespace": "trimmed",
+    "identifiers": "strings",
+    "emptyCells": "null",
+    "sourceRows": "retained",
+    "otherSourceValues": "preserved as strings"
+  },
+  "records": [
+    {
+      "sourceRow": 2,
+      "harvestingCode": "BB",
+      "description": "CUT AND CARRY"
+    },
+    {
+      "sourceRow": 3,
+      "harvestingCode": "C1",
+      "description": "C1-CUTTER1"
+    },
+    {
+      "sourceRow": 4,
+      "harvestingCode": "CU",
+      "description": "CUTTER"
+    },
+    {
+      "sourceRow": 5,
+      "harvestingCode": "HM",
+      "description": "HARVESTING MANDORE"
+    },
+    {
+      "sourceRow": 6,
+      "harvestingCode": "QC",
+      "description": "MAIC CUTTER"
+    },
+    {
+      "sourceRow": 7,
+      "harvestingCode": "QF",
+      "description": "MAIC FROND STACKER"
+    },
+    {
+      "sourceRow": 8,
+      "harvestingCode": "QG",
+      "description": "MAIC - MACHINE OPERATOR - GRABBER"
+    },
+    {
+      "sourceRow": 9,
+      "harvestingCode": "QL",
+      "description": "MAIC - LOOSE FRUIT PICKER"
+    },
+    {
+      "sourceRow": 10,
+      "harvestingCode": "QM",
+      "description": "MAIC - MACHINE OPERATOR"
+    },
+    {
+      "sourceRow": 11,
+      "harvestingCode": "QR",
+      "description": "MAIC - CARRIER"
+    },
+    {
+      "sourceRow": 12,
+      "harvestingCode": "R1",
+      "description": "R1-CARRIER1"
+    },
+    {
+      "sourceRow": 13,
+      "harvestingCode": "R2",
+      "description": "R2-CARRIER2"
+    },
+    {
+      "sourceRow": 14,
+      "harvestingCode": "RR",
+      "description": "CARRIER"
+    },
+    {
+      "sourceRow": 15,
+      "harvestingCode": "TT",
+      "description": "CUTTER AND TRACTOR"
+    }
+  ]
+}

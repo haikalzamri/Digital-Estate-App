@@ -52,6 +52,7 @@ export function ModuleShell({ audience, title, subtitle, children, onSync, syncB
           </div>
         </div>
         <div className="module-status" aria-live="polite">
+          <a className="back-button" href="/dex">DEX Prototype</a>
           {isOnline ? <Wifi aria-hidden="true" size={18} /> : <WifiOff aria-hidden="true" size={18} />}
           <span>{isOnline ? "Online" : "Offline"}</span>
           <button

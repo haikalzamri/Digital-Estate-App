@@ -1,6 +1,7 @@
 const baseUrl = (process.env.APP_BASE_URL || "http://127.0.0.1:3000").replace(/\/$/, "");
 
 const routeChecks = [
+  ["/dex", ["Digital Estate Extended", "DEX", "Workshop tools"]],
   ["/management/minamas-harvesting-interval", ["MINAMAS", "Harvesting Interval", "Field Status", "Estate field map", "Presentation prototype", "E450"]],
   ["/management/pre-plan", ["Pre-Plan", "Prototype", "Demo data", "Planning date", "Select unassigned workers", "Programme board", "Activity code or programme", "Allocation summary", "Finalise Demo"]],
   ["/management/work-program", ["Work Program Monthly View"]],
@@ -51,6 +52,30 @@ try {
   }
 } catch (error) {
   fail(`Field map: ${error.message}`);
+}
+
+try {
+  const response = await fetch(`${baseUrl}/dex/data/field-map-data.geojson`);
+  const data = await response.json();
+  if (!response.ok || data.type !== "FeatureCollection" || !data.features?.length) {
+    fail("DEX field map: invalid or empty GeoJSON");
+  } else {
+    pass(`DEX field map: ${data.features.length} features`);
+  }
+  const html = await (await fetch(`${baseUrl}/dex`)).text();
+  const assets = [...new Set([...html.matchAll(/(?:src|href)="([^"]+\.(?:js|css)(?:\?[^"]*)?)"/g)]
+    .map((match) => match[1]).filter((asset) => asset.startsWith("/dex/_next/")))];
+  if (!assets.some((asset) => asset.includes(".js")) || !assets.some((asset) => asset.includes(".css"))) {
+    fail("DEX: exported JS/CSS links missing");
+  }
+  for (const asset of assets) {
+    const result = await fetch(new URL(asset, baseUrl));
+    const type = result.headers.get("content-type") || "";
+    if (!result.ok || !/javascript|text\/css/.test(type)) fail(`DEX asset: ${result.status} ${type} ${asset}`);
+  }
+  if (assets.length) pass(`DEX: ${assets.length} exported assets checked`);
+} catch (error) {
+  fail(`DEX assets: ${error.message}`);
 }
 
 for (const path of ["/api/work-program-records", "/api/pmv-records"]) {

@@ -1,0 +1,338 @@
+{
+  "schemaVersion": 1,
+  "dataset": "rates",
+  "dataKind": "reference",
+  "preparedOn": "2026-10-18",
+  "recordCount": 42,
+  "scope": "full_master_extract",
+  "source": {
+    "file": "E063_DATA.xlsx",
+    "sha256": "427b21a7d16ceb53c6e793d1bb7f76e2a3d86f39007b2a7088ebd6ca3f33c188",
+    "sheet": "Rate Master List",
+    "fullDataRowCount": 42,
+    "columnMapping": [
+      {
+        "column": "A",
+        "sourceHeader": "Rate Code",
+        "jsonField": "rateCode"
+      },
+      {
+        "column": "B",
+        "sourceHeader": "Rate No",
+        "jsonField": "rateValueSource"
+      },
+      {
+        "column": "C",
+        "sourceHeader": "Rate Desc",
+        "jsonField": "rateDescription"
+      }
+    ]
+  },
+  "normalization": {
+    "surroundingWhitespace": "trimmed",
+    "identifiers": "strings",
+    "emptyCells": "null",
+    "sourceRows": "retained",
+    "otherSourceValues": "preserved as strings"
+  },
+  "records": [
+    {
+      "sourceRow": 2,
+      "rateCode": "1",
+      "rateValueSource": "65.38",
+      "rateDescription": "Daily",
+      "rateValue": 65.38
+    },
+    {
+      "sourceRow": 3,
+      "rateCode": "10",
+      "rateValueSource": "73.38",
+      "rateDescription": "Daily",
+      "rateValue": 73.38
+    },
+    {
+      "sourceRow": 4,
+      "rateCode": "11",
+      "rateValueSource": "74.38",
+      "rateDescription": "Daily",
+      "rateValue": 74.38
+    },
+    {
+      "sourceRow": 5,
+      "rateCode": "2",
+      "rateValueSource": "65.88",
+      "rateDescription": "Daily",
+      "rateValue": 65.88
+    },
+    {
+      "sourceRow": 6,
+      "rateCode": "3",
+      "rateValueSource": "66.38",
+      "rateDescription": "Daily",
+      "rateValue": 66.38
+    },
+    {
+      "sourceRow": 7,
+      "rateCode": "4",
+      "rateValueSource": "67.38",
+      "rateDescription": "Daily",
+      "rateValue": 67.38
+    },
+    {
+      "sourceRow": 8,
+      "rateCode": "5",
+      "rateValueSource": "68.38",
+      "rateDescription": "Daily",
+      "rateValue": 68.38
+    },
+    {
+      "sourceRow": 9,
+      "rateCode": "6",
+      "rateValueSource": "69.38",
+      "rateDescription": "Daily",
+      "rateValue": 69.38
+    },
+    {
+      "sourceRow": 10,
+      "rateCode": "7",
+      "rateValueSource": "70.38",
+      "rateDescription": "Daily",
+      "rateValue": 70.38
+    },
+    {
+      "sourceRow": 11,
+      "rateCode": "8",
+      "rateValueSource": "71.38",
+      "rateDescription": "Daily",
+      "rateValue": 71.38
+    },
+    {
+      "sourceRow": 12,
+      "rateCode": "9",
+      "rateValueSource": "72.38",
+      "rateDescription": "Daily",
+      "rateValue": 72.38
+    },
+    {
+      "sourceRow": 13,
+      "rateCode": "DLC1",
+      "rateValueSource": "0.14000000000000001",
+      "rateDescription": "KG",
+      "rateValue": 0.14
+    },
+    {
+      "sourceRow": 14,
+      "rateCode": "DLC2",
+      "rateValueSource": "0.14299999999999999",
+      "rateDescription": "KG",
+      "rateValue": 0.143
+    },
+    {
+      "sourceRow": 15,
+      "rateCode": "DLC3",
+      "rateValueSource": "0.14599999999999999",
+      "rateDescription": "KG",
+      "rateValue": 0.146
+    },
+    {
+      "sourceRow": 16,
+      "rateCode": "DLC4",
+      "rateValueSource": "0.15",
+      "rateDescription": "KG",
+      "rateValue": 0.15
+    },
+    {
+      "sourceRow": 17,
+      "rateCode": "DLC5",
+      "rateValueSource": "0.153",
+      "rateDescription": "KG",
+      "rateValue": 0.153
+    },
+    {
+      "sourceRow": 18,
+      "rateCode": "DLC6",
+      "rateValueSource": "0.157",
+      "rateDescription": "KG",
+      "rateValue": 0.157
+    },
+    {
+      "sourceRow": 19,
+      "rateCode": "MLC0",
+      "rateValueSource": "0.14000000000000001",
+      "rateDescription": "KG",
+      "rateValue": 0.14
+    },
+    {
+      "sourceRow": 20,
+      "rateCode": "MLC1",
+      "rateValueSource": "0.123",
+      "rateDescription": "KG",
+      "rateValue": 0.123
+    },
+    {
+      "sourceRow": 21,
+      "rateCode": "MLC2",
+      "rateValueSource": "0.125",
+      "rateDescription": "KG",
+      "rateValue": 0.125
+    },
+    {
+      "sourceRow": 22,
+      "rateCode": "MLC3",
+      "rateValueSource": "0.128",
+      "rateDescription": "KG",
+      "rateValue": 0.128
+    },
+    {
+      "sourceRow": 23,
+      "rateCode": "MLC4",
+      "rateValueSource": "0.13100000000000001",
+      "rateDescription": "KG",
+      "rateValue": 0.131
+    },
+    {
+      "sourceRow": 24,
+      "rateCode": "MLC5",
+      "rateValueSource": "0.13400000000000001",
+      "rateDescription": "KG",
+      "rateValue": 0.134
+    },
+    {
+      "sourceRow": 25,
+      "rateCode": "MLC6",
+      "rateValueSource": "0.13800000000000001",
+      "rateDescription": "KG",
+      "rateValue": 0.138
+    },
+    {
+      "sourceRow": 26,
+      "rateCode": "P1",
+      "rateValueSource": "1",
+      "rateDescription": "PALM",
+      "rateValue": 1.0
+    },
+    {
+      "sourceRow": 27,
+      "rateCode": "P2",
+      "rateValueSource": "1.5",
+      "rateDescription": "PALM",
+      "rateValue": 1.5
+    },
+    {
+      "sourceRow": 28,
+      "rateCode": "P3",
+      "rateValueSource": "27.5",
+      "rateDescription": "HA",
+      "rateValue": 27.5
+    },
+    {
+      "sourceRow": 29,
+      "rateCode": "P4",
+      "rateValueSource": "2",
+      "rateDescription": "PALM",
+      "rateValue": 2.0
+    },
+    {
+      "sourceRow": 30,
+      "rateCode": "P5",
+      "rateValueSource": "3",
+      "rateDescription": "PALM",
+      "rateValue": 3.0
+    },
+    {
+      "sourceRow": 31,
+      "rateCode": "P6",
+      "rateValueSource": "0.05",
+      "rateDescription": "PALM",
+      "rateValue": 0.05
+    },
+    {
+      "sourceRow": 32,
+      "rateCode": "P7",
+      "rateValueSource": "0.1",
+      "rateDescription": "PALM",
+      "rateValue": 0.1
+    },
+    {
+      "sourceRow": 33,
+      "rateCode": "P10",
+      "rateValueSource": "0.5",
+      "rateDescription": "PALM",
+      "rateValue": 0.5
+    },
+    {
+      "sourceRow": 34,
+      "rateCode": "P11",
+      "rateValueSource": "0.8",
+      "rateDescription": "PALM",
+      "rateValue": 0.8
+    },
+    {
+      "sourceRow": 35,
+      "rateCode": "P8",
+      "rateValueSource": "0.3",
+      "rateDescription": "PALM",
+      "rateValue": 0.3
+    },
+    {
+      "sourceRow": 36,
+      "rateCode": "P9",
+      "rateValueSource": "0.4",
+      "rateDescription": "PALM",
+      "rateValue": 0.4
+    },
+    {
+      "sourceRow": 37,
+      "rateCode": "P12",
+      "rateValueSource": "0.7",
+      "rateDescription": "PALM",
+      "rateValue": 0.7
+    },
+    {
+      "sourceRow": 38,
+      "rateCode": "P13",
+      "rateValueSource": "0.9",
+      "rateDescription": "PALM",
+      "rateValue": 0.9
+    },
+    {
+      "sourceRow": 39,
+      "rateCode": "P14",
+      "rateValueSource": "1.2",
+      "rateDescription": "PALM",
+      "rateValue": 1.2
+    },
+    {
+      "sourceRow": 40,
+      "rateCode": "P15",
+      "rateValueSource": "50",
+      "rateDescription": "UNIT",
+      "rateValue": 50.0
+    },
+    {
+      "sourceRow": 41,
+      "rateCode": "P16",
+      "rateValueSource": "80",
+      "rateDescription": "UNIT",
+      "rateValue": 80.0
+    },
+    {
+      "sourceRow": 42,
+      "rateCode": "P17",
+      "rateValueSource": "3.7",
+      "rateDescription": "TON",
+      "rateValue": 3.7
+    },
+    {
+      "sourceRow": 43,
+      "rateCode": "P18",
+      "rateValueSource": "13.43",
+      "rateDescription": "TON",
+      "rateValue": 13.43
+    }
+  ],
+  "derivedFields": {
+    "rateValue": "Numeric representation of rateValueSource; no currency or applicability mapping supplied."
+  },
+  "currency": null
+}

@@ -11,5 +11,7 @@ export default defineConfig([
     "build/**",
     "next-env.d.ts",
     "api/**",
+    "dex-prototype/**",
+    "public/dex-runtime/**",
   ]),
 ]);

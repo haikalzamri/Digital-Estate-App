@@ -1,0 +1,920 @@
+{
+  "schemaVersion": 1,
+  "dataset": "estates",
+  "dataKind": "reference",
+  "preparedOn": "2026-10-18",
+  "recordCount": 177,
+  "scope": "full_master_extract",
+  "source": {
+    "file": "E063_DATA.xlsx",
+    "sha256": "427b21a7d16ceb53c6e793d1bb7f76e2a3d86f39007b2a7088ebd6ca3f33c188",
+    "sheet": "Estate Master List",
+    "fullDataRowCount": 177,
+    "columnMapping": [
+      {
+        "column": "A",
+        "sourceHeader": "Plant Code",
+        "jsonField": "estateCode"
+      },
+      {
+        "column": "B",
+        "sourceHeader": "Plant Name",
+        "jsonField": "estateName"
+      }
+    ]
+  },
+  "normalization": {
+    "surroundingWhitespace": "trimmed",
+    "identifiers": "strings",
+    "emptyCells": "null",
+    "sourceRows": "retained",
+    "otherSourceValues": "preserved as strings"
+  },
+  "records": [
+    {
+      "sourceRow": 2,
+      "estateCode": "E006",
+      "estateName": "Ldg Bukit Hijau"
+    },
+    {
+      "sourceRow": 3,
+      "estateCode": "E007",
+      "estateName": "Ldg Seri Intan"
+    },
+    {
+      "sourceRow": 4,
+      "estateCode": "E009",
+      "estateName": "Ldg Sabrang"
+    },
+    {
+      "sourceRow": 5,
+      "estateCode": "E010",
+      "estateName": "Ldg Tali Ayer"
+    },
+    {
+      "sourceRow": 6,
+      "estateCode": "E013",
+      "estateName": "Ldg Bukit Rajah"
+    },
+    {
+      "sourceRow": 7,
+      "estateCode": "E016",
+      "estateName": "Ldg Sungei Buloh"
+    },
+    {
+      "sourceRow": 8,
+      "estateCode": "E017",
+      "estateName": "Ldg Tennamaram"
+    },
+    {
+      "sourceRow": 9,
+      "estateCode": "E019",
+      "estateName": "Ldg Salak"
+    },
+    {
+      "sourceRow": 10,
+      "estateCode": "E022",
+      "estateName": "Ldg Pagoh"
+    },
+    {
+      "sourceRow": 11,
+      "estateCode": "E024",
+      "estateName": "Ldg Kempas"
+    },
+    {
+      "sourceRow": 12,
+      "estateCode": "E027",
+      "estateName": "Ldg New Labu"
+    },
+    {
+      "sourceRow": 13,
+      "estateCode": "E029",
+      "estateName": "Ldg Bukit Paloh"
+    },
+    {
+      "sourceRow": 14,
+      "estateCode": "E030",
+      "estateName": "Ldg CEP Niyor"
+    },
+    {
+      "sourceRow": 15,
+      "estateCode": "E031",
+      "estateName": "Ldg CEP Rengam"
+    },
+    {
+      "sourceRow": 16,
+      "estateCode": "E033",
+      "estateName": "Ldg Gunung Mas"
+    },
+    {
+      "sourceRow": 17,
+      "estateCode": "E036",
+      "estateName": "Ldg Kempas Klebang"
+    },
+    {
+      "sourceRow": 18,
+      "estateCode": "E037",
+      "estateName": "Ldg Kulai"
+    },
+    {
+      "sourceRow": 19,
+      "estateCode": "E039",
+      "estateName": "Ldg Layang"
+    },
+    {
+      "sourceRow": 20,
+      "estateCode": "E040",
+      "estateName": "Ldg Seri Pulai"
+    },
+    {
+      "sourceRow": 21,
+      "estateCode": "E043",
+      "estateName": "Ldg Segaliud"
+    },
+    {
+      "sourceRow": 22,
+      "estateCode": "E045",
+      "estateName": "Ldg Sentosa"
+    },
+    {
+      "sourceRow": 23,
+      "estateCode": "E046",
+      "estateName": "Ldg Tigowis"
+    },
+    {
+      "sourceRow": 24,
+      "estateCode": "E047",
+      "estateName": "Ldg Tun Tan Siew Sin"
+    },
+    {
+      "sourceRow": 25,
+      "estateCode": "E048",
+      "estateName": "Ldg Tunku"
+    },
+    {
+      "sourceRow": 26,
+      "estateCode": "E063",
+      "estateName": "Ldg Digital"
+    },
+    {
+      "sourceRow": 27,
+      "estateCode": "E103",
+      "estateName": "Ldg Tampin Linggi"
+    },
+    {
+      "sourceRow": 28,
+      "estateCode": "E104",
+      "estateName": "Ldg Cenas"
+    },
+    {
+      "sourceRow": 29,
+      "estateCode": "E105",
+      "estateName": "Ldg Cha`ah"
+    },
+    {
+      "sourceRow": 30,
+      "estateCode": "E107",
+      "estateName": "Ldg Sembrong"
+    },
+    {
+      "sourceRow": 31,
+      "estateCode": "E108",
+      "estateName": "Ldg Tun Dr. Ismail"
+    },
+    {
+      "sourceRow": 32,
+      "estateCode": "E109",
+      "estateName": "Ldg Sungai Gemas"
+    },
+    {
+      "sourceRow": 33,
+      "estateCode": "E111",
+      "estateName": "Ldg Lambak/ Elaeis"
+    },
+    {
+      "sourceRow": 34,
+      "estateCode": "E115",
+      "estateName": "Ldg Sg. Wangi"
+    },
+    {
+      "sourceRow": 35,
+      "estateCode": "E117",
+      "estateName": "Ldg Dusun Durian"
+    },
+    {
+      "sourceRow": 36,
+      "estateCode": "E118",
+      "estateName": "Ldg Bkt. Pilah"
+    },
+    {
+      "sourceRow": 37,
+      "estateCode": "E121",
+      "estateName": "Ldg Elphil"
+    },
+    {
+      "sourceRow": 38,
+      "estateCode": "E122",
+      "estateName": "Ldg Cluny"
+    },
+    {
+      "sourceRow": 39,
+      "estateCode": "E123",
+      "estateName": "Ldg Sepang"
+    },
+    {
+      "sourceRow": 40,
+      "estateCode": "E125",
+      "estateName": "Ldg Sg. Sebaling"
+    },
+    {
+      "sourceRow": 41,
+      "estateCode": "E126",
+      "estateName": "Ldg Diamond Jubilee"
+    },
+    {
+      "sourceRow": 42,
+      "estateCode": "E127",
+      "estateName": "Ldg Sg. Senarut"
+    },
+    {
+      "sourceRow": 43,
+      "estateCode": "E128",
+      "estateName": "Ldg Welch"
+    },
+    {
+      "sourceRow": 44,
+      "estateCode": "E129",
+      "estateName": "Ldg Tangkah"
+    },
+    {
+      "sourceRow": 45,
+      "estateCode": "E130",
+      "estateName": "Ldg Lanadron"
+    },
+    {
+      "sourceRow": 46,
+      "estateCode": "E132",
+      "estateName": "Ldg Bikam"
+    },
+    {
+      "sourceRow": 47,
+      "estateCode": "E133",
+      "estateName": "Ldg St. Helier"
+    },
+    {
+      "sourceRow": 48,
+      "estateCode": "E134",
+      "estateName": "Ldg North Labis"
+    },
+    {
+      "sourceRow": 49,
+      "estateCode": "E135",
+      "estateName": "Ldg Bagan Datoh"
+    },
+    {
+      "sourceRow": 50,
+      "estateCode": "E136",
+      "estateName": "Ldg Flemington"
+    },
+    {
+      "sourceRow": 51,
+      "estateCode": "E137",
+      "estateName": "Ldg Sg. Samak"
+    },
+    {
+      "sourceRow": 52,
+      "estateCode": "E138",
+      "estateName": "Ldg Pertang"
+    },
+    {
+      "sourceRow": 53,
+      "estateCode": "E139",
+      "estateName": "Ldg Bukit Benut"
+    },
+    {
+      "sourceRow": 54,
+      "estateCode": "E140",
+      "estateName": "Ldg Holyrood"
+    },
+    {
+      "sourceRow": 55,
+      "estateCode": "E142",
+      "estateName": "Ldg Kinta Kellas"
+    },
+    {
+      "sourceRow": 56,
+      "estateCode": "E143",
+      "estateName": "Ldg Sungai Baru"
+    },
+    {
+      "sourceRow": 57,
+      "estateCode": "E146",
+      "estateName": "Ldg Sogomana"
+    },
+    {
+      "sourceRow": 58,
+      "estateCode": "E147",
+      "estateName": "Ldg Bradwall"
+    },
+    {
+      "sourceRow": 59,
+      "estateCode": "E148",
+      "estateName": "Ldg Chersonese"
+    },
+    {
+      "sourceRow": 60,
+      "estateCode": "E149",
+      "estateName": "Ldg Muar River"
+    },
+    {
+      "sourceRow": 61,
+      "estateCode": "E150",
+      "estateName": "Ldg Somme"
+    },
+    {
+      "sourceRow": 62,
+      "estateCode": "E152",
+      "estateName": "Ldg West"
+    },
+    {
+      "sourceRow": 63,
+      "estateCode": "E153",
+      "estateName": "Ldg East"
+    },
+    {
+      "sourceRow": 64,
+      "estateCode": "E155",
+      "estateName": "Ldg Anak Kulim"
+    },
+    {
+      "sourceRow": 65,
+      "estateCode": "E156",
+      "estateName": "Ldg Bkt. Selarong"
+    },
+    {
+      "sourceRow": 66,
+      "estateCode": "E162",
+      "estateName": "Ldg Kalumpong"
+    },
+    {
+      "sourceRow": 67,
+      "estateCode": "E164",
+      "estateName": "Ldg Sabak Bernam"
+    },
+    {
+      "sourceRow": 68,
+      "estateCode": "E165",
+      "estateName": "Ldg Bkt Kerayong"
+    },
+    {
+      "sourceRow": 69,
+      "estateCode": "E166",
+      "estateName": "Ldg Bkt Talang"
+    },
+    {
+      "sourceRow": 70,
+      "estateCode": "E167",
+      "estateName": "Ldg Bkt Cherakah"
+    },
+    {
+      "sourceRow": 71,
+      "estateCode": "E169",
+      "estateName": "Ldg Mentakab"
+    },
+    {
+      "sourceRow": 72,
+      "estateCode": "E185",
+      "estateName": "Ldg Rasan"
+    },
+    {
+      "sourceRow": 73,
+      "estateCode": "E186",
+      "estateName": "Ldg Kelida"
+    },
+    {
+      "sourceRow": 74,
+      "estateCode": "E187",
+      "estateName": "Ldg Lavang"
+    },
+    {
+      "sourceRow": 75,
+      "estateCode": "E188",
+      "estateName": "Ldg Belian"
+    },
+    {
+      "sourceRow": 76,
+      "estateCode": "E191",
+      "estateName": "Ldg Imam"
+    },
+    {
+      "sourceRow": 77,
+      "estateCode": "E192",
+      "estateName": "Ldg Table"
+    },
+    {
+      "sourceRow": 78,
+      "estateCode": "E193",
+      "estateName": "Ldg Merotai"
+    },
+    {
+      "sourceRow": 79,
+      "estateCode": "E194",
+      "estateName": "Ldg Tiger"
+    },
+    {
+      "sourceRow": 80,
+      "estateCode": "E195",
+      "estateName": "Ldg Mostyn"
+    },
+    {
+      "sourceRow": 81,
+      "estateCode": "E196",
+      "estateName": "Ldg Tingkayu"
+    },
+    {
+      "sourceRow": 82,
+      "estateCode": "E197",
+      "estateName": "Ldg Binuang"
+    },
+    {
+      "sourceRow": 83,
+      "estateCode": "E198",
+      "estateName": "Ldg Sungang"
+    },
+    {
+      "sourceRow": 84,
+      "estateCode": "E199",
+      "estateName": "Ldg Giram"
+    },
+    {
+      "sourceRow": 85,
+      "estateCode": "E200",
+      "estateName": "Ldg Sapong"
+    },
+    {
+      "sourceRow": 86,
+      "estateCode": "E201",
+      "estateName": "Ldg Melalap"
+    },
+    {
+      "sourceRow": 87,
+      "estateCode": "E229",
+      "estateName": "Ldg Derawan"
+    },
+    {
+      "sourceRow": 88,
+      "estateCode": "E231",
+      "estateName": "Ldg Takau"
+    },
+    {
+      "sourceRow": 89,
+      "estateCode": "E233",
+      "estateName": "Ldg Rajawali"
+    },
+    {
+      "sourceRow": 90,
+      "estateCode": "E234",
+      "estateName": "Ldg Semarak"
+    },
+    {
+      "sourceRow": 91,
+      "estateCode": "E237",
+      "estateName": "Ldg Pekaka"
+    },
+    {
+      "sourceRow": 92,
+      "estateCode": "E238",
+      "estateName": "Ldg Ruai"
+    },
+    {
+      "sourceRow": 93,
+      "estateCode": "E239",
+      "estateName": "Ldg Dulang"
+    },
+    {
+      "sourceRow": 94,
+      "estateCode": "E240",
+      "estateName": "Ldg Paroh"
+    },
+    {
+      "sourceRow": 95,
+      "estateCode": "E243",
+      "estateName": "Ldg Chartquest"
+    },
+    {
+      "sourceRow": 96,
+      "estateCode": "E244",
+      "estateName": "Ldg Sahua"
+    },
+    {
+      "sourceRow": 97,
+      "estateCode": "E245",
+      "estateName": "Ldg Damai"
+    },
+    {
+      "sourceRow": 98,
+      "estateCode": "E246",
+      "estateName": "Ldg Samudera"
+    },
+    {
+      "sourceRow": 99,
+      "estateCode": "E247",
+      "estateName": "Ldg Bayu"
+    },
+    {
+      "sourceRow": 100,
+      "estateCode": "E249",
+      "estateName": "Ldg Glengowrie"
+    },
+    {
+      "sourceRow": 101,
+      "estateCode": "E250",
+      "estateName": "Ldg Yong Peng"
+    },
+    {
+      "sourceRow": 102,
+      "estateCode": "E254",
+      "estateName": "Ldg Bukit Badak"
+    },
+    {
+      "sourceRow": 103,
+      "estateCode": "E256",
+      "estateName": "Ldg Kamuning"
+    },
+    {
+      "sourceRow": 104,
+      "estateCode": "E257",
+      "estateName": "Ldg Sengkang"
+    },
+    {
+      "sourceRow": 105,
+      "estateCode": "E258",
+      "estateName": "Ldg Sua Betong"
+    },
+    {
+      "sourceRow": 106,
+      "estateCode": "E260",
+      "estateName": "Ldg Pengkalan Bukit"
+    },
+    {
+      "sourceRow": 107,
+      "estateCode": "E262",
+      "estateName": "Ldg Ulu Remis"
+    },
+    {
+      "sourceRow": 108,
+      "estateCode": "E264",
+      "estateName": "Ldg Bukit Asahan"
+    },
+    {
+      "sourceRow": 109,
+      "estateCode": "E267",
+      "estateName": "Ldg PD Lukut"
+    },
+    {
+      "sourceRow": 110,
+      "estateCode": "E268",
+      "estateName": "Ldg Bukit Pelandok"
+    },
+    {
+      "sourceRow": 111,
+      "estateCode": "E269",
+      "estateName": "Ldg Tanah Merah"
+    },
+    {
+      "sourceRow": 112,
+      "estateCode": "E273",
+      "estateName": "Ldg Padang Buluh"
+    },
+    {
+      "sourceRow": 113,
+      "estateCode": "E275",
+      "estateName": "Ldg Sg. Dingin"
+    },
+    {
+      "sourceRow": 114,
+      "estateCode": "E278",
+      "estateName": "Ldg Bukit Lagong"
+    },
+    {
+      "sourceRow": 115,
+      "estateCode": "E280",
+      "estateName": "Ldg Chenor"
+    },
+    {
+      "sourceRow": 116,
+      "estateCode": "E281",
+      "estateName": "Ldg Jabor"
+    },
+    {
+      "sourceRow": 117,
+      "estateCode": "E282",
+      "estateName": "Ldg Pekan"
+    },
+    {
+      "sourceRow": 118,
+      "estateCode": "E284",
+      "estateName": "Ldg Kemuning"
+    },
+    {
+      "sourceRow": 119,
+      "estateCode": "E285",
+      "estateName": "Ldg Labu"
+    },
+    {
+      "sourceRow": 120,
+      "estateCode": "E286",
+      "estateName": "Ldg Siliau"
+    },
+    {
+      "sourceRow": 121,
+      "estateCode": "E291",
+      "estateName": "Ldg Serkam"
+    },
+    {
+      "sourceRow": 122,
+      "estateCode": "E294",
+      "estateName": "Ldg Jelata Bumi"
+    },
+    {
+      "sourceRow": 123,
+      "estateCode": "E297",
+      "estateName": "Ldg Bukit Puteri"
+    },
+    {
+      "sourceRow": 124,
+      "estateCode": "E298",
+      "estateName": "Ldg Sungai Mai"
+    },
+    {
+      "sourceRow": 125,
+      "estateCode": "E299",
+      "estateName": "Ldg Kerdau"
+    },
+    {
+      "sourceRow": 126,
+      "estateCode": "E300",
+      "estateName": "Ldg Jentar"
+    },
+    {
+      "sourceRow": 127,
+      "estateCode": "E303",
+      "estateName": "Ldg Jentayu"
+    },
+    {
+      "sourceRow": 128,
+      "estateCode": "E304",
+      "estateName": "Ldg Koh Foh"
+    },
+    {
+      "sourceRow": 129,
+      "estateCode": "E317",
+      "estateName": "Ldg Elmina"
+    },
+    {
+      "sourceRow": 130,
+      "estateCode": "E388",
+      "estateName": "Ldg Kamuning (SE)"
+    },
+    {
+      "sourceRow": 131,
+      "estateCode": "E389",
+      "estateName": "Ldg Bukit Asahan (SE)"
+    },
+    {
+      "sourceRow": 132,
+      "estateCode": "E390",
+      "estateName": "Ldg Sg. Dingin (SE)"
+    },
+    {
+      "sourceRow": 133,
+      "estateCode": "E506",
+      "estateName": "Ldg Lavang (SE)"
+    },
+    {
+      "sourceRow": 134,
+      "estateCode": "E534",
+      "estateName": "Ldg Sg. Simpang Kiri"
+    },
+    {
+      "sourceRow": 135,
+      "estateCode": "M008",
+      "estateName": "KKS Seri Intan"
+    },
+    {
+      "sourceRow": 136,
+      "estateCode": "M018",
+      "estateName": "KKS Tennamaram"
+    },
+    {
+      "sourceRow": 137,
+      "estateCode": "M034",
+      "estateName": "KKS Gunung Mas"
+    },
+    {
+      "sourceRow": 138,
+      "estateCode": "M042",
+      "estateName": "KKS Sandakan Bay"
+    },
+    {
+      "sourceRow": 139,
+      "estateCode": "M044",
+      "estateName": "KKS Segaliud"
+    },
+    {
+      "sourceRow": 140,
+      "estateCode": "M050",
+      "estateName": "KKS Kempas"
+    },
+    {
+      "sourceRow": 141,
+      "estateCode": "M085",
+      "estateName": "KKS Hadapan"
+    },
+    {
+      "sourceRow": 142,
+      "estateCode": "M112",
+      "estateName": "KKS Cha`ah"
+    },
+    {
+      "sourceRow": 143,
+      "estateCode": "M170",
+      "estateName": "KKS Selaba"
+    },
+    {
+      "sourceRow": 144,
+      "estateCode": "M172",
+      "estateName": "KKS Diamond Jubilee"
+    },
+    {
+      "sourceRow": 145,
+      "estateCode": "M173",
+      "estateName": "KKS Nordanal"
+    },
+    {
+      "sourceRow": 146,
+      "estateCode": "M174",
+      "estateName": "KKS Flemington"
+    },
+    {
+      "sourceRow": 147,
+      "estateCode": "M176",
+      "estateName": "KKS Chersonese"
+    },
+    {
+      "sourceRow": 148,
+      "estateCode": "M177",
+      "estateName": "KKS West"
+    },
+    {
+      "sourceRow": 149,
+      "estateCode": "M178",
+      "estateName": "KKS East"
+    },
+    {
+      "sourceRow": 150,
+      "estateCode": "M179",
+      "estateName": "KKS Kalumpong"
+    },
+    {
+      "sourceRow": 151,
+      "estateCode": "M180",
+      "estateName": "KKS Bkt. Benut"
+    },
+    {
+      "sourceRow": 152,
+      "estateCode": "M181",
+      "estateName": "KKS Bukit Kerayong"
+    },
+    {
+      "sourceRow": 153,
+      "estateCode": "M189",
+      "estateName": "KKS Lavang"
+    },
+    {
+      "sourceRow": 154,
+      "estateCode": "M202",
+      "estateName": "KKS Binuang"
+    },
+    {
+      "sourceRow": 155,
+      "estateCode": "M203",
+      "estateName": "KKS Melalap"
+    },
+    {
+      "sourceRow": 156,
+      "estateCode": "M204",
+      "estateName": "KKS Giram"
+    },
+    {
+      "sourceRow": 157,
+      "estateCode": "M205",
+      "estateName": "KKS Merotai"
+    },
+    {
+      "sourceRow": 158,
+      "estateCode": "M230",
+      "estateName": "KKS Derawan"
+    },
+    {
+      "sourceRow": 159,
+      "estateCode": "M235",
+      "estateName": "KKS Rajawali"
+    },
+    {
+      "sourceRow": 160,
+      "estateCode": "M241",
+      "estateName": "KKS Pekaka"
+    },
+    {
+      "sourceRow": 161,
+      "estateCode": "M251",
+      "estateName": "KKS Yong Peng"
+    },
+    {
+      "sourceRow": 162,
+      "estateCode": "M252",
+      "estateName": "KKS Labu"
+    },
+    {
+      "sourceRow": 163,
+      "estateCode": "M263",
+      "estateName": "KKS Rantau"
+    },
+    {
+      "sourceRow": 164,
+      "estateCode": "M265",
+      "estateName": "KKS Ulu Remis"
+    },
+    {
+      "sourceRow": 165,
+      "estateCode": "M276",
+      "estateName": "KKS Tanah Merah"
+    },
+    {
+      "sourceRow": 166,
+      "estateCode": "M277",
+      "estateName": "KKS Sg. Dingin"
+    },
+    {
+      "sourceRow": 167,
+      "estateCode": "M283",
+      "estateName": "KKS Jabor"
+    },
+    {
+      "sourceRow": 168,
+      "estateCode": "M302",
+      "estateName": "KKS Bukit Puteri"
+    },
+    {
+      "sourceRow": 169,
+      "estateCode": "M305",
+      "estateName": "KOK FOH-O"
+    },
+    {
+      "sourceRow": 170,
+      "estateCode": "M476",
+      "estateName": "KKS Elphil"
+    },
+    {
+      "sourceRow": 171,
+      "estateCode": "M520",
+      "estateName": "KKS Pagoh"
+    },
+    {
+      "sourceRow": 172,
+      "estateCode": "M521",
+      "estateName": "KKS SUA BETONG"
+    },
+    {
+      "sourceRow": 173,
+      "estateCode": "M581",
+      "estateName": "KKS Bukit Talang"
+    },
+    {
+      "sourceRow": 174,
+      "estateCode": "M582",
+      "estateName": "KKS Kerdau"
+    },
+    {
+      "sourceRow": 175,
+      "estateCode": "M593",
+      "estateName": "KKS Sepang"
+    },
+    {
+      "sourceRow": 176,
+      "estateCode": "M600",
+      "estateName": "KKS Mostyn"
+    },
+    {
+      "sourceRow": 177,
+      "estateCode": "M601",
+      "estateName": "KKS Kok Foh"
+    },
+    {
+      "sourceRow": 178,
+      "estateCode": "M699",
+      "estateName": "KKS Bintang"
+    }
+  ]
+}

@@ -14,3 +14,6 @@ AGENTS.md
 codex/
 .codex/
 codex-clipboard-*.png
+
+# Generated DEX module served by the main application
+/public/dex-runtime/

@@ -1,0 +1,1296 @@
+{
+  "schemaVersion": 1,
+  "dataset": "employees",
+  "dataKind": "reference",
+  "preparedOn": "2026-10-18",
+  "recordCount": 122,
+  "scope": "full_master_extract",
+  "source": {
+    "file": "E063_DATA.xlsx",
+    "sha256": "427b21a7d16ceb53c6e793d1bb7f76e2a3d86f39007b2a7088ebd6ca3f33c188",
+    "sheet": "Employee Master List",
+    "fullDataRowCount": 122,
+    "columnMapping": [
+      {
+        "column": "A",
+        "sourceHeader": "Estate ID",
+        "jsonField": "estateCode"
+      },
+      {
+        "column": "B",
+        "sourceHeader": "Gang No",
+        "jsonField": "gangNo"
+      },
+      {
+        "column": "C",
+        "sourceHeader": "Gang Desc",
+        "jsonField": "gangDescription"
+      },
+      {
+        "column": "D",
+        "sourceHeader": "Employee ID",
+        "jsonField": "employeeId"
+      },
+      {
+        "column": "E",
+        "sourceHeader": "Employee Name",
+        "jsonField": "employeeName"
+      },
+      {
+        "column": "F",
+        "sourceHeader": "Harvesting Code",
+        "jsonField": "harvestingCode"
+      },
+      {
+        "column": "G",
+        "sourceHeader": "Harvesting code desc",
+        "jsonField": "harvestingCodeDescription"
+      }
+    ]
+  },
+  "normalization": {
+    "surroundingWhitespace": "trimmed",
+    "identifiers": "strings",
+    "emptyCells": "null",
+    "sourceRows": "retained",
+    "otherSourceValues": "preserved as strings"
+  },
+  "records": [
+    {
+      "sourceRow": 2,
+      "estateCode": "E063",
+      "gangNo": "3",
+      "gangDescription": "HARVESTING 3",
+      "employeeId": "337265",
+      "employeeName": "MUHAMAD JAELANI",
+      "harvestingCode": "QC",
+      "harvestingCodeDescription": "MAIC CUTTER"
+    },
+    {
+      "sourceRow": 3,
+      "estateCode": "E063",
+      "gangNo": "3",
+      "gangDescription": "HARVESTING 3",
+      "employeeId": "171494",
+      "employeeName": "MANARUDDIN",
+      "harvestingCode": "QC",
+      "harvestingCodeDescription": "MAIC CUTTER"
+    },
+    {
+      "sourceRow": 4,
+      "estateCode": "E063",
+      "gangNo": "3",
+      "gangDescription": "HARVESTING 3",
+      "employeeId": "332463",
+      "employeeName": "WILDAN HAPIZ",
+      "harvestingCode": "QC",
+      "harvestingCodeDescription": "MAIC CUTTER"
+    },
+    {
+      "sourceRow": 5,
+      "estateCode": "E063",
+      "gangNo": "3",
+      "gangDescription": "HARVESTING 3",
+      "employeeId": "171486",
+      "employeeName": "HAFID",
+      "harvestingCode": "QC",
+      "harvestingCodeDescription": "MAIC CUTTER"
+    },
+    {
+      "sourceRow": 6,
+      "estateCode": "E063",
+      "gangNo": "3",
+      "gangDescription": "HARVESTING 3",
+      "employeeId": "337269",
+      "employeeName": "RUDI HARDI",
+      "harvestingCode": "QC",
+      "harvestingCodeDescription": "MAIC CUTTER"
+    },
+    {
+      "sourceRow": 7,
+      "estateCode": "E063",
+      "gangNo": "3",
+      "gangDescription": "HARVESTING 3",
+      "employeeId": "332459",
+      "employeeName": "RAHMAN ZULHADI",
+      "harvestingCode": "QG",
+      "harvestingCodeDescription": "MAIC - MACHINE OPERATOR - GRABBER"
+    },
+    {
+      "sourceRow": 8,
+      "estateCode": "E063",
+      "gangNo": "3",
+      "gangDescription": "HARVESTING 3",
+      "employeeId": "182698",
+      "employeeName": "M YANI",
+      "harvestingCode": "QF",
+      "harvestingCodeDescription": "MAIC FROND STACKER"
+    },
+    {
+      "sourceRow": 9,
+      "estateCode": "E063",
+      "gangNo": "3",
+      "gangDescription": "HARVESTING 3",
+      "employeeId": "183800",
+      "employeeName": "AHMAD SALEH",
+      "harvestingCode": "QG",
+      "harvestingCodeDescription": "MAIC - MACHINE OPERATOR - GRABBER"
+    },
+    {
+      "sourceRow": 10,
+      "estateCode": "E063",
+      "gangNo": "3",
+      "gangDescription": "HARVESTING 3",
+      "employeeId": "334876",
+      "employeeName": "RAMEDAN",
+      "harvestingCode": "QM",
+      "harvestingCodeDescription": "MAIC - MACHINE OPERATOR"
+    },
+    {
+      "sourceRow": 11,
+      "estateCode": "E063",
+      "gangNo": "3",
+      "gangDescription": "HARVESTING 3",
+      "employeeId": "170458",
+      "employeeName": "HERDI",
+      "harvestingCode": "QC",
+      "harvestingCodeDescription": "MAIC CUTTER"
+    },
+    {
+      "sourceRow": 12,
+      "estateCode": "E063",
+      "gangNo": "3",
+      "gangDescription": "HARVESTING 3",
+      "employeeId": "171484",
+      "employeeName": "MIPTAHUDDIN",
+      "harvestingCode": "QC",
+      "harvestingCodeDescription": "MAIC CUTTER"
+    },
+    {
+      "sourceRow": 13,
+      "estateCode": "E063",
+      "gangNo": "3",
+      "gangDescription": "HARVESTING 3",
+      "employeeId": "174055",
+      "employeeName": "MULTAZAM",
+      "harvestingCode": "QF",
+      "harvestingCodeDescription": "MAIC FROND STACKER"
+    },
+    {
+      "sourceRow": 14,
+      "estateCode": "E063",
+      "gangNo": "3",
+      "gangDescription": "HARVESTING 3",
+      "employeeId": "179903",
+      "employeeName": "ISHAK",
+      "harvestingCode": "QF",
+      "harvestingCodeDescription": "MAIC FROND STACKER"
+    },
+    {
+      "sourceRow": 15,
+      "estateCode": "E063",
+      "gangNo": "3",
+      "gangDescription": "HARVESTING 3",
+      "employeeId": "172558",
+      "employeeName": "MUHAEMIN ARDI",
+      "harvestingCode": "QF",
+      "harvestingCodeDescription": "MAIC FROND STACKER"
+    },
+    {
+      "sourceRow": 16,
+      "estateCode": "E063",
+      "gangNo": "3",
+      "gangDescription": "HARVESTING 3",
+      "employeeId": "182052",
+      "employeeName": "AFIK MUSTOFA",
+      "harvestingCode": "QF",
+      "harvestingCodeDescription": "MAIC FROND STACKER"
+    },
+    {
+      "sourceRow": 17,
+      "estateCode": "E063",
+      "gangNo": "4",
+      "gangDescription": "HARVESTING 4",
+      "employeeId": "171502",
+      "employeeName": "SALMAN ALFARISI",
+      "harvestingCode": "QC",
+      "harvestingCodeDescription": "MAIC CUTTER"
+    },
+    {
+      "sourceRow": 18,
+      "estateCode": "E063",
+      "gangNo": "4",
+      "gangDescription": "HARVESTING 4",
+      "employeeId": "172573",
+      "employeeName": "HAMDI",
+      "harvestingCode": "QC",
+      "harvestingCodeDescription": "MAIC CUTTER"
+    },
+    {
+      "sourceRow": 19,
+      "estateCode": "E063",
+      "gangNo": "4",
+      "gangDescription": "HARVESTING 4",
+      "employeeId": "334880",
+      "employeeName": "RUSNAN",
+      "harvestingCode": "QC",
+      "harvestingCodeDescription": "MAIC CUTTER"
+    },
+    {
+      "sourceRow": 20,
+      "estateCode": "E063",
+      "gangNo": "4",
+      "gangDescription": "HARVESTING 4",
+      "employeeId": "171497",
+      "employeeName": "SIDI ALBARAGI",
+      "harvestingCode": "QG",
+      "harvestingCodeDescription": "MAIC - MACHINE OPERATOR - GRABBER"
+    },
+    {
+      "sourceRow": 21,
+      "estateCode": "E063",
+      "gangNo": "4",
+      "gangDescription": "HARVESTING 4",
+      "employeeId": "334878",
+      "employeeName": "NASLIM",
+      "harvestingCode": "QC",
+      "harvestingCodeDescription": "MAIC CUTTER"
+    },
+    {
+      "sourceRow": 22,
+      "estateCode": "E063",
+      "gangNo": "4",
+      "gangDescription": "HARVESTING 4",
+      "employeeId": "175649",
+      "employeeName": "HENDRA HERAWAN SAHNI",
+      "harvestingCode": "QF",
+      "harvestingCodeDescription": "MAIC FROND STACKER"
+    },
+    {
+      "sourceRow": 23,
+      "estateCode": "E063",
+      "gangNo": "4",
+      "gangDescription": "HARVESTING 4",
+      "employeeId": "178341",
+      "employeeName": "HUN",
+      "harvestingCode": "QC",
+      "harvestingCodeDescription": "MAIC CUTTER"
+    },
+    {
+      "sourceRow": 24,
+      "estateCode": "E063",
+      "gangNo": "4",
+      "gangDescription": "HARVESTING 4",
+      "employeeId": "178346",
+      "employeeName": "IRWAN HASANI",
+      "harvestingCode": "QF",
+      "harvestingCodeDescription": "MAIC FROND STACKER"
+    },
+    {
+      "sourceRow": 25,
+      "estateCode": "E063",
+      "gangNo": "4",
+      "gangDescription": "HARVESTING 4",
+      "employeeId": "178345",
+      "employeeName": "NOLI",
+      "harvestingCode": "QC",
+      "harvestingCodeDescription": "MAIC CUTTER"
+    },
+    {
+      "sourceRow": 26,
+      "estateCode": "E063",
+      "gangNo": "4",
+      "gangDescription": "HARVESTING 4",
+      "employeeId": "332461",
+      "employeeName": "MURDIN",
+      "harvestingCode": "QG",
+      "harvestingCodeDescription": "MAIC - MACHINE OPERATOR - GRABBER"
+    },
+    {
+      "sourceRow": 27,
+      "estateCode": "E063",
+      "gangNo": "4",
+      "gangDescription": "HARVESTING 4",
+      "employeeId": "174051",
+      "employeeName": "MUHAMMAD SALEH",
+      "harvestingCode": "QC",
+      "harvestingCodeDescription": "MAIC CUTTER"
+    },
+    {
+      "sourceRow": 28,
+      "estateCode": "E063",
+      "gangNo": "4",
+      "gangDescription": "HARVESTING 4",
+      "employeeId": "337111",
+      "employeeName": "MARTANANG MISNANG",
+      "harvestingCode": "QC",
+      "harvestingCodeDescription": "MAIC CUTTER"
+    },
+    {
+      "sourceRow": 29,
+      "estateCode": "E063",
+      "gangNo": "4",
+      "gangDescription": "HARVESTING 4",
+      "employeeId": "171489",
+      "employeeName": "ZAINI",
+      "harvestingCode": "QC",
+      "harvestingCodeDescription": "MAIC CUTTER"
+    },
+    {
+      "sourceRow": 30,
+      "estateCode": "E063",
+      "gangNo": "4",
+      "gangDescription": "HARVESTING 4",
+      "employeeId": "172496",
+      "employeeName": "HIRMAN",
+      "harvestingCode": "QF",
+      "harvestingCodeDescription": "MAIC FROND STACKER"
+    },
+    {
+      "sourceRow": 31,
+      "estateCode": "E063",
+      "gangNo": "4",
+      "gangDescription": "HARVESTING 4",
+      "employeeId": "174052",
+      "employeeName": "HIZBUL WATONI",
+      "harvestingCode": "HM",
+      "harvestingCodeDescription": "HARVESTING MANDORE"
+    },
+    {
+      "sourceRow": 32,
+      "estateCode": "E063",
+      "gangNo": "5",
+      "gangDescription": "HARVESTING 5",
+      "employeeId": "112842",
+      "employeeName": "SUNAJI",
+      "harvestingCode": "QC",
+      "harvestingCodeDescription": "MAIC CUTTER"
+    },
+    {
+      "sourceRow": 33,
+      "estateCode": "E063",
+      "gangNo": "5",
+      "gangDescription": "HARVESTING 5",
+      "employeeId": "96281",
+      "employeeName": "MARMAN",
+      "harvestingCode": "QF",
+      "harvestingCodeDescription": "MAIC FROND STACKER"
+    },
+    {
+      "sourceRow": 34,
+      "estateCode": "E063",
+      "gangNo": "5",
+      "gangDescription": "HARVESTING 5",
+      "employeeId": "111455",
+      "employeeName": "BHOLAMAN SINGH KHAPANGI MAGAR",
+      "harvestingCode": "QC",
+      "harvestingCodeDescription": "MAIC CUTTER"
+    },
+    {
+      "sourceRow": 35,
+      "estateCode": "E063",
+      "gangNo": "5",
+      "gangDescription": "HARVESTING 5",
+      "employeeId": "171491",
+      "employeeName": "RUMIADI",
+      "harvestingCode": "QF",
+      "harvestingCodeDescription": "MAIC FROND STACKER"
+    },
+    {
+      "sourceRow": 36,
+      "estateCode": "E063",
+      "gangNo": "5",
+      "gangDescription": "HARVESTING 5",
+      "employeeId": "337108",
+      "employeeName": "SAEFUL BAHRI",
+      "harvestingCode": "QF",
+      "harvestingCodeDescription": "MAIC FROND STACKER"
+    },
+    {
+      "sourceRow": 37,
+      "estateCode": "E063",
+      "gangNo": "5",
+      "gangDescription": "HARVESTING 5",
+      "employeeId": "153919",
+      "employeeName": "DULAL JANA",
+      "harvestingCode": "HM",
+      "harvestingCodeDescription": "HARVESTING MANDORE"
+    },
+    {
+      "sourceRow": 38,
+      "estateCode": "E063",
+      "gangNo": "5",
+      "gangDescription": "HARVESTING 5",
+      "employeeId": "332462",
+      "employeeName": "WAWAN",
+      "harvestingCode": "QC",
+      "harvestingCodeDescription": "MAIC CUTTER"
+    },
+    {
+      "sourceRow": 39,
+      "estateCode": "E063",
+      "gangNo": "5",
+      "gangDescription": "HARVESTING 5",
+      "employeeId": "170457",
+      "employeeName": "SUHAELI",
+      "harvestingCode": "QC",
+      "harvestingCodeDescription": "MAIC CUTTER"
+    },
+    {
+      "sourceRow": 40,
+      "estateCode": "E063",
+      "gangNo": "5",
+      "gangDescription": "HARVESTING 5",
+      "employeeId": "150192",
+      "employeeName": "SUGITO",
+      "harvestingCode": "QC",
+      "harvestingCodeDescription": "MAIC CUTTER"
+    },
+    {
+      "sourceRow": 41,
+      "estateCode": "E063",
+      "gangNo": "5",
+      "gangDescription": "HARVESTING 5",
+      "employeeId": "174054",
+      "employeeName": "MUKHLIS",
+      "harvestingCode": "QC",
+      "harvestingCodeDescription": "MAIC CUTTER"
+    },
+    {
+      "sourceRow": 42,
+      "estateCode": "E063",
+      "gangNo": "5",
+      "gangDescription": "HARVESTING 5",
+      "employeeId": "171481",
+      "employeeName": "MUHAMAD PAOLANA",
+      "harvestingCode": "QG",
+      "harvestingCodeDescription": "MAIC - MACHINE OPERATOR - GRABBER"
+    },
+    {
+      "sourceRow": 43,
+      "estateCode": "E063",
+      "gangNo": "5",
+      "gangDescription": "HARVESTING 5",
+      "employeeId": "337142",
+      "employeeName": "RIO SAPTA HADI",
+      "harvestingCode": "QF",
+      "harvestingCodeDescription": "MAIC FROND STACKER"
+    },
+    {
+      "sourceRow": 44,
+      "estateCode": "E063",
+      "gangNo": "5",
+      "gangDescription": "HARVESTING 5",
+      "employeeId": "337059",
+      "employeeName": "DENI WAHYU WIDODO",
+      "harvestingCode": "QC",
+      "harvestingCodeDescription": "MAIC CUTTER"
+    },
+    {
+      "sourceRow": 45,
+      "estateCode": "E063",
+      "gangNo": "5",
+      "gangDescription": "HARVESTING 5",
+      "employeeId": "182047",
+      "employeeName": "AHMAD YANI",
+      "harvestingCode": "QF",
+      "harvestingCodeDescription": "MAIC FROND STACKER"
+    },
+    {
+      "sourceRow": 46,
+      "estateCode": "E063",
+      "gangNo": "5",
+      "gangDescription": "HARVESTING 5",
+      "employeeId": "157933",
+      "employeeName": "HARIAWAN",
+      "harvestingCode": "QG",
+      "harvestingCodeDescription": "MAIC - MACHINE OPERATOR - GRABBER"
+    },
+    {
+      "sourceRow": 47,
+      "estateCode": "E063",
+      "gangNo": "3B",
+      "gangDescription": "SPG",
+      "employeeId": "171496",
+      "employeeName": "HANDRI",
+      "harvestingCode": null,
+      "harvestingCodeDescription": null
+    },
+    {
+      "sourceRow": 48,
+      "estateCode": "E063",
+      "gangNo": "3B",
+      "gangDescription": "SPG",
+      "employeeId": "172572",
+      "employeeName": "RIFAI",
+      "harvestingCode": null,
+      "harvestingCodeDescription": null
+    },
+    {
+      "sourceRow": 49,
+      "estateCode": "E063",
+      "gangNo": "3B",
+      "gangDescription": "SPG",
+      "employeeId": "337096",
+      "employeeName": "HARIANTO",
+      "harvestingCode": null,
+      "harvestingCodeDescription": null
+    },
+    {
+      "sourceRow": 50,
+      "estateCode": "E063",
+      "gangNo": "3B",
+      "gangDescription": "SPG",
+      "employeeId": "337657",
+      "employeeName": "IMAM HADI PRADANA",
+      "harvestingCode": null,
+      "harvestingCodeDescription": null
+    },
+    {
+      "sourceRow": 51,
+      "estateCode": "E063",
+      "gangNo": "3B",
+      "gangDescription": "SPG",
+      "employeeId": "178350",
+      "employeeName": "USMAN BAJURI",
+      "harvestingCode": null,
+      "harvestingCodeDescription": null
+    },
+    {
+      "sourceRow": 52,
+      "estateCode": "E063",
+      "gangNo": "3B",
+      "gangDescription": "SPG",
+      "employeeId": "337134",
+      "employeeName": "HANIFAN JAYA",
+      "harvestingCode": null,
+      "harvestingCodeDescription": null
+    },
+    {
+      "sourceRow": 53,
+      "estateCode": "E063",
+      "gangNo": "3B",
+      "gangDescription": "SPG",
+      "employeeId": "337146",
+      "employeeName": "ROZI",
+      "harvestingCode": null,
+      "harvestingCodeDescription": null
+    },
+    {
+      "sourceRow": 54,
+      "estateCode": "E063",
+      "gangNo": "3B",
+      "gangDescription": "SPG",
+      "employeeId": "172485",
+      "employeeName": "SAMSUDIN",
+      "harvestingCode": null,
+      "harvestingCodeDescription": null
+    },
+    {
+      "sourceRow": 55,
+      "estateCode": "E063",
+      "gangNo": "3B",
+      "gangDescription": "SPG",
+      "employeeId": "337656",
+      "employeeName": "HAFIZAL MULIADI",
+      "harvestingCode": null,
+      "harvestingCodeDescription": null
+    },
+    {
+      "sourceRow": 56,
+      "estateCode": "E063",
+      "gangNo": "3B",
+      "gangDescription": "SPG",
+      "employeeId": "337146",
+      "employeeName": "MALISIN",
+      "harvestingCode": null,
+      "harvestingCodeDescription": null
+    },
+    {
+      "sourceRow": 57,
+      "estateCode": "E063",
+      "gangNo": "3B",
+      "gangDescription": "SPG",
+      "employeeId": "337266",
+      "employeeName": "ABDUL AZIZ",
+      "harvestingCode": null,
+      "harvestingCodeDescription": null
+    },
+    {
+      "sourceRow": 58,
+      "estateCode": "E063",
+      "gangNo": "3B",
+      "gangDescription": "SPG",
+      "employeeId": "337270",
+      "employeeName": "MURSIDIN",
+      "harvestingCode": null,
+      "harvestingCodeDescription": null
+    },
+    {
+      "sourceRow": 59,
+      "estateCode": "E063",
+      "gangNo": "3B",
+      "gangDescription": "SPG",
+      "employeeId": "181778",
+      "employeeName": "RIZAL PADLI",
+      "harvestingCode": null,
+      "harvestingCodeDescription": null
+    },
+    {
+      "sourceRow": 60,
+      "estateCode": "E063",
+      "gangNo": "3B",
+      "gangDescription": "SPG",
+      "employeeId": "337272",
+      "employeeName": "ABD MUHAJAB",
+      "harvestingCode": null,
+      "harvestingCodeDescription": null
+    },
+    {
+      "sourceRow": 61,
+      "estateCode": "E063",
+      "gangNo": "3B",
+      "gangDescription": "SPG",
+      "employeeId": "181794",
+      "employeeName": "RISKA JAYA",
+      "harvestingCode": null,
+      "harvestingCodeDescription": null
+    },
+    {
+      "sourceRow": 62,
+      "estateCode": "E063",
+      "gangNo": "3A",
+      "gangDescription": "MALFC",
+      "employeeId": "170453",
+      "employeeName": "AGUS EPENDI",
+      "harvestingCode": null,
+      "harvestingCodeDescription": null
+    },
+    {
+      "sourceRow": 63,
+      "estateCode": "E063",
+      "gangNo": "3A",
+      "gangDescription": "MALFC",
+      "employeeId": "182049",
+      "employeeName": "ADI JATMIKO",
+      "harvestingCode": null,
+      "harvestingCodeDescription": null
+    },
+    {
+      "sourceRow": 64,
+      "estateCode": "E063",
+      "gangNo": "3A",
+      "gangDescription": "MALFC",
+      "employeeId": "337175",
+      "employeeName": "FAJRI SAPUTRA",
+      "harvestingCode": null,
+      "harvestingCodeDescription": null
+    },
+    {
+      "sourceRow": 65,
+      "estateCode": "E063",
+      "gangNo": "3A",
+      "gangDescription": "MALFC",
+      "employeeId": "338453",
+      "employeeName": "NURSAM",
+      "harvestingCode": null,
+      "harvestingCodeDescription": null
+    },
+    {
+      "sourceRow": 66,
+      "estateCode": "E063",
+      "gangNo": "3A",
+      "gangDescription": "MALFC",
+      "employeeId": "337144",
+      "employeeName": "USMAN",
+      "harvestingCode": null,
+      "harvestingCodeDescription": null
+    },
+    {
+      "sourceRow": 67,
+      "estateCode": "E063",
+      "gangNo": "3A",
+      "gangDescription": "MALFC",
+      "employeeId": "337106",
+      "employeeName": "SAMSUL AZHAR",
+      "harvestingCode": null,
+      "harvestingCodeDescription": null
+    },
+    {
+      "sourceRow": 68,
+      "estateCode": "E063",
+      "gangNo": "3A",
+      "gangDescription": "MALFC",
+      "employeeId": "337112",
+      "employeeName": "SATRIA RAMDANI",
+      "harvestingCode": null,
+      "harvestingCodeDescription": null
+    },
+    {
+      "sourceRow": 69,
+      "estateCode": "E063",
+      "gangNo": "3A",
+      "gangDescription": "MALFC",
+      "employeeId": "337128",
+      "employeeName": "ANDRE SAPUTRA",
+      "harvestingCode": null,
+      "harvestingCodeDescription": null
+    },
+    {
+      "sourceRow": 70,
+      "estateCode": "E063",
+      "gangNo": "3A",
+      "gangDescription": "MALFC",
+      "employeeId": "337130",
+      "employeeName": "MALDI",
+      "harvestingCode": null,
+      "harvestingCodeDescription": null
+    },
+    {
+      "sourceRow": 71,
+      "estateCode": "E063",
+      "gangNo": "3A",
+      "gangDescription": "MALFC",
+      "employeeId": "338209",
+      "employeeName": "YAKUB PRASETYA",
+      "harvestingCode": null,
+      "harvestingCodeDescription": null
+    },
+    {
+      "sourceRow": 72,
+      "estateCode": "E063",
+      "gangNo": "3A",
+      "gangDescription": "MALFC",
+      "employeeId": "337136",
+      "employeeName": "MUHAMAD ROME GHAZALI",
+      "harvestingCode": null,
+      "harvestingCodeDescription": null
+    },
+    {
+      "sourceRow": 73,
+      "estateCode": "E063",
+      "gangNo": "3A",
+      "gangDescription": "MALFC",
+      "employeeId": "337137",
+      "employeeName": "SAIDUM",
+      "harvestingCode": null,
+      "harvestingCodeDescription": null
+    },
+    {
+      "sourceRow": 74,
+      "estateCode": "E063",
+      "gangNo": "3A",
+      "gangDescription": "MALFC",
+      "employeeId": "337140",
+      "employeeName": "HASBULLOH",
+      "harvestingCode": null,
+      "harvestingCodeDescription": null
+    },
+    {
+      "sourceRow": 75,
+      "estateCode": "E063",
+      "gangNo": "3A",
+      "gangDescription": "MALFC",
+      "employeeId": "337172",
+      "employeeName": "DIDIK SULAEMAN",
+      "harvestingCode": null,
+      "harvestingCodeDescription": null
+    },
+    {
+      "sourceRow": 76,
+      "estateCode": "E063",
+      "gangNo": "3A",
+      "gangDescription": "MALFC",
+      "employeeId": "337170",
+      "employeeName": "AHYAR ROSIDI",
+      "harvestingCode": null,
+      "harvestingCodeDescription": null
+    },
+    {
+      "sourceRow": 77,
+      "estateCode": "E063",
+      "gangNo": "3A",
+      "gangDescription": "MALFC",
+      "employeeId": "337164",
+      "employeeName": "MUHAMMAD RIYAD",
+      "harvestingCode": null,
+      "harvestingCodeDescription": null
+    },
+    {
+      "sourceRow": 78,
+      "estateCode": "E063",
+      "gangNo": "3A",
+      "gangDescription": "MALFC",
+      "employeeId": "337168",
+      "employeeName": "MARUDIN",
+      "harvestingCode": null,
+      "harvestingCodeDescription": null
+    },
+    {
+      "sourceRow": 79,
+      "estateCode": "E063",
+      "gangNo": "3A",
+      "gangDescription": "MALFC",
+      "employeeId": "337171",
+      "employeeName": "MUHAMAD SAFWAN",
+      "harvestingCode": null,
+      "harvestingCodeDescription": null
+    },
+    {
+      "sourceRow": 80,
+      "estateCode": "E063",
+      "gangNo": "3A",
+      "gangDescription": "MALFC",
+      "employeeId": "337143",
+      "employeeName": "ZAMRONI ALFA AZHARI",
+      "harvestingCode": null,
+      "harvestingCodeDescription": null
+    },
+    {
+      "sourceRow": 81,
+      "estateCode": "E063",
+      "gangNo": "3A",
+      "gangDescription": "MALFC",
+      "employeeId": "338204",
+      "employeeName": "ACHMAT NASRODIN",
+      "harvestingCode": null,
+      "harvestingCodeDescription": null
+    },
+    {
+      "sourceRow": 82,
+      "estateCode": "E063",
+      "gangNo": "3A",
+      "gangDescription": "MALFC",
+      "employeeId": "338205",
+      "employeeName": "ANANG MAULIDIN",
+      "harvestingCode": null,
+      "harvestingCodeDescription": null
+    },
+    {
+      "sourceRow": 83,
+      "estateCode": "E063",
+      "gangNo": "3A",
+      "gangDescription": "MALFC",
+      "employeeId": "338206",
+      "employeeName": "NUR WIJI DEPUTRA",
+      "harvestingCode": null,
+      "harvestingCodeDescription": null
+    },
+    {
+      "sourceRow": 84,
+      "estateCode": "E063",
+      "gangNo": "3A",
+      "gangDescription": "MALFC",
+      "employeeId": "338208",
+      "employeeName": "RIZKY APRIANTO",
+      "harvestingCode": null,
+      "harvestingCodeDescription": null
+    },
+    {
+      "sourceRow": 85,
+      "estateCode": "E063",
+      "gangNo": "3A",
+      "gangDescription": "MALFC",
+      "employeeId": "183075",
+      "employeeName": "WAYAN SUGIARTE",
+      "harvestingCode": null,
+      "harvestingCodeDescription": null
+    },
+    {
+      "sourceRow": 86,
+      "estateCode": "E063",
+      "gangNo": "21",
+      "gangDescription": "FIELD AND GENERAL",
+      "employeeId": "120631",
+      "employeeName": "ROY SUBIR",
+      "harvestingCode": null,
+      "harvestingCodeDescription": null
+    },
+    {
+      "sourceRow": 87,
+      "estateCode": "E063",
+      "gangNo": "21",
+      "gangDescription": "FIELD AND GENERAL",
+      "employeeId": "120702",
+      "employeeName": "SK SAHABUDDIN",
+      "harvestingCode": null,
+      "harvestingCodeDescription": null
+    },
+    {
+      "sourceRow": 88,
+      "estateCode": "E063",
+      "gangNo": "21",
+      "gangDescription": "FIELD AND GENERAL",
+      "employeeId": "133849",
+      "employeeName": "AKBAR MANDAL",
+      "harvestingCode": null,
+      "harvestingCodeDescription": null
+    },
+    {
+      "sourceRow": 89,
+      "estateCode": "E063",
+      "gangNo": "21",
+      "gangDescription": "FIELD AND GENERAL",
+      "employeeId": "152179",
+      "employeeName": "MD SADDAM SK",
+      "harvestingCode": null,
+      "harvestingCodeDescription": null
+    },
+    {
+      "sourceRow": 90,
+      "estateCode": "E063",
+      "gangNo": "21",
+      "gangDescription": "FIELD AND GENERAL",
+      "employeeId": "156834",
+      "employeeName": "MANDAL MAMIN",
+      "harvestingCode": null,
+      "harvestingCodeDescription": null
+    },
+    {
+      "sourceRow": 91,
+      "estateCode": "E063",
+      "gangNo": "21",
+      "gangDescription": "FIELD AND GENERAL",
+      "employeeId": "156859",
+      "employeeName": "SURABUDDIN KHAN",
+      "harvestingCode": null,
+      "harvestingCodeDescription": null
+    },
+    {
+      "sourceRow": 92,
+      "estateCode": "E063",
+      "gangNo": "21",
+      "gangDescription": "FIELD AND GENERAL",
+      "employeeId": "178216",
+      "employeeName": "LETCHUMY A/P NADESAN",
+      "harvestingCode": null,
+      "harvestingCodeDescription": null
+    },
+    {
+      "sourceRow": 93,
+      "estateCode": "E063",
+      "gangNo": "21",
+      "gangDescription": "FIELD AND GENERAL",
+      "employeeId": "102305",
+      "employeeName": "NIRMOL CHANDRA",
+      "harvestingCode": null,
+      "harvestingCodeDescription": null
+    },
+    {
+      "sourceRow": 94,
+      "estateCode": "E063",
+      "gangNo": "24",
+      "gangDescription": "FIELD AND GENERAL",
+      "employeeId": "5880",
+      "employeeName": "SHANKAR A/L P. PARAMASIVAN",
+      "harvestingCode": null,
+      "harvestingCodeDescription": null
+    },
+    {
+      "sourceRow": 95,
+      "estateCode": "E063",
+      "gangNo": "24",
+      "gangDescription": "FIELD AND GENERAL",
+      "employeeId": "5883",
+      "employeeName": "VIJAYAN A/L SINGARVELLU",
+      "harvestingCode": null,
+      "harvestingCodeDescription": null
+    },
+    {
+      "sourceRow": 96,
+      "estateCode": "E063",
+      "gangNo": "24",
+      "gangDescription": "FIELD AND GENERAL",
+      "employeeId": "5942",
+      "employeeName": "ASMA' ANBALAGI BINTI ABDULLAH",
+      "harvestingCode": null,
+      "harvestingCodeDescription": null
+    },
+    {
+      "sourceRow": 97,
+      "estateCode": "E063",
+      "gangNo": "24",
+      "gangDescription": "FIELD AND GENERAL",
+      "employeeId": "6008",
+      "employeeName": "KRISHNAMOORTHY A/L RENGANATHEN",
+      "harvestingCode": null,
+      "harvestingCodeDescription": null
+    },
+    {
+      "sourceRow": 98,
+      "estateCode": "E063",
+      "gangNo": "24",
+      "gangDescription": "FIELD AND GENERAL",
+      "employeeId": "88408",
+      "employeeName": "KASTHURI A/P RENGANATHEN",
+      "harvestingCode": null,
+      "harvestingCodeDescription": null
+    },
+    {
+      "sourceRow": 99,
+      "estateCode": "E063",
+      "gangNo": "24",
+      "gangDescription": "FIELD AND GENERAL",
+      "employeeId": "150756",
+      "employeeName": "ARUN KUMAR GUPTA",
+      "harvestingCode": null,
+      "harvestingCodeDescription": null
+    },
+    {
+      "sourceRow": 100,
+      "estateCode": "E063",
+      "gangNo": "24",
+      "gangDescription": "FIELD AND GENERAL",
+      "employeeId": "156850",
+      "employeeName": "MOHD YUSUF",
+      "harvestingCode": null,
+      "harvestingCodeDescription": null
+    },
+    {
+      "sourceRow": 101,
+      "estateCode": "E063",
+      "gangNo": "24",
+      "gangDescription": "FIELD AND GENERAL",
+      "employeeId": "178215",
+      "employeeName": "VANATHAIE A/P AMMASIE",
+      "harvestingCode": null,
+      "harvestingCodeDescription": null
+    },
+    {
+      "sourceRow": 102,
+      "estateCode": "E063",
+      "gangNo": "24",
+      "gangDescription": "FIELD AND GENERAL",
+      "employeeId": "5959",
+      "employeeName": "NORMAH BINTI SALIMAN",
+      "harvestingCode": null,
+      "harvestingCodeDescription": null
+    },
+    {
+      "sourceRow": 103,
+      "estateCode": "E063",
+      "gangNo": "24",
+      "gangDescription": "FIELD AND GENERAL",
+      "employeeId": "5989",
+      "employeeName": "NAGAKANNI A/P RAMAYAH",
+      "harvestingCode": null,
+      "harvestingCodeDescription": null
+    },
+    {
+      "sourceRow": 104,
+      "estateCode": "E063",
+      "gangNo": "24",
+      "gangDescription": "FIELD AND GENERAL",
+      "employeeId": "5996",
+      "employeeName": "JAMILAH BINTI SAHARUDDIN",
+      "harvestingCode": null,
+      "harvestingCodeDescription": null
+    },
+    {
+      "sourceRow": 105,
+      "estateCode": "E063",
+      "gangNo": "24",
+      "gangDescription": "FIELD AND GENERAL",
+      "employeeId": "6061",
+      "employeeName": "KASTURI A/P LETCHUMANAN",
+      "harvestingCode": null,
+      "harvestingCodeDescription": null
+    },
+    {
+      "sourceRow": 106,
+      "estateCode": "E063",
+      "gangNo": "24",
+      "gangDescription": "FIELD AND GENERAL",
+      "employeeId": "6075",
+      "employeeName": "KARNEGE A/P ELLAPERUMAL",
+      "harvestingCode": null,
+      "harvestingCodeDescription": null
+    },
+    {
+      "sourceRow": 107,
+      "estateCode": "E063",
+      "gangNo": "24",
+      "gangDescription": "FIELD AND GENERAL",
+      "employeeId": "120626",
+      "employeeName": "SARKAR DINABANDHU",
+      "harvestingCode": null,
+      "harvestingCodeDescription": null
+    },
+    {
+      "sourceRow": 108,
+      "estateCode": "E063",
+      "gangNo": "24",
+      "gangDescription": "FIELD AND GENERAL",
+      "employeeId": "140944",
+      "employeeName": "RAKESH ALI MONDAL",
+      "harvestingCode": null,
+      "harvestingCodeDescription": null
+    },
+    {
+      "sourceRow": 109,
+      "estateCode": "E063",
+      "gangNo": "24",
+      "gangDescription": "FIELD AND GENERAL",
+      "employeeId": "141627",
+      "employeeName": "RAM SAHAY",
+      "harvestingCode": null,
+      "harvestingCodeDescription": null
+    },
+    {
+      "sourceRow": 110,
+      "estateCode": "E063",
+      "gangNo": "24",
+      "gangDescription": "FIELD AND GENERAL",
+      "employeeId": "144057",
+      "employeeName": "MOHAMMAD MUKBBIR HUSSAIN",
+      "harvestingCode": null,
+      "harvestingCodeDescription": null
+    },
+    {
+      "sourceRow": 111,
+      "estateCode": "E063",
+      "gangNo": "24",
+      "gangDescription": "FIELD AND GENERAL",
+      "employeeId": "146872",
+      "employeeName": "SHAHAJAHAN KORANI",
+      "harvestingCode": null,
+      "harvestingCodeDescription": null
+    },
+    {
+      "sourceRow": 112,
+      "estateCode": "E063",
+      "gangNo": "24",
+      "gangDescription": "FIELD AND GENERAL",
+      "employeeId": "148564",
+      "employeeName": "SITI SALWA MARIAPPAN BINTI ABDULLAH",
+      "harvestingCode": null,
+      "harvestingCodeDescription": null
+    },
+    {
+      "sourceRow": 113,
+      "estateCode": "E063",
+      "gangNo": "24",
+      "gangDescription": "FIELD AND GENERAL",
+      "employeeId": "151499",
+      "employeeName": "RAMNARAYAN PRASAD",
+      "harvestingCode": null,
+      "harvestingCodeDescription": null
+    },
+    {
+      "sourceRow": 114,
+      "estateCode": "E063",
+      "gangNo": "24",
+      "gangDescription": "FIELD AND GENERAL",
+      "employeeId": "152541",
+      "employeeName": "VINOD",
+      "harvestingCode": null,
+      "harvestingCodeDescription": null
+    },
+    {
+      "sourceRow": 115,
+      "estateCode": "E063",
+      "gangNo": "24",
+      "gangDescription": "FIELD AND GENERAL",
+      "employeeId": "153917",
+      "employeeName": "LALU MANDAL",
+      "harvestingCode": null,
+      "harvestingCodeDescription": null
+    },
+    {
+      "sourceRow": 116,
+      "estateCode": "E063",
+      "gangNo": "24",
+      "gangDescription": "FIELD AND GENERAL",
+      "employeeId": "153920",
+      "employeeName": "DIPAK KUMAR DAS",
+      "harvestingCode": null,
+      "harvestingCodeDescription": null
+    },
+    {
+      "sourceRow": 117,
+      "estateCode": "E063",
+      "gangNo": "24",
+      "gangDescription": "FIELD AND GENERAL",
+      "employeeId": "156849",
+      "employeeName": "ASPHATULLA MONDAL",
+      "harvestingCode": null,
+      "harvestingCodeDescription": null
+    },
+    {
+      "sourceRow": 118,
+      "estateCode": "E063",
+      "gangNo": "24",
+      "gangDescription": "FIELD AND GENERAL",
+      "employeeId": "156855",
+      "employeeName": "SEKH ABIDUDDIN",
+      "harvestingCode": null,
+      "harvestingCodeDescription": null
+    },
+    {
+      "sourceRow": 119,
+      "estateCode": "E063",
+      "gangNo": "24",
+      "gangDescription": "FIELD AND GENERAL",
+      "employeeId": "162930",
+      "employeeName": "THIRUMAGAL A/P MANIAM",
+      "harvestingCode": null,
+      "harvestingCodeDescription": null
+    },
+    {
+      "sourceRow": 120,
+      "estateCode": "E063",
+      "gangNo": "24",
+      "gangDescription": "FIELD AND GENERAL",
+      "employeeId": "156854",
+      "employeeName": "YOGENDRA KUMAR BHARATE",
+      "harvestingCode": null,
+      "harvestingCodeDescription": null
+    },
+    {
+      "sourceRow": 121,
+      "estateCode": "E063",
+      "gangNo": "24",
+      "gangDescription": "FIELD AND GENERAL",
+      "employeeId": "178525",
+      "employeeName": "INDRANI A/P MUNIANDY",
+      "harvestingCode": null,
+      "harvestingCodeDescription": null
+    },
+    {
+      "sourceRow": 122,
+      "estateCode": "E063",
+      "gangNo": "24",
+      "gangDescription": "FIELD AND GENERAL",
+      "employeeId": "332561",
+      "employeeName": "ANUOR BIN YAHAYA",
+      "harvestingCode": null,
+      "harvestingCodeDescription": null
+    },
+    {
+      "sourceRow": 123,
+      "estateCode": "E063",
+      "gangNo": "24",
+      "gangDescription": "FIELD AND GENERAL",
+      "employeeId": "332563",
+      "employeeName": "HARIZAL BIN ABU BAKAR",
+      "harvestingCode": null,
+      "harvestingCodeDescription": null
+    }
+  ],
+  "uniqueEmployeeIdCount": 121,
+  "dataQualityIssues": [
+    {
+      "type": "duplicate_employee_identity",
+      "estateCode": "E063",
+      "employeeId": "337146",
+      "sourceRows": [
+        53,
+        56
+      ],
+      "conflictingFields": [
+        "employeeName"
+      ],
+      "handling": "Preserve both source rows. Do not silently merge; use unambiguous workers for initial workshop examples."
+    }
+  ]
+}

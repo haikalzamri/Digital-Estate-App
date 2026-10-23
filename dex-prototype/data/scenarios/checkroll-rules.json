@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "dataKind": "Illustrative workshop defaults",
+  "description": "Editable payment assumptions for DEX demonstrations; not a verified payroll configuration.",
+  "dailyGangs": [
+    "21",
+    "23",
+    "24"
+  ],
+  "pieceGangs": [
+    "3A",
+    "3B",
+    "3C",
+    "3D"
+  ],
+  "bunchGangs": [
+    "3",
+    "4",
+    "5"
+  ],
+  "bunchWorkerCode": "QC",
+  "fallback": "daily",
+  "methods": [
+    {
+      "id": "daily",
+      "label": "Daily rated"
+    },
+    {
+      "id": "piece",
+      "label": "Piece rated"
+    },
+    {
+      "id": "bunch",
+      "label": "Bunch count"
+    }
+  ]
+}

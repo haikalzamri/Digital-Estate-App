@@ -1,0 +1,240 @@
+{
+  "schemaVersion": 1,
+  "dataset": "outturn-codes",
+  "dataKind": "reference",
+  "preparedOn": "2026-10-18",
+  "recordCount": 41,
+  "scope": "full_master_extract",
+  "source": {
+    "file": "E063_DATA.xlsx",
+    "sha256": "427b21a7d16ceb53c6e793d1bb7f76e2a3d86f39007b2a7088ebd6ca3f33c188",
+    "sheet": "Outturn Code Master",
+    "fullDataRowCount": 41,
+    "columnMapping": [
+      {
+        "column": "A",
+        "sourceHeader": "Outturn Code",
+        "jsonField": "outturnCode"
+      },
+      {
+        "column": "B",
+        "sourceHeader": "Outturn Desc",
+        "jsonField": "description"
+      }
+    ]
+  },
+  "normalization": {
+    "surroundingWhitespace": "trimmed",
+    "identifiers": "strings",
+    "emptyCells": "null",
+    "sourceRows": "retained",
+    "otherSourceValues": "preserved as strings"
+  },
+  "records": [
+    {
+      "sourceRow": 2,
+      "outturnCode": "01",
+      "description": "WRK ON NOR. DAY (FULL DAY)"
+    },
+    {
+      "sourceRow": 3,
+      "outturnCode": "02",
+      "description": "WRK ON FWDOR  (FULL DAY)"
+    },
+    {
+      "sourceRow": 4,
+      "outturnCode": "03",
+      "description": "WRK ON PHOL (FULL DAY)"
+    },
+    {
+      "sourceRow": 5,
+      "outturnCode": "04",
+      "description": "WRK ON NOR. DAY (1/2 DAY-1/2 PB)"
+    },
+    {
+      "sourceRow": 6,
+      "outturnCode": "05",
+      "description": "WRK ON FWDOR (1/2 DAY- 1/2 PB)"
+    },
+    {
+      "sourceRow": 7,
+      "outturnCode": "06",
+      "description": "WRK ON PHOL (1/2 DAY- 1/2 PB)"
+    },
+    {
+      "sourceRow": 8,
+      "outturnCode": "07",
+      "description": "WRK ON NOR. DAY(1/2 DAY- NO PB)"
+    },
+    {
+      "sourceRow": 9,
+      "outturnCode": "08",
+      "description": "WRK ON FWDOR (1/2 DAY- NO PB)"
+    },
+    {
+      "sourceRow": 10,
+      "outturnCode": "09",
+      "description": "WRK ON PHOL (1/2 DAY- NO PB)"
+    },
+    {
+      "sourceRow": 11,
+      "outturnCode": "A0",
+      "description": "ABSENT"
+    },
+    {
+      "sourceRow": 12,
+      "outturnCode": "F0",
+      "description": "FIXED WEEKDAY OF REST"
+    },
+    {
+      "sourceRow": 13,
+      "outturnCode": "H0",
+      "description": "PAID PUBLIC HOLIDAY"
+    },
+    {
+      "sourceRow": 14,
+      "outturnCode": "H1",
+      "description": "UNPAID PUBLIC HOLIDAY"
+    },
+    {
+      "sourceRow": 15,
+      "outturnCode": "X7",
+      "description": "WRK NOT OFFERED (RAIN)"
+    },
+    {
+      "sourceRow": 16,
+      "outturnCode": "X8",
+      "description": "WRK NOT OFFERED (OTHERS)"
+    },
+    {
+      "sourceRow": 17,
+      "outturnCode": "V4",
+      "description": "VACATION LEAVE"
+    },
+    {
+      "sourceRow": 18,
+      "outturnCode": "S0",
+      "description": "OUTPATIENT LEAVE"
+    },
+    {
+      "sourceRow": 19,
+      "outturnCode": "S1",
+      "description": "INPATIENT LEAVE"
+    },
+    {
+      "sourceRow": 20,
+      "outturnCode": "L0",
+      "description": "APPROVED UNPAID LEAVE"
+    },
+    {
+      "sourceRow": 21,
+      "outturnCode": "E3",
+      "description": "SOCSO LEAVE"
+    },
+    {
+      "sourceRow": 22,
+      "outturnCode": "E4",
+      "description": "WORKMAN COMPENSATION"
+    },
+    {
+      "sourceRow": 23,
+      "outturnCode": "M2",
+      "description": "MATERNITY LEAVE"
+    },
+    {
+      "sourceRow": 24,
+      "outturnCode": "L1",
+      "description": "PAID PILGRIMAGE LEAVE"
+    },
+    {
+      "sourceRow": 25,
+      "outturnCode": "L2",
+      "description": "UNPAID PILGRIMAGE LEAVE"
+    },
+    {
+      "sourceRow": 26,
+      "outturnCode": "L3",
+      "description": "UNPAID APPROVED RELIGIOUS/FESTIVAL"
+    },
+    {
+      "sourceRow": 27,
+      "outturnCode": "L4",
+      "description": "COMPASSIONATE LEAVE - FIRE/FLOOD"
+    },
+    {
+      "sourceRow": 28,
+      "outturnCode": "L5",
+      "description": "COMPASSIONATE LEAVE - DEATH"
+    },
+    {
+      "sourceRow": 29,
+      "outturnCode": "L6",
+      "description": "PATERNITY LEAVE"
+    },
+    {
+      "sourceRow": 30,
+      "outturnCode": "L7",
+      "description": "RUKUN TETANGGA"
+    },
+    {
+      "sourceRow": 31,
+      "outturnCode": "L8",
+      "description": "APPROVED STUDY LEAVE"
+    },
+    {
+      "sourceRow": 32,
+      "outturnCode": "I1",
+      "description": "PROLONGED ILLNESS - FULL PAY"
+    },
+    {
+      "sourceRow": 33,
+      "outturnCode": "I2",
+      "description": "PROLONGED ILLNESS - HALF PAY"
+    },
+    {
+      "sourceRow": 34,
+      "outturnCode": "I3",
+      "description": "PROLONGED ILLNESS - NO PAY"
+    },
+    {
+      "sourceRow": 35,
+      "outturnCode": "U1",
+      "description": "SUSPENSION FROM WORK - FULL PAY"
+    },
+    {
+      "sourceRow": 36,
+      "outturnCode": "U2",
+      "description": "SUSPENSION FROM WORK - HALF PAY"
+    },
+    {
+      "sourceRow": 37,
+      "outturnCode": "U3",
+      "description": "SUSPENSION FROM WORK - NO PAY"
+    },
+    {
+      "sourceRow": 38,
+      "outturnCode": "Q1",
+      "description": "PAID UNRECORDED LEAVE (COVID-19)"
+    },
+    {
+      "sourceRow": 39,
+      "outturnCode": "T1",
+      "description": "ATTEND UNION TRAINING/SEMINAR"
+    },
+    {
+      "sourceRow": 40,
+      "outturnCode": "T2",
+      "description": "PAID EVENT ATTENDANCE"
+    },
+    {
+      "sourceRow": 41,
+      "outturnCode": "T3",
+      "description": "PAID LEAVE FOR VOTING"
+    },
+    {
+      "sourceRow": 42,
+      "outturnCode": "T4",
+      "description": "CORPORATE SOCIAL RESPONSIBILITY LEAVE"
+    }
+  ]
+}

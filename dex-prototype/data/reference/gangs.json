@@ -1,0 +1,112 @@
+{
+  "schemaVersion": 1,
+  "dataset": "gangs",
+  "dataKind": "reference",
+  "preparedOn": "2026-10-18",
+  "recordCount": 12,
+  "scope": "full_master_extract",
+  "source": {
+    "file": "E063_DATA.xlsx",
+    "sha256": "427b21a7d16ceb53c6e793d1bb7f76e2a3d86f39007b2a7088ebd6ca3f33c188",
+    "sheet": "Gang Master List",
+    "fullDataRowCount": 12,
+    "columnMapping": [
+      {
+        "column": "A",
+        "sourceHeader": "Estate Code",
+        "jsonField": "estateCode"
+      },
+      {
+        "column": "B",
+        "sourceHeader": "Gang No",
+        "jsonField": "gangNo"
+      },
+      {
+        "column": "C",
+        "sourceHeader": "Gang Desc",
+        "jsonField": "description"
+      }
+    ]
+  },
+  "normalization": {
+    "surroundingWhitespace": "trimmed",
+    "identifiers": "strings",
+    "emptyCells": "null",
+    "sourceRows": "retained",
+    "otherSourceValues": "preserved as strings"
+  },
+  "records": [
+    {
+      "sourceRow": 2,
+      "estateCode": "E063",
+      "gangNo": "21",
+      "description": "FIELD AND GENERAL"
+    },
+    {
+      "sourceRow": 3,
+      "estateCode": "E063",
+      "gangNo": "23",
+      "description": "FIELD AND GENERAL"
+    },
+    {
+      "sourceRow": 4,
+      "estateCode": "E063",
+      "gangNo": "3",
+      "description": "HARVESTING 3"
+    },
+    {
+      "sourceRow": 5,
+      "estateCode": "E063",
+      "gangNo": "3A",
+      "description": "MALFC"
+    },
+    {
+      "sourceRow": 6,
+      "estateCode": "E063",
+      "gangNo": "3B",
+      "description": "SPG"
+    },
+    {
+      "sourceRow": 7,
+      "estateCode": "E063",
+      "gangNo": "3C",
+      "description": "PIECE RATE"
+    },
+    {
+      "sourceRow": 8,
+      "estateCode": "E063",
+      "gangNo": "4",
+      "description": "HARVESTING 4"
+    },
+    {
+      "sourceRow": 9,
+      "estateCode": "E063",
+      "gangNo": "5",
+      "description": "HARVESTING 5"
+    },
+    {
+      "sourceRow": 10,
+      "estateCode": "E063",
+      "gangNo": "24",
+      "description": "FIELD AND GENERAL"
+    },
+    {
+      "sourceRow": 11,
+      "estateCode": "E063",
+      "gangNo": "3D",
+      "description": "PIECE RATE"
+    },
+    {
+      "sourceRow": 12,
+      "estateCode": "E063",
+      "gangNo": "1",
+      "description": "HARVESTING SCOUT"
+    },
+    {
+      "sourceRow": 13,
+      "estateCode": "E063",
+      "gangNo": "2",
+      "description": "HARVESTING 2 NEW"
+    }
+  ]
+}

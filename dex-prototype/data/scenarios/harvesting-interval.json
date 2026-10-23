@@ -1,0 +1,1136 @@
+{
+  "schemaVersion": 1,
+  "dataKind": "simulated",
+  "simulated": true,
+  "description": "October workshop scenario. Field identities, day groups and template hectares adapted from the historical Digital Estate Harvesting Interval. Dates, intervals, production and dispatch quantities are simulated.",
+  "historicalReference": "components/harvesting-interval/harvesting-interval-dashboard.tsx; lib/data/harvesting-interval-source.json (historical actuals end 2026-06-30)",
+  "metadata": {
+    "module": "DEX Harvesting Interval",
+    "activitySourceFile": "Workshop scenario",
+    "referenceTemplateFile": "Historical Digital Estate field template",
+    "sourceDescription": "Familiar E063 field identities with simulated October operations",
+    "baseDate": "2026-09-30",
+    "startDate": "2026-10-01",
+    "lastActivityDate": "2026-10-17",
+    "lastDispatchDate": "2026-10-17",
+    "defaultMonth": "2026-10",
+    "availableMonths": [
+      "2026-10"
+    ]
+  },
+  "fields": [
+    {
+      "id": "D1-01-02D1",
+      "field": "02D1",
+      "block": "D1",
+      "hectares": 38.17,
+      "blockHectares": 187.84,
+      "baseInterval": 7,
+      "bfDisplay": "7",
+      "hasReferenceBaseline": true
+    },
+    {
+      "id": "D1-02-2009D",
+      "field": "2009D",
+      "block": "D1",
+      "hectares": 77.39,
+      "blockHectares": 187.84,
+      "baseInterval": 12,
+      "bfDisplay": "12",
+      "hasReferenceBaseline": true
+    },
+    {
+      "id": "D1-03-P06C",
+      "field": "P06C",
+      "block": "D1",
+      "hectares": 61.49,
+      "blockHectares": 187.84,
+      "baseInterval": 17,
+      "bfDisplay": "17",
+      "hasReferenceBaseline": true
+    },
+    {
+      "id": "D1-04-2023D",
+      "field": "2023D",
+      "block": "D1",
+      "hectares": 10.79,
+      "blockHectares": 187.84,
+      "baseInterval": 22,
+      "bfDisplay": "22",
+      "hasReferenceBaseline": true
+    },
+    {
+      "id": "D2-05-2009C",
+      "field": "2009C",
+      "block": "D2",
+      "hectares": 69.09,
+      "blockHectares": 188.85,
+      "baseInterval": 4,
+      "bfDisplay": "4",
+      "hasReferenceBaseline": true
+    },
+    {
+      "id": "D2-06-2014C",
+      "field": "2014C",
+      "block": "D2",
+      "hectares": 7.4,
+      "blockHectares": 188.85,
+      "baseInterval": 9,
+      "bfDisplay": "9",
+      "hasReferenceBaseline": true
+    },
+    {
+      "id": "D2-07-08C1",
+      "field": "08C1",
+      "block": "D2",
+      "hectares": 36.26,
+      "blockHectares": 188.85,
+      "baseInterval": 7,
+      "bfDisplay": "7",
+      "hasReferenceBaseline": true
+    },
+    {
+      "id": "D2-08-05C1",
+      "field": "05C1",
+      "block": "D2",
+      "hectares": 44.9,
+      "blockHectares": 188.85,
+      "baseInterval": 12,
+      "bfDisplay": "12",
+      "hasReferenceBaseline": true
+    },
+    {
+      "id": "D2-09-2014A",
+      "field": "2014A",
+      "block": "D2",
+      "hectares": 31.2,
+      "blockHectares": 188.85,
+      "baseInterval": 17,
+      "bfDisplay": "17",
+      "hasReferenceBaseline": true
+    },
+    {
+      "id": "D3-10-2014A",
+      "field": "2014A",
+      "block": "D3",
+      "hectares": 30.69,
+      "blockHectares": 188.82,
+      "baseInterval": 17,
+      "bfDisplay": "17",
+      "hasReferenceBaseline": true
+    },
+    {
+      "id": "D3-11-2012B",
+      "field": "2012B",
+      "block": "D3",
+      "hectares": 66.77,
+      "blockHectares": 188.82,
+      "baseInterval": 22,
+      "bfDisplay": "22",
+      "hasReferenceBaseline": true
+    },
+    {
+      "id": "D3-12-2012A",
+      "field": "2012A",
+      "block": "D3",
+      "hectares": 65.06,
+      "blockHectares": 188.82,
+      "baseInterval": 4,
+      "bfDisplay": "4",
+      "hasReferenceBaseline": true
+    },
+    {
+      "id": "D3-13-2009C1",
+      "field": "2009C1",
+      "block": "D3",
+      "hectares": 26.3,
+      "blockHectares": 188.82,
+      "baseInterval": 9,
+      "bfDisplay": "9",
+      "hasReferenceBaseline": true
+    },
+    {
+      "id": "D4-14-2009C1",
+      "field": "2009C1",
+      "block": "D4",
+      "hectares": 49.85,
+      "blockHectares": 188.86,
+      "baseInterval": 9,
+      "bfDisplay": "9",
+      "hasReferenceBaseline": true
+    },
+    {
+      "id": "D4-15-2017A",
+      "field": "2017A",
+      "block": "D4",
+      "hectares": 99.51,
+      "blockHectares": 188.86,
+      "baseInterval": 7,
+      "bfDisplay": "7",
+      "hasReferenceBaseline": true
+    },
+    {
+      "id": "D4-16-2019A",
+      "field": "2019A",
+      "block": "D4",
+      "hectares": 39.5,
+      "blockHectares": 188.86,
+      "baseInterval": 12,
+      "bfDisplay": "12",
+      "hasReferenceBaseline": true
+    },
+    {
+      "id": "D5-17-2019A",
+      "field": "2019A",
+      "block": "D5",
+      "hectares": 6.95,
+      "blockHectares": 184.77,
+      "baseInterval": 12,
+      "bfDisplay": "12",
+      "hasReferenceBaseline": true
+    },
+    {
+      "id": "D5-18-2019B",
+      "field": "2019B",
+      "block": "D5",
+      "hectares": 24.33,
+      "blockHectares": 184.77,
+      "baseInterval": 17,
+      "bfDisplay": "17",
+      "hasReferenceBaseline": true
+    },
+    {
+      "id": "D5-19-2019B",
+      "field": "2019B",
+      "block": "D5",
+      "hectares": 24.33,
+      "blockHectares": 184.77,
+      "baseInterval": 17,
+      "bfDisplay": "17",
+      "hasReferenceBaseline": true
+    },
+    {
+      "id": "D5-20-2017C",
+      "field": "2017C",
+      "block": "D5",
+      "hectares": 107.16,
+      "blockHectares": 184.77,
+      "baseInterval": 22,
+      "bfDisplay": "22",
+      "hasReferenceBaseline": true
+    },
+    {
+      "id": "D5-21-2017B",
+      "field": "2017B",
+      "block": "D5",
+      "hectares": 22.0,
+      "blockHectares": 184.77,
+      "baseInterval": 4,
+      "bfDisplay": "4",
+      "hasReferenceBaseline": true
+    },
+    {
+      "id": "D6-22-2017B",
+      "field": "2017B",
+      "block": "D6",
+      "hectares": 75.36,
+      "blockHectares": 187.98,
+      "baseInterval": 4,
+      "bfDisplay": "4",
+      "hasReferenceBaseline": true
+    },
+    {
+      "id": "D6-23-07B3A",
+      "field": "07B3A",
+      "block": "D6",
+      "hectares": 86.62,
+      "blockHectares": 187.98,
+      "baseInterval": 9,
+      "bfDisplay": "9",
+      "hasReferenceBaseline": true
+    },
+    {
+      "id": "D6-24-07B3",
+      "field": "07B3",
+      "block": "D6",
+      "hectares": 26.0,
+      "blockHectares": 187.98,
+      "baseInterval": 7,
+      "bfDisplay": "7",
+      "hasReferenceBaseline": true
+    },
+    {
+      "id": "D7-25-07B3",
+      "field": "07B3",
+      "block": "D7",
+      "hectares": 31.74,
+      "blockHectares": 186.73,
+      "baseInterval": 7,
+      "bfDisplay": "7",
+      "hasReferenceBaseline": true
+    },
+    {
+      "id": "D7-26-07B3B",
+      "field": "07B3B",
+      "block": "D7",
+      "hectares": 48.96,
+      "blockHectares": 186.73,
+      "baseInterval": 12,
+      "bfDisplay": "12",
+      "hasReferenceBaseline": true
+    },
+    {
+      "id": "D7-27-2018B1",
+      "field": "2018B1",
+      "block": "D7",
+      "hectares": 51.93,
+      "blockHectares": 186.73,
+      "baseInterval": 17,
+      "bfDisplay": "17",
+      "hasReferenceBaseline": true
+    },
+    {
+      "id": "D7-28-07B1",
+      "field": "07B1",
+      "block": "D7",
+      "hectares": 54.1,
+      "blockHectares": 186.73,
+      "baseInterval": 22,
+      "bfDisplay": "22",
+      "hasReferenceBaseline": true
+    },
+    {
+      "id": "D8-29-07B1",
+      "field": "07B1",
+      "block": "D8",
+      "hectares": 7.1,
+      "blockHectares": 188.99,
+      "baseInterval": 22,
+      "bfDisplay": "22",
+      "hasReferenceBaseline": true
+    },
+    {
+      "id": "D8-30-2016B",
+      "field": "2016B",
+      "block": "D8",
+      "hectares": 75.29,
+      "blockHectares": 188.99,
+      "baseInterval": 4,
+      "bfDisplay": "4",
+      "hasReferenceBaseline": true
+    },
+    {
+      "id": "D8-31-2015B",
+      "field": "2015B",
+      "block": "D8",
+      "hectares": 68.8,
+      "blockHectares": 188.99,
+      "baseInterval": 9,
+      "bfDisplay": "9",
+      "hasReferenceBaseline": true
+    },
+    {
+      "id": "D8-32-P06B",
+      "field": "P06B",
+      "block": "D8",
+      "hectares": 37.8,
+      "blockHectares": 188.99,
+      "baseInterval": 7,
+      "bfDisplay": "7",
+      "hasReferenceBaseline": true
+    },
+    {
+      "id": "D9-33-P06B",
+      "field": "P06B",
+      "block": "D9",
+      "hectares": 34.12,
+      "blockHectares": 189.53,
+      "baseInterval": 7,
+      "bfDisplay": "7",
+      "hasReferenceBaseline": true
+    },
+    {
+      "id": "D9-34-2015E",
+      "field": "2015E",
+      "block": "D9",
+      "hectares": 56.0,
+      "blockHectares": 189.53,
+      "baseInterval": 12,
+      "bfDisplay": "12",
+      "hasReferenceBaseline": true
+    },
+    {
+      "id": "D9-35-2018A",
+      "field": "2018A",
+      "block": "D9",
+      "hectares": 99.41,
+      "blockHectares": 189.53,
+      "baseInterval": 17,
+      "bfDisplay": "17",
+      "hasReferenceBaseline": true
+    }
+  ],
+  "activityByField": {
+    "02D1": {},
+    "2009D": {
+      "2026-10-01": {
+        "hectare": 27.09,
+        "bunches": 2059,
+        "tonnage": 37.062,
+        "activityCode": "C1"
+      },
+      "2026-10-02": {
+        "hectare": 27.09,
+        "bunches": 2059,
+        "tonnage": 37.062,
+        "activityCode": "C1"
+      }
+    },
+    "P06C": {
+      "2026-10-11": {
+        "hectare": 27.67,
+        "bunches": 2131,
+        "tonnage": 38.358,
+        "activityCode": "C1"
+      }
+    },
+    "2023D": {
+      "2026-10-11": {
+        "hectare": 2.7,
+        "bunches": 211,
+        "tonnage": 3.798,
+        "activityCode": "C1"
+      },
+      "2026-10-12": {
+        "hectare": 2.7,
+        "bunches": 211,
+        "tonnage": 3.798,
+        "activityCode": "C1"
+      }
+    },
+    "2009C": {
+      "2026-10-01": {
+        "hectare": 24.18,
+        "bunches": 1910,
+        "tonnage": 34.38,
+        "activityCode": "C1"
+      },
+      "2026-10-13": {
+        "hectare": 24.18,
+        "bunches": 1910,
+        "tonnage": 34.38,
+        "activityCode": "C1"
+      }
+    },
+    "2014C": {
+      "2026-10-02": {
+        "hectare": 3.33,
+        "bunches": 266,
+        "tonnage": 4.788,
+        "activityCode": "C1"
+      },
+      "2026-10-13": {
+        "hectare": 3.33,
+        "bunches": 266,
+        "tonnage": 4.788,
+        "activityCode": "C1"
+      },
+      "2026-10-14": {
+        "hectare": 3.33,
+        "bunches": 266,
+        "tonnage": 4.788,
+        "activityCode": "C1"
+      }
+    },
+    "08C1": {},
+    "05C1": {
+      "2026-10-04": {
+        "hectare": 15.71,
+        "bunches": 1288,
+        "tonnage": 23.184,
+        "activityCode": "C1"
+      },
+      "2026-10-15": {
+        "hectare": 15.71,
+        "bunches": 1288,
+        "tonnage": 23.184,
+        "activityCode": "C1"
+      },
+      "2026-10-16": {
+        "hectare": 15.71,
+        "bunches": 1288,
+        "tonnage": 23.184,
+        "activityCode": "C1"
+      }
+    },
+    "2014A": {
+      "2026-10-05": {
+        "hectare": 27.85,
+        "bunches": 2312,
+        "tonnage": 41.616,
+        "activityCode": "C1"
+      },
+      "2026-10-17": {
+        "hectare": 27.85,
+        "bunches": 2312,
+        "tonnage": 41.616,
+        "activityCode": "C1"
+      }
+    },
+    "2012B": {
+      "2026-10-08": {
+        "hectare": 16.69,
+        "bunches": 1402,
+        "tonnage": 25.236,
+        "activityCode": "C1"
+      },
+      "2026-10-09": {
+        "hectare": 16.69,
+        "bunches": 1402,
+        "tonnage": 25.236,
+        "activityCode": "C1"
+      }
+    },
+    "2012A": {
+      "2026-10-10": {
+        "hectare": 22.77,
+        "bunches": 1935,
+        "tonnage": 34.83,
+        "activityCode": "C1"
+      }
+    },
+    "2009C1": {
+      "2026-10-03": {
+        "hectare": 34.27,
+        "bunches": 2570,
+        "tonnage": 46.26,
+        "activityCode": "C1"
+      },
+      "2026-10-04": {
+        "hectare": 34.27,
+        "bunches": 2570,
+        "tonnage": 46.26,
+        "activityCode": "C1"
+      }
+    },
+    "2017A": {},
+    "2019A": {
+      "2026-10-01": {
+        "hectare": 16.26,
+        "bunches": 1252,
+        "tonnage": 22.536,
+        "activityCode": "C1"
+      },
+      "2026-10-12": {
+        "hectare": 16.26,
+        "bunches": 1252,
+        "tonnage": 22.536,
+        "activityCode": "C1"
+      },
+      "2026-10-13": {
+        "hectare": 16.26,
+        "bunches": 1252,
+        "tonnage": 22.536,
+        "activityCode": "C1"
+      }
+    },
+    "2019B": {
+      "2026-10-02": {
+        "hectare": 21.9,
+        "bunches": 1708,
+        "tonnage": 30.744,
+        "activityCode": "C1"
+      },
+      "2026-10-14": {
+        "hectare": 21.9,
+        "bunches": 1708,
+        "tonnage": 30.744,
+        "activityCode": "C1"
+      }
+    },
+    "2017C": {
+      "2026-10-03": {
+        "hectare": 26.79,
+        "bunches": 2116,
+        "tonnage": 38.088,
+        "activityCode": "C1"
+      },
+      "2026-10-14": {
+        "hectare": 26.79,
+        "bunches": 2116,
+        "tonnage": 38.088,
+        "activityCode": "C1"
+      },
+      "2026-10-15": {
+        "hectare": 26.79,
+        "bunches": 2116,
+        "tonnage": 38.088,
+        "activityCode": "C1"
+      }
+    },
+    "2017B": {
+      "2026-10-01": {
+        "hectare": 34.08,
+        "bunches": 2726,
+        "tonnage": 49.068,
+        "activityCode": "C1"
+      }
+    },
+    "07B3A": {
+      "2026-10-05": {
+        "hectare": 38.98,
+        "bunches": 3157,
+        "tonnage": 56.826,
+        "activityCode": "C1"
+      },
+      "2026-10-16": {
+        "hectare": 38.98,
+        "bunches": 3157,
+        "tonnage": 56.826,
+        "activityCode": "C1"
+      },
+      "2026-10-17": {
+        "hectare": 38.98,
+        "bunches": 3157,
+        "tonnage": 56.826,
+        "activityCode": "C1"
+      }
+    },
+    "07B3": {},
+    "07B3B": {
+      "2026-10-09": {
+        "hectare": 17.14,
+        "bunches": 1423,
+        "tonnage": 25.614,
+        "activityCode": "C1"
+      },
+      "2026-10-10": {
+        "hectare": 17.14,
+        "bunches": 1423,
+        "tonnage": 25.614,
+        "activityCode": "C1"
+      }
+    },
+    "2018B1": {
+      "2026-10-11": {
+        "hectare": 23.37,
+        "bunches": 1963,
+        "tonnage": 35.334,
+        "activityCode": "C1"
+      }
+    },
+    "07B1": {
+      "2026-10-01": {
+        "hectare": 15.3,
+        "bunches": 1300,
+        "tonnage": 23.4,
+        "activityCode": "C1"
+      },
+      "2026-10-02": {
+        "hectare": 15.3,
+        "bunches": 1300,
+        "tonnage": 23.4,
+        "activityCode": "C1"
+      }
+    },
+    "2016B": {
+      "2026-10-01": {
+        "hectare": 26.35,
+        "bunches": 1976,
+        "tonnage": 35.568,
+        "activityCode": "C1"
+      },
+      "2026-10-13": {
+        "hectare": 26.35,
+        "bunches": 1976,
+        "tonnage": 35.568,
+        "activityCode": "C1"
+      }
+    },
+    "2015B": {
+      "2026-10-02": {
+        "hectare": 30.96,
+        "bunches": 2353,
+        "tonnage": 42.354,
+        "activityCode": "C1"
+      },
+      "2026-10-13": {
+        "hectare": 30.96,
+        "bunches": 2353,
+        "tonnage": 42.354,
+        "activityCode": "C1"
+      },
+      "2026-10-14": {
+        "hectare": 30.96,
+        "bunches": 2353,
+        "tonnage": 42.354,
+        "activityCode": "C1"
+      }
+    },
+    "P06B": {},
+    "2015E": {
+      "2026-10-04": {
+        "hectare": 19.6,
+        "bunches": 1529,
+        "tonnage": 27.522,
+        "activityCode": "C1"
+      },
+      "2026-10-15": {
+        "hectare": 19.6,
+        "bunches": 1529,
+        "tonnage": 27.522,
+        "activityCode": "C1"
+      },
+      "2026-10-16": {
+        "hectare": 19.6,
+        "bunches": 1529,
+        "tonnage": 27.522,
+        "activityCode": "C1"
+      }
+    },
+    "2018A": {
+      "2026-10-03": {
+        "hectare": 44.73,
+        "bunches": 3534,
+        "tonnage": 63.612,
+        "activityCode": "C1"
+      }
+    }
+  },
+  "dailyTotals": {
+    "2026-10-01": {
+      "hectare": 143.26,
+      "bunches": 11223,
+      "tonnage": 202.014
+    },
+    "2026-10-02": {
+      "hectare": 98.58,
+      "bunches": 7686,
+      "tonnage": 138.348
+    },
+    "2026-10-11": {
+      "hectare": 53.74,
+      "bunches": 4305,
+      "tonnage": 77.49
+    },
+    "2026-10-12": {
+      "hectare": 18.96,
+      "bunches": 1463,
+      "tonnage": 26.334
+    },
+    "2026-10-13": {
+      "hectare": 101.08,
+      "bunches": 7757,
+      "tonnage": 139.626
+    },
+    "2026-10-14": {
+      "hectare": 82.98,
+      "bunches": 6443,
+      "tonnage": 115.974
+    },
+    "2026-10-04": {
+      "hectare": 69.58,
+      "bunches": 5387,
+      "tonnage": 96.966
+    },
+    "2026-10-15": {
+      "hectare": 62.1,
+      "bunches": 4933,
+      "tonnage": 88.794
+    },
+    "2026-10-16": {
+      "hectare": 74.29,
+      "bunches": 5974,
+      "tonnage": 107.532
+    },
+    "2026-10-05": {
+      "hectare": 66.83,
+      "bunches": 5469,
+      "tonnage": 98.442
+    },
+    "2026-10-17": {
+      "hectare": 66.83,
+      "bunches": 5469,
+      "tonnage": 98.442
+    },
+    "2026-10-08": {
+      "hectare": 16.69,
+      "bunches": 1402,
+      "tonnage": 25.236
+    },
+    "2026-10-09": {
+      "hectare": 33.83,
+      "bunches": 2825,
+      "tonnage": 50.85
+    },
+    "2026-10-10": {
+      "hectare": 39.91,
+      "bunches": 3358,
+      "tonnage": 60.444
+    },
+    "2026-10-03": {
+      "hectare": 105.79,
+      "bunches": 8220,
+      "tonnage": 147.96
+    }
+  },
+  "dispatchByField": {
+    "02D1": {},
+    "2009D": {
+      "2026-10-01": {
+        "hectare": 24.92,
+        "bunches": 1894,
+        "kg": 34097
+      },
+      "2026-10-02": {
+        "hectare": 24.92,
+        "bunches": 1894,
+        "kg": 34097
+      }
+    },
+    "P06C": {
+      "2026-10-11": {
+        "hectare": 25.46,
+        "bunches": 1961,
+        "kg": 35289
+      }
+    },
+    "2023D": {
+      "2026-10-11": {
+        "hectare": 2.48,
+        "bunches": 194,
+        "kg": 3494
+      },
+      "2026-10-12": {
+        "hectare": 2.48,
+        "bunches": 194,
+        "kg": 3494
+      }
+    },
+    "2009C": {
+      "2026-10-01": {
+        "hectare": 22.25,
+        "bunches": 1757,
+        "kg": 31630
+      },
+      "2026-10-13": {
+        "hectare": 22.25,
+        "bunches": 1757,
+        "kg": 31630
+      }
+    },
+    "2014C": {
+      "2026-10-02": {
+        "hectare": 3.06,
+        "bunches": 245,
+        "kg": 4405
+      },
+      "2026-10-13": {
+        "hectare": 3.06,
+        "bunches": 245,
+        "kg": 4405
+      },
+      "2026-10-14": {
+        "hectare": 3.06,
+        "bunches": 245,
+        "kg": 4405
+      }
+    },
+    "08C1": {},
+    "05C1": {
+      "2026-10-04": {
+        "hectare": 14.45,
+        "bunches": 1185,
+        "kg": 21329
+      },
+      "2026-10-15": {
+        "hectare": 14.45,
+        "bunches": 1185,
+        "kg": 21329
+      },
+      "2026-10-16": {
+        "hectare": 14.45,
+        "bunches": 1185,
+        "kg": 21329
+      }
+    },
+    "2014A": {
+      "2026-10-05": {
+        "hectare": 25.62,
+        "bunches": 2127,
+        "kg": 38287
+      },
+      "2026-10-17": {
+        "hectare": 25.62,
+        "bunches": 2127,
+        "kg": 38287
+      }
+    },
+    "2012B": {
+      "2026-10-08": {
+        "hectare": 15.35,
+        "bunches": 1290,
+        "kg": 23217
+      },
+      "2026-10-09": {
+        "hectare": 15.35,
+        "bunches": 1290,
+        "kg": 23217
+      }
+    },
+    "2012A": {
+      "2026-10-10": {
+        "hectare": 20.95,
+        "bunches": 1780,
+        "kg": 32044
+      }
+    },
+    "2009C1": {
+      "2026-10-03": {
+        "hectare": 31.53,
+        "bunches": 2364,
+        "kg": 42559
+      },
+      "2026-10-04": {
+        "hectare": 31.53,
+        "bunches": 2364,
+        "kg": 42559
+      }
+    },
+    "2017A": {},
+    "2019A": {
+      "2026-10-01": {
+        "hectare": 14.96,
+        "bunches": 1152,
+        "kg": 20733
+      },
+      "2026-10-12": {
+        "hectare": 14.96,
+        "bunches": 1152,
+        "kg": 20733
+      },
+      "2026-10-13": {
+        "hectare": 14.96,
+        "bunches": 1152,
+        "kg": 20733
+      }
+    },
+    "2019B": {
+      "2026-10-02": {
+        "hectare": 20.15,
+        "bunches": 1571,
+        "kg": 28284
+      },
+      "2026-10-14": {
+        "hectare": 20.15,
+        "bunches": 1571,
+        "kg": 28284
+      }
+    },
+    "2017C": {
+      "2026-10-03": {
+        "hectare": 24.65,
+        "bunches": 1947,
+        "kg": 35041
+      },
+      "2026-10-14": {
+        "hectare": 24.65,
+        "bunches": 1947,
+        "kg": 35041
+      },
+      "2026-10-15": {
+        "hectare": 24.65,
+        "bunches": 1947,
+        "kg": 35041
+      }
+    },
+    "2017B": {
+      "2026-10-01": {
+        "hectare": 31.35,
+        "bunches": 2508,
+        "kg": 45143
+      }
+    },
+    "07B3A": {
+      "2026-10-05": {
+        "hectare": 35.86,
+        "bunches": 2904,
+        "kg": 52280
+      },
+      "2026-10-16": {
+        "hectare": 35.86,
+        "bunches": 2904,
+        "kg": 52280
+      },
+      "2026-10-17": {
+        "hectare": 35.86,
+        "bunches": 2904,
+        "kg": 52280
+      }
+    },
+    "07B3": {},
+    "07B3B": {
+      "2026-10-09": {
+        "hectare": 15.77,
+        "bunches": 1309,
+        "kg": 23565
+      },
+      "2026-10-10": {
+        "hectare": 15.77,
+        "bunches": 1309,
+        "kg": 23565
+      }
+    },
+    "2018B1": {
+      "2026-10-11": {
+        "hectare": 21.5,
+        "bunches": 1806,
+        "kg": 32507
+      }
+    },
+    "07B1": {
+      "2026-10-01": {
+        "hectare": 14.08,
+        "bunches": 1196,
+        "kg": 21528
+      },
+      "2026-10-02": {
+        "hectare": 14.08,
+        "bunches": 1196,
+        "kg": 21528
+      }
+    },
+    "2016B": {
+      "2026-10-01": {
+        "hectare": 24.24,
+        "bunches": 1818,
+        "kg": 32723
+      },
+      "2026-10-13": {
+        "hectare": 24.24,
+        "bunches": 1818,
+        "kg": 32723
+      }
+    },
+    "2015B": {
+      "2026-10-02": {
+        "hectare": 28.48,
+        "bunches": 2165,
+        "kg": 38966
+      },
+      "2026-10-13": {
+        "hectare": 28.48,
+        "bunches": 2165,
+        "kg": 38966
+      },
+      "2026-10-14": {
+        "hectare": 28.48,
+        "bunches": 2165,
+        "kg": 38966
+      }
+    },
+    "P06B": {},
+    "2015E": {
+      "2026-10-04": {
+        "hectare": 18.03,
+        "bunches": 1407,
+        "kg": 25320
+      },
+      "2026-10-15": {
+        "hectare": 18.03,
+        "bunches": 1407,
+        "kg": 25320
+      },
+      "2026-10-16": {
+        "hectare": 18.03,
+        "bunches": 1407,
+        "kg": 25320
+      }
+    },
+    "2018A": {
+      "2026-10-03": {
+        "hectare": 41.15,
+        "bunches": 3251,
+        "kg": 58523
+      }
+    }
+  },
+  "dispatchDailyTotals": {
+    "2026-10-01": {
+      "hectare": 131.8,
+      "bunches": 10325,
+      "kg": 185854
+    },
+    "2026-10-02": {
+      "hectare": 90.69,
+      "bunches": 7071,
+      "kg": 127280
+    },
+    "2026-10-11": {
+      "hectare": 49.44,
+      "bunches": 3961,
+      "kg": 71290
+    },
+    "2026-10-12": {
+      "hectare": 17.44,
+      "bunches": 1346,
+      "kg": 24227
+    },
+    "2026-10-13": {
+      "hectare": 92.99,
+      "bunches": 7137,
+      "kg": 128457
+    },
+    "2026-10-14": {
+      "hectare": 76.34,
+      "bunches": 5928,
+      "kg": 106696
+    },
+    "2026-10-04": {
+      "hectare": 64.01,
+      "bunches": 4956,
+      "kg": 89208
+    },
+    "2026-10-15": {
+      "hectare": 57.13,
+      "bunches": 4539,
+      "kg": 81690
+    },
+    "2026-10-16": {
+      "hectare": 68.34,
+      "bunches": 5496,
+      "kg": 98929
+    },
+    "2026-10-05": {
+      "hectare": 61.48,
+      "bunches": 5031,
+      "kg": 90567
+    },
+    "2026-10-17": {
+      "hectare": 61.48,
+      "bunches": 5031,
+      "kg": 90567
+    },
+    "2026-10-08": {
+      "hectare": 15.35,
+      "bunches": 1290,
+      "kg": 23217
+    },
+    "2026-10-09": {
+      "hectare": 31.12,
+      "bunches": 2599,
+      "kg": 46782
+    },
+    "2026-10-10": {
+      "hectare": 36.72,
+      "bunches": 3089,
+      "kg": 55609
+    },
+    "2026-10-03": {
+      "hectare": 97.33,
+      "bunches": 7562,
+      "kg": 136123
+    }
+  },
+  "overlayByField": {}
+}

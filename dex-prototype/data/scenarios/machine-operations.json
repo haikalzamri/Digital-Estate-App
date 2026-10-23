@@ -1,0 +1,125 @@
+{
+  "schemaVersion": 1,
+  "dataKind": "illustrative",
+  "simulationSecondsPerRoute": 90,
+  "checklist": [
+    {
+      "key": "rops",
+      "label": "ROPS"
+    },
+    {
+      "key": "brakeClutch",
+      "label": "Brek dan clutch"
+    },
+    {
+      "key": "seatbelt",
+      "label": "Tali Pinggang Keselamatan"
+    },
+    {
+      "key": "tyreThread",
+      "label": "Bunga Tayar"
+    },
+    {
+      "key": "parkingBrake",
+      "label": "Brek Parkir / Brek Tangan"
+    },
+    {
+      "key": "bearing",
+      "label": "Bearing"
+    },
+    {
+      "key": "tyrePressureDamage",
+      "label": "Tekanan tayar dan kerosakan"
+    },
+    {
+      "key": "oilWaterLeak",
+      "label": "Tahap kebocoran minyak/air"
+    },
+    {
+      "key": "engineOilLevel",
+      "label": "Paras minyak enjin"
+    },
+    {
+      "key": "gearboxOilLevel",
+      "label": "Paras minyak gear box"
+    },
+    {
+      "key": "coolantLevel",
+      "label": "Paras cecair penyejuk"
+    },
+    {
+      "key": "tyreNut",
+      "label": "Nut tayar"
+    },
+    {
+      "key": "greaseNipples",
+      "label": "Keadaan grease pada nipples"
+    },
+    {
+      "key": "gearbox",
+      "label": "Gearbox"
+    },
+    {
+      "key": "airFilter",
+      "label": "Penapis angin"
+    },
+    {
+      "key": "dieselFilter",
+      "label": "Penapis minyak diesel"
+    },
+    {
+      "key": "batteryWaterLevel",
+      "label": "Paras air bateri"
+    },
+    {
+      "key": "fanBeltTension",
+      "label": "Ketegangan tali sawat"
+    },
+    {
+      "key": "steering",
+      "label": "Steering"
+    },
+    {
+      "key": "tyreSeal",
+      "label": "Sil Tayar"
+    }
+  ],
+  "idleReasons": [
+    "No driver",
+    "Driver AL / MC",
+    "Under repair",
+    "Training",
+    "No material",
+    "Rain / flood",
+    "Other"
+  ],
+  "damageComponents": [
+    "Oil seal",
+    "Brake & clutch",
+    "Axle",
+    "Bearing",
+    "Tyre",
+    "Engine",
+    "Cooling",
+    "Transmission",
+    "Hydraulic",
+    "Steering",
+    "Electrical",
+    "Other"
+  ],
+  "issueCategories": [
+    "Pokok tumbang",
+    "Jalan rosak",
+    "Drainage",
+    "Access blocked",
+    "Other"
+  ],
+  "openIssues": [
+    {
+      "evitCode": "MB001",
+      "component": "Hydraulic",
+      "date": "2026-10-19",
+      "remark": "Illustrative issue carried from the previous day"
+    }
+  ]
+}

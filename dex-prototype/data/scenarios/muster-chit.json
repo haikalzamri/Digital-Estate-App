@@ -1,0 +1,51 @@
+{
+  "provenance": "Illustrative workshop planning values. PH4008 is the user's example and is not present in the supplied activity master. Crop quantities and LF reference dates are simulated, editable planning context; no employee SD classification or absence reason is inferred.",
+  "activities": [
+    {
+      "code": "PH4008",
+      "name": "Harvesting support (workshop example)"
+    }
+  ],
+  "crop": {
+    "inField": 34.94,
+    "bin": 0,
+    "platform": 0,
+    "estimate": 180,
+    "looseFruit": 10
+  },
+  "looseFruitLastDates": {
+    "02D1": "2026-10-12",
+    "05C1": "2026-10-10",
+    "07B1": "2026-10-09",
+    "07B3": "2026-10-11",
+    "07B3A": "2026-10-09",
+    "07B3B": "2026-10-10",
+    "08C1": "2026-10-07",
+    "2014C": "2026-10-12",
+    "2009C": "2026-09-28",
+    "P06C": "2026-10-10",
+    "2009C1": "2026-10-13"
+  },
+  "categoryNames": [
+    "Mandore",
+    "Cutter",
+    "Frond Stacker",
+    "Loose Fruit Collector",
+    "Carrier",
+    "Teambased (BB)",
+    "Machine / MTG Operator"
+  ],
+  "absenceReasons": [
+    "Unspecified",
+    "Suspension (U1)",
+    "Suspension (U2)",
+    "Suspension (U3)",
+    "Rain (X7)",
+    "Leave (V4)",
+    "Absent (A0)",
+    "Maternity (M2)",
+    "Sick (S0)",
+    "Sick (S1)",
+    "Approved unpaid leave (L0)"
+  ]
+}

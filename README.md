@@ -21,8 +21,9 @@ The current production modules are:
 | Costbook prototype | Management | [`/management/costbook`](https://digital-estate-app.vercel.app/management/costbook) |
 | Work Program Input | Field users | [`/input/work-program`](https://digital-estate-app.vercel.app/input/work-program) |
 | PMV Input | Field users | [`/input/pmv`](https://digital-estate-app.vercel.app/input/pmv) |
+| DEX Prototype | Workshop participants | [`/dex`](https://digital-estate-app.vercel.app/dex) |
 
-The root route redirects to `/management/work-program`.
+The root route redirects to `/management/work-program`. DEX is an isolated prototype at `/dex` in the same application and Vercel project; existing module routes remain available.
 
 ## Features
 
@@ -37,6 +38,7 @@ The root route redirects to `/management/work-program`.
 - Leaflet/OpenStreetMap field boundary map using KMZ-derived GeoJSON.
 - Browser localStorage offline queue for pending Work Program and PMV uploads/deletes.
 - Supabase-backed API routes for production Work Program and PMV records.
+- DEX workflow simulation covering Work Programme, Attendance and Productivity, Machine operations, and Warehouse, with connected Web and Phone views.
 
 ## Tech Stack
 
@@ -90,7 +92,8 @@ supabase/
 | `components/` | Module UI, dashboards, trackers, maps, and shared shells. |
 | `lib/` | Domain logic, static fallback data, shared types, and server utilities. |
 | `public/data/` | Browser-served field boundary GeoJSON. |
-| `scripts/` | Route smoke tests and targeted domain checks. |
+| `scripts/` | Build packaging, route smoke tests and targeted domain checks. |
+| `dex-prototype/` | Isolated DEX source, reference data, scenarios and workflow checks. |
 | `supabase/` | Database setup and seed SQL scripts. |
 
 ## Data Model
@@ -107,6 +110,7 @@ supabase/
 | Harvesting Interval prototype | Static fallback data in `lib/data/harvesting-interval-source.json` |
 | Minamas Harvesting Interval prototype | Independent static dataset in `lib/minamas-harvesting-interval/source.json` |
 | Costbook prototype | Static dummy data in `lib/data/costbook-source.json` |
+| DEX Prototype | Prepared JSON reference/scenario data and a separate browser-local simulated session |
 
 ### Static Fallback Data
 
@@ -124,6 +128,8 @@ supabase/
 Static demo datasets and browser-served field map data may be masked or transformed before external hosting. Hosted demo values and map boundaries should not be treated as official operational records or actual company boundary data.
 
 Pre-Plan is a workflow-review prototype with no SAP or Supabase integration. Its demo plans are saved only in the current browser; they are not shared between users or devices and can be lost if browser site data is cleared.
+
+DEX starts with the same prepared reference lists and illustrative balances for every visitor. Entries remain in that browser across refreshes and are not uploaded or shared between users. Workshop tools can reset local progress while retaining the sample data. Role selection demonstrates workflows rather than providing authenticated access. See [DEX documentation](dex-prototype/README.md).
 
 ### Offline Behaviour
 
@@ -193,7 +199,7 @@ Do not commit passwords, tokens, API keys, service-role keys, or `.env` files.
 | Command | Purpose |
 | --- | --- |
 | `npm run dev` | Start the Next.js development server. |
-| `npm run build` | Build the production application. |
+| `npm run build` | Export DEX for `/dex`, then build the existing production application. |
 | `npm run start` | Start the production build locally. |
 | `npm run lint` | Run ESLint. |
 | `npm run typecheck` | Run TypeScript checks. |
@@ -218,7 +224,7 @@ Frontend code must call Next.js API routes under `app/api/`; Supabase service-ro
 
 ## Deployment
 
-Production is deployed by Vercel from the `main` branch.
+Production is deployed by Vercel from the `main` branch. Keep the Vercel project root at the repository root and use `npm run build`. The build installs the locked DEX dependencies when needed and generates ignored assets under `public/dex-runtime/`; generated assets are not committed.
 
 Recommended release flow:
 
@@ -238,7 +244,8 @@ Recommended release flow:
 - Minamas Harvesting Interval is a separate static-data prototype with an illustrative map and no database integration.
 - Costbook is currently a management-only static dummy-data prototype and is not yet connected to an approved source file.
 - Rainfall data is shown as a placeholder until an approved rainfall source is integrated.
+- DEX uses simulated transactions, browser-local storage and role selectors; it has no live purchasing, payroll, SAP, GPS tracking or shared database integration.
 
 ## License
 
-Private project repository.
+No open-source licence is specified.
