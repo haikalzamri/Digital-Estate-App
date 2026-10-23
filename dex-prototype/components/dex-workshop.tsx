@@ -5,7 +5,6 @@ import { WarehouseWorkspace } from "@/components/warehouse-workspace";
 import { warehouseCounts } from "@/lib/warehouse";
 import { CheckrollWorkspace, CheckrollReferenceDetails } from "@/components/checkroll-workspace";
 import { CompletionReview, CompletionFeedback } from "@/components/work-completion";
-import Link from "next/link";
 import { WorkProgramme } from "@/components/work-programme";
 import { WorkRows, WorkComposer, type PhoneTab } from "@/components/phone-workspace";
 import { PhonePortal, DEX_MODULES, type PhoneScreen } from "@/components/phone-portal";
@@ -303,7 +302,7 @@ export function DexWorkshop() {
 
   return <div className={"dex-app mode-" + mode}>
     <header className="app-header">
-      <Link className="brand" href="/" aria-label="DEX home"><LeafMark /><span><strong>DEX<span className="brand-dot">.</span></strong><small>Digital Estate Extended</small></span></Link>
+      <a className="brand" href={process.env.NEXT_PUBLIC_DEX_BASE_PATH || "/"} aria-label="DEX home"><LeafMark /><span><strong>DEX<span className="brand-dot">.</span></strong><small>Digital Estate Extended</small></span></a>
       <div className="estate-label"><span className="estate-dot" /><strong>Ldg Digital</strong><span className="muted">E063</span><span className="header-divider" /><span className="simulation-label">Workshop simulation</span></div>
       <div className="header-actions">
         {process.env.NEXT_PUBLIC_DEX_BASE_PATH?<a className="dex-return-link" href="/management/work-program">Digital Estate <ArrowRight size={13}/></a>:null}
